@@ -1414,8 +1414,11 @@
     <xsl:variable name="fieldName"
                   select="concat('_', $ref, '_', replace($attributeName, ':', 'COLON'))"/>
 
-    <div class="form-group" id="gn-attr-{$fieldName}">
+    <div class="form-group gn-attr-{replace($attributeName, ':', '_')}" id="gn-attr-{$fieldName}">
       <label class="col-sm-4">
+        <xsl:if test="$attributeName = 'xlink:href'">
+          <i class="fa fa-link fa-fw"/>
+        </xsl:if>
         <xsl:value-of select="gn-fn-metadata:getLabel($schema, $attributeName, $labels)/label"/>
       </label>
       <div class="col-sm-7">
@@ -1500,7 +1503,7 @@
     <xsl:variable name="attributeLabel" select="gn-fn-metadata:getLabel($schema, @name, $labels)"/>
     <xsl:variable name="fieldName"
                   select="concat(replace(@name, ':', 'COLON'), '_', $insertRef)"/>
-    <button type="button" class="btn btn-default btn-xs btn-attr"
+    <button type="button" class="btn btn-default btn-xs btn-attr btn-xs gn-attr-{replace(@name, ':', '_')}"
             id="gn-attr-add-button-{$fieldName}"
             data-gn-click-and-spin="add('{$ref}', '{@name}', '{$insertRef}', null, true)"
             title="{$attributeLabel/description}">
@@ -1527,16 +1530,34 @@
     </div>
   </xsl:template>
 
+  <!-- Render suggest directive action -->
+  <xsl:template name="render-suggest-button">
+    <xsl:param name="process-name"/>
+    <xsl:param name="process-params"/>
+    <xsl:param name="btnClass" required="no"/>
+
+    <div class="row form-group gn-field gn-extra-field gn-process-{$process-name}">
+      <div class="col-xs-10 col-xs-offset-2">
+        <span data-gn-suggest-button="{$process-name}"
+              data-params="{$process-params}"
+              data-icon="{$btnClass}"
+              data-name="{normalize-space($strings/*[name() = $process-name])}"
+              data-help="{normalize-space($strings/*[name() = concat($process-name, 'Help')])}"/>
+      </div>
+    </div>
+  </xsl:template>
+
 
   <!-- Render associated resource action -->
   <xsl:template name="render-associated-resource-button">
     <xsl:param name="type"/>
+    <xsl:param name="options"/>
     <xsl:param name="label"/>
 
     <div class="row form-group gn-field gn-extra-field">
       <div class="col-xs-10 col-xs-offset-2">
         <a class="btn gn-associated-resource-btn"
-           data-ng-click="gnOnlinesrc.onOpenPopup('{$type}')">
+           data-ng-click="gnOnlinesrc.onOpenPopup('{$type}'{if ($options != '') then concat(', ''', $options, '''') else ''})">
           <i class="fa gn-icon-{$type}"></i>&#160;
           <span data-translate="">
             <xsl:choose>

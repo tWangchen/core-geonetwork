@@ -104,6 +104,7 @@
   "defaultView": "Default view",
   "full": "Full view",
   "securityConstraints": "Security constraints",
+  "versionIdentifier": "Version identifier",
   "otherConstraints": "Other constraints",
   "resourceConstraints": "Resource constraints",
   "maintenanceAndUpdateFrequencies": "Update frequencies",
@@ -192,7 +193,8 @@
   "preview": "Preview",
   "metadataInformation": "Metadata information",
   "backTosearch": "Back to search",
-  "backTosmap": "Back to map",
+  "backTomap": "Back to map",
+  "backTohome": "Back to home",
   "shareOn": "Share on social sites",
   "updatedOn": "Updated: ",
   "license": "License",
@@ -413,6 +415,8 @@
   "setall": "Set all privileges",
   "print_legend": "Legend",
   "print_legend_field": "Include legends",
+  "landscape": "Landscape",
+  "portrait": "Portrait",
   "wfsDownloadDataInstruction": "Choose a data format to download:",
   "wfsTypenameNotAvailable": "The featuretype '{{typename}}' is not available in the WFS service. You can select from available featuretypes instead",
   "wfsChooseFeatureTypeToDownload": "Choose a featuretype to download",
@@ -490,5 +494,7 @@
   "userSearchUpdateUrl": "Update",
   "userSearchFeaturedDisplayInHomePage": "Home page",
   "userSearchUpdated": "User search saved",
-  "userSearchUpdatedError": "Error saving user search"
+  "userSearchUpdatedError": "Error saving user search",
+  "seeDraft": "This record has a working copy version. Click here to see it.",
+  "seeNoDraft": "This record has an approved and published version. Click here to see it."
 }
