@@ -43,7 +43,7 @@
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
                 exclude-result-prefixes="#all">
-  <xsl:import href="../../iso19115-3.2018/convert/ISO19139/fromISO19139.xsl"/>
+  <xsl:import href="../../iso19115-3/convert/ISO19139/fromISO19139.xsl"/>
 
   <!-- Remove geonet:* elements. -->
   <xsl:template match="gn:*" priority="2"/>

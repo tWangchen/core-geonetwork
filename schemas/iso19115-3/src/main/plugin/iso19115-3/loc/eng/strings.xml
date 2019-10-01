@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+	<understandResource>Information about the dataset</understandResource>
+	<relatedResources>Related services and linked data</relatedResources>
+	<techInfo>Technical information</techInfo>
+	<contactInfo>Contact information</contactInfo>
+	<mdContactInfo>Metadata contact</mdContactInfo>
+	<refDate>Reference date</refDate>
+	<temporalRef>Temporal information</temporalRef>
+	<constraintInfo>Access constraint information</constraintInfo>
+	<xml_iso19139>Save this metadata as an ISO19139 XML file</xml_iso19139>
+	<xml_iso19139Tooai_dc>Save this metadata as an OAI Dublin Core XML file
+	</xml_iso19139Tooai_dc>
+
+	<!-- New strings added for the AngularJS editor -->
+	<!-- View and tabs -->
+	<advanced>Full Standard</advanced>
+	<default>Tabs</default>
+	<services>Services Tabs</services>
+	<simple>Simple Standard</simple>
+	<inspire>INSPIRE</inspire>
+	<resource>Resource</resource>
+	<xml>XML</xml>
+	<metadata>Metadata</metadata>
+	<identificationInfo>Identification</identificationInfo>
+	<distributionInfo>Distribution</distributionInfo>
+	<dataQualityInfo>Quality</dataQualityInfo>
+	<resourceLineage>Lineage</resourceLineage>
+	<spatialRepresentationInfo>Spatial rep.</spatialRepresentationInfo>
+	<referenceSystemInfo>Ref. system</referenceSystemInfo>
+	<contentInfo>Content</contentInfo>
+	<portrayalCatalogueInfo>Portrayal</portrayalCatalogueInfo>
+	<metadataMaintenance>Md. maintenance</metadataMaintenance>
+	<applicationSchemaInfo>Schema info</applicationSchemaInfo>
+	<acquisitionInformation>Acquisition info</acquisitionInformation>
+	<qualityMeasures>Q. measures</qualityMeasures>
+
+	<add-resource-id>Compute resource identifier</add-resource-id>
+	<add-resource-idHelp>Compose the resource identifier using the catalog
+		URL and the metadata identifier (eg.
+		http://www.organization.org/catalogue/5391bf69-44bc-4ea0-8cc0-6cf6c3bc81ae).
+	</add-resource-idHelp>
+	<add-extent-from-geokeywords>Compute extent from keyword
+	</add-extent-from-geokeywords>
+	<add-extent-from-geokeywordsHelp>Analyze each keyword of type place and
+		add matching extent.</add-extent-from-geokeywordsHelp>
+	<pointOfContact>Resource Contact</pointOfContact>
+	<contact>Metadata Contact</contact>
+
+	<source>Source</source>
+	<resourceIdentification>Resource Identification
+	</resourceIdentification>
+
+	<metadataScope>Type of Resource</metadataScope>
+
+
+	<resourceQuality>Resource Quality</resourceQuality>
+	<conceptualConsistency>Logical Consistency</conceptualConsistency>
+	<absoluteExternalPositionalAccuracy>Positional Accuracy
+	</absoluteExternalPositionalAccuracy>
+	<nonQuantitativeAttributeCorrectness>Attribute Correctness
+	</nonQuantitativeAttributeCorrectness>
+	<completenessOmission>Completeness</completenessOmission>
+	<conformity_title>Title</conformity_title>
+	<conformity_date>Date</conformity_date>
+	<explanation>Explanation</explanation>
+	<pass>Pass</pass>
+	<notEvaluated>Not evaluated</notEvaluated>
+
+
+	<!-- XSD error translation -->
+	<invalidElement>Invalid element. Invalid content was found starting
+		with element: </invalidElement>
+	<onElementOf>One of the following elements </onElementOf>
+	<isExpected> is expected.</isExpected>
+	<isNotComplete> is not complete.</isNotComplete>
+	<elementLocated>Parent element is </elementLocated>
+	<missingElement>Missing element. The content of element:
+	</missingElement>
+	<invalidValue>Invalid or missing value.</invalidValue>
+	<notValidFor> is not a valid value for </notValidFor>
+	<xsdErrorIs>XSD error is: </xsdErrorIs>
+	<inElement> in element </inElement>
+	<enum1>Value </enum1>
+	<enum2> is not valid for the field </enum2>
+	<enum3>List of values is :</enum3>
+
+	<!-- new tabs in default mode -->
+	<resourceCitation>Citation</resourceCitation>
+	<resourceDescription>Description</resourceDescription>
+	<resourceKeywords>Keywords</resourceKeywords>
+	<resourceMaintenance>Maintenance</resourceMaintenance>
+	<constraints>Constraints</constraints>
+	<resourceConstraints>Resource Constraints</resourceConstraints>
+	<metadataConstraints>Metadata Constraints</metadataConstraints>
+	<contacts>Contacts</contacts>
+	<resourceContact>Resource Contacts</resourceContact>
+	<metadataContact>Metadata Contacts</metadataContact>
+	<resourceSpatial>Spatial</resourceSpatial>
+	<resourceExtents>Extents</resourceExtents>
+	<distribution_name>Name</distribution_name>
+	<distribution_version>Version</distribution_version>
+	<resourceType>Type</resourceType>
+	<resourceLineageTab>Lineage</resourceLineageTab>
+	<resourceFormat>Format (admin only)</resourceFormat>
+	<resourceFormatNoTitle></resourceFormatNoTitle>
+	<distribution>Distribution</distribution>
+
+	<useAssociatedResources>
+		<span>
+			Add an online resource for distribution using the "
+			<i class="fa fa-link"></i>
+			<i class="icon-external-link"></i>
+			Associated resources" panel at the right hand side of the form
+		</span>
+	</useAssociatedResources>
+
+	<!-- gaDatasetURI -->
+	<gaDatasetURI>GA Dataset URI</gaDatasetURI>
+	
+	<!-- Identifiers -->
+	<DOI>Digtial Object Identifier</DOI>
+	<PID>Persistent Identifier</PID>
+	
+	<!-- Service stuff -->
+	<serviceDescription>Description</serviceDescription>
+	<serviceType>Service Type</serviceType>
+	<serviceParameter>Parameter</serviceParameter>
+	<containsOperations>Operations</containsOperations>
+	<operation>Operation</operation>
+	<operatesOn>Operates On</operatesOn>
+	<parameter-name>Name</parameter-name>
+	<parameter-direction>Direction</parameter-direction>
+	<parameter-description>Description</parameter-description>
+	<optionality>Optional?</optionality>
+	<repeatability>Repeatable?</repeatability>
+
+	<useAssociatedResourcesForOperatesOn>
+		<span>
+			Select metadata records describing datasets that the service operates
+			on using the "
+			<i class="fa fa-link"></i>
+			<i class="icon-external-link"></i>
+			Associated resources" panel at the right hand side of the form. Use
+			the "
+			<i class="fa fa-files-o"></i>
+			<i class="icon-external-link"></i>
+			Link to a dataset" menu option.
+		</span>
+	</useAssociatedResourcesForOperatesOn>
+  
+  <!-- Source Dataset Template -->
+  <resourceMandatory>Mandatory</resourceMandatory>
+  <resourceOptional>Optional</resourceOptional>
+  <NLI>NLI additional Fields</NLI>
+  
+</strings>
