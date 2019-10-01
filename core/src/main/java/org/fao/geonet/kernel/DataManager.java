@@ -257,6 +257,17 @@ public class DataManager {
     public String extractUUID(String schema, Element md) throws Exception {
         return metadataUtils.extractUUID(schema, md);
     }
+    
+    @Deprecated
+    public String extractGAID(String schema, Element md) throws Exception {
+        return metadataUtils.extractGAID(schema, md);
+    }
+    
+    @Deprecated
+    public String getGAID() throws Exception {
+        return metadataUtils.getGAID();
+    }
+    
 
     @Deprecated
     public String extractDefaultLanguage(String schema, Element md) throws Exception {
@@ -271,6 +282,11 @@ public class DataManager {
     @Deprecated
     public Element setUUID(String schema, String uuid, Element md) throws Exception {
         return metadataUtils.setUUID(schema, uuid, md);
+    }
+    
+    @Deprecated
+    public Element setGAID(String schema, String uuid, Element md) throws Exception {
+        return metadataUtils.setGAID(schema, uuid, md);
     }
 
     @Deprecated

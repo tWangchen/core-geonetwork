@@ -28,6 +28,7 @@ package org.fao.geonet.kernel.setting;
  */
 public class Settings {
     public static final String SYSTEM_SITE_ORGANIZATION = "system/site/organization";
+    public static final String SYSTEM_SITE_ORGANIZATION_WEBSITE = "system/site/organizationWebsite";
     public static final String SYSTEM_SITE_SITE_ID_PATH = "system/site/siteId";
     public static final String SYSTEM_SITE_NAME_PATH = "system/site/name";
     public static final String SYSTEM_SITE_LABEL_PREFIX = "system/site/labels/";
@@ -130,6 +131,7 @@ public class Settings {
     public static final String METADATA_BACKUPARCHIVE_ENABLE = "metadata/backuparchive/enable";
     public static final String METADATA_VCS = "metadata/vcs/enable";
     public static final String VIRTUAL_SETTINGS_SUFFIX_ISDEFINED = "IsDefined";
+	public static final String METADATA_BATCHEDIT_HISTORY = "metadata/batchedit/history";
     public static final String NODE = "node/id";
     public static final String NODE_DEFAULT = "node/default";
     public static final String NODE_NAME = "node/name";

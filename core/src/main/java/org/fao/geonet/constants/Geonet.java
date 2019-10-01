@@ -26,6 +26,8 @@ package org.fao.geonet.constants;
 import org.apache.lucene.util.Version;
 import org.jdom.Namespace;
 
+import java.text.SimpleDateFormat;
+
 import javax.xml.XMLConstants;
 
 import jeeves.constants.Jeeves;
@@ -96,7 +98,13 @@ public final class Geonet {
     public static final String CLASSIFIER = GEONETWORK + ".classifier";
     public static final String CORS = GEONETWORK + ".cors";
 
-
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HHmm");
+    public static final String BATCHEDIT_BACKUP_BUCKET = "https://s3-ap-southeast-2.amazonaws.com/ga-ecat3-batchedit/";
+    public static final String BATCHEDIT_REPORT = "be_report";
+    public static final String BATCHEDIT_BACKUP = "be_backup";
+    public static final String BATCHEDIT_PROGRESS = "be_progress";
+    public static final String CSV_DOWNLOAD_STATUS = "csv_download_status";
+    
     /**
      * Container for file names.
      */
@@ -112,15 +120,20 @@ public final class Geonet {
         public static final String UPDATE_FIXED_INFO_SUBTEMPLATE = "update-fixed-info-subtemplate.xsl";
         public static final String UPDATE_CHILD_FROM_PARENT_INFO = "update-child-from-parent-info.xsl";
         public static final String EXTRACT_UUID = "extract-uuid.xsl";
+		public static final String EXTRACT_GAID = "extract-ga-id.xsl";
+        public static final String EXTRACT_SUBTEMPLATETITLE = "extract-subtemplate-title.xsl";
         public static final String EXTRACT_DEFAULT_LANGUAGE = "extract-default-language.xsl";
         public static final String EXTRACT_SKOS_FROM_ISO19135 = "xml_iso19135ToSKOS.xsl";
         public static final String EXTRACT_DATE_MODIFIED = "extract-date-modified.xsl";
         public static final String SET_UUID = "set-uuid.xsl";
+        public static final String SET_GAID            = "set-gaid.xsl";
         public static final String EXTRACT_THUMBNAILS = "extract-thumbnails.xsl";
         public static final String SET_CREATIVECOMMONS = "set-creativecommons.xsl";
         public static final String SET_DATACOMMONS = "set-datacommons.xsl";
         public static final String SET_THUMBNAIL = "set-thumbnail.xsl";
         public static final String UNSET_THUMBNAIL = "unset-thumbnail.xsl";
+        public static final String PUBLICATION_DATE = "publicationdate-add.xsl";
+        public static final String SET_KEYWORD = "set-keyword.xsl";
         public static final String SCHEMA_SUGGESTIONS = "schema-suggestions.xml";
         public static final String SCHEMA_SUBSTITUTES = "schema-substitutes.xml";
         public static final String SCHEMA_CONVERSIONS = "schema-conversions.xml";
@@ -481,6 +494,11 @@ public final class Geonet {
          */
         public static final String UUID = "uuid";
         /**
+         * Parameter name: {@value #ECAT_ID} - Text field that search for specific eCatId given
+         */
+        public static final String ECAT_ID = "eCatId";
+        
+        /**
          * Attrset used in Z39.50 search
          */
         public static final String ATTRSET = "attrset";
@@ -491,6 +509,7 @@ public final class Geonet {
 
 
         public static final String RESULT_TYPE = "resultType";
+        public static final String MY_RECORD = "onlyMyRecord";
 
         public static final String FAST = "fast";
         public static final String INDEX = "index";
@@ -606,6 +625,19 @@ public final class Geonet {
     }
 
     /**
+     * Workflow status
+     */
+    public static final class WorkflowStatus {
+    	public static final int UNKNOWN = 0;
+        public static final int DRAFT  = 1;
+        public static final int APPROVED = 2;
+        public static final int RETIRED = 3;
+        public static final int SUBMITTED  = 4;
+        public static final int REJECTED  = 5;
+        
+    }
+    
+    /**
      * Codelist directories.
      */
     public static final class CodeList {
@@ -645,14 +677,45 @@ public final class Geonet {
         public static final Namespace XSI = Namespace.getNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
         public static final Namespace OWS = Namespace.getNamespace("ows", "http://www.opengis.net/ows");
         public static final Namespace OGC = Namespace.getNamespace("ogc", "http://www.opengis.net/ogc");
-        public static final Namespace GML = Namespace.getNamespace("gml", "http://www.opengis.net/gml");
-        public static final Namespace GML32 = Namespace.getNamespace("gml", "http://www.opengis.net/gml/3.2");
+        //public static final Namespace GML = Namespace.getNamespace("gml", "http://www.opengis.net/gml");
+        public static final Namespace GML = Namespace.getNamespace("gml", "http://www.opengis.net/gml/3.2");
         public static final Namespace SVRL = Namespace.getNamespace("svrl", "http://purl.oclc.org/dsdl/svrl");
         public static final Namespace SLD = Namespace.getNamespace("sld", "http://www.opengis.net/sld");
         public static final Namespace SE = Namespace.getNamespace("se", "http://www.opengis.net/se");
         public static final Namespace XML = Namespace.getNamespace("xml", "http://www.w3.org/XML/1998/namespace");
+        
+    	public static final Namespace MDB = Namespace.getNamespace("mdb", "http://standards.iso.org/iso/19115/-3/mdb/1.0");
+    	public static final Namespace MCC = Namespace.getNamespace("mcc", "http://standards.iso.org/iso/19115/-3/mcc/1.0");
+    	public static final Namespace CIT = Namespace.getNamespace("cit", "http://standards.iso.org/iso/19115/-3/cit/1.0");
+    	public static final Namespace CAT = Namespace.getNamespace("cat", "http://standards.iso.org/iso/19115/-3/cat/1.0");
+    	public static final Namespace GCX = Namespace.getNamespace("gcx", "http://standards.iso.org/iso/19115/-3/gcx/1.0");
+    	public static final Namespace GEX = Namespace.getNamespace("gex", "http://standards.iso.org/iso/19115/-3/gex/1.0");
+    	public static final Namespace LAN = Namespace.getNamespace("lan", "http://standards.iso.org/iso/19115/-3/lan/1.0");
+    	public static final Namespace GCO_3 = Namespace.getNamespace("gco", "http://standards.iso.org/iso/19115/-3/gco/1.0");
+    	public static final Namespace MAC = Namespace.getNamespace("mac", "http://standards.iso.org/iso/19115/-3/mac/1.0");
+    	public static final Namespace MAS = Namespace.getNamespace("mas", "http://standards.iso.org/iso/19115/-3/mas/1.0");
+    	public static final Namespace MCO = Namespace.getNamespace("mco", "http://standards.iso.org/iso/19115/-3/mco/1.0");
+    	public static final Namespace MDA = Namespace.getNamespace("mda", "http://standards.iso.org/iso/19115/-3/mda/1.0");
+    	public static final Namespace MDQ = Namespace.getNamespace("mdq", "http://standards.iso.org/iso/19157/-2/mdq/1.0");
+    	public static final Namespace MDS = Namespace.getNamespace("mds", "http://standards.iso.org/iso/19115/-3/mds/1.0");
+    	public static final Namespace MDT = Namespace.getNamespace("mdt", "http://standards.iso.org/iso/19115/-3/mdt/1.0");
+    	public static final Namespace MEX = Namespace.getNamespace("mex", "http://standards.iso.org/iso/19115/-3/mex/1.0");
+    	public static final Namespace MMI = Namespace.getNamespace("mmi", "http://standards.iso.org/iso/19115/-3/mmi/1.0");
+    	public static final Namespace MPC = Namespace.getNamespace("mpc", "http://standards.iso.org/iso/19115/-3/mpc/1.0");
+    	public static final Namespace MRC = Namespace.getNamespace("mrc", "http://standards.iso.org/iso/19115/-3/mrc/1.0");
+    	public static final Namespace MRD = Namespace.getNamespace("mrd", "http://standards.iso.org/iso/19115/-3/mrd/1.0");
+    	public static final Namespace MRI = Namespace.getNamespace("mri", "http://standards.iso.org/iso/19115/-3/mri/1.0");
+    	public static final Namespace MRL = Namespace.getNamespace("mrl", "http://standards.iso.org/iso/19115/-3/mrl/1.0");
+    	public static final Namespace MRS = Namespace.getNamespace("mrs", "http://standards.iso.org/iso/19115/-3/mrs/1.0");
+    	public static final Namespace MSR = Namespace.getNamespace("msr", "http://standards.iso.org/iso/19115/-3/msr/1.0");
+    	public static final Namespace SRV_3 = Namespace.getNamespace("srv", "http://standards.iso.org/iso/19115/-3/srv/2.0");
+    	
     }
 
+    public static final class Namespaces2 {
+    	public static final org.jdom2.Namespace MRI = org.jdom2.Namespace.getNamespace("mri", "http://standards.iso.org/iso/19115/-3/mri/1.0");
+    	public static final org.jdom2.Namespace GCO = org.jdom2.Namespace.getNamespace("gco", "http://standards.iso.org/iso/19115/-3/gco/1.0");
+    }
     public static class IndexFieldNames {
 
         public static final String HASXLINKS = "_hasxlinks";
@@ -664,6 +727,7 @@ public final class Geonet {
         public static final String SOURCE = "_source";
         public static final String IS_TEMPLATE = "_isTemplate";
         public static final String UUID = "_uuid";
+        public static final String TITLE = "_title";
         public static final String IS_HARVESTED = "_isHarvested";
         public static final String OWNER = "_owner";
         public static final String DUMMY = "_dummy";
@@ -687,5 +751,60 @@ public final class Geonet {
 		public static final String IS_PUBLISHED_TO_ALL = "_isPublishedToAll";
         public static final String FEEDBACKCOUNT = "feedbackCount";
         public static final String DRAFT = "_draft";
+    }
+    
+    public static class Transform {
+		public static final String[] PUBLISH_KEYWORDS = { "Published_Internal", "Published_External",
+				"Retired_Internal" };
+		public static final String PUBLISHED_INTERNAL = "Published_Internal";
+		public static final String PUBLISHED_EXTERNAL = "Published_External";
+		public static final String RETIRED_INTERNAL = "Retired_Internal";
+    }
+    
+    /**
+     * Container for element values.
+     */
+    public static final class EditType {
+    	public static final String TITLE = "Title";
+    	public static final String ABSTRACT = "Abstract";
+    	public static final String PURPOSE = "Purpose";
+    	public static final String STATUS = "Status";
+    	public static final String MAINTENANCE_FREQ = "MaintenanceFrequency";
+    	public static final String TOPIC_CAT = "TopicCategory";
+        public static final String MD_SCOPE = "MetadataScope";
+        public static final String MD_PARENT = "ParentMetadata";
+        public static final String MD_SECURITY_CONSTRAINT = "MetadataSecurityConstraint";
+        public static final String RES_SECURITY_CONSTRAINT = "ResourceSecurityConstraint";
+        public static final String RES_LEGAL_CONSTRAINT = "ResourceLegalConstraints";
+        public static final String USE_LIMITATION = "UseLimitations";
+        public static final String LINEAGE = "Lineage";
+        public static final String SOURCE_DESC = "SourceDescription";
+        public static final String SPACIAL_REF_SYSYTEM = "SpacialReferenceSystem";
+        
+    	public static final String KEYWORD = "Keyword";
+    	public static final String KEYWORD_THESAURUS = "Keyword-Thesaurus";
+        
+        public static final String RES_CONTACT = "ResourceContact";
+        public static final String DISTRIBUTION_CONTACT = "DistributionContact";
+        public static final String MD_CONTACT = "MetadataContact";
+        public static final String RESPONSIBLE_PARTY = "ResponsibleParty";
+        
+        public static final String CITATION_DATE = "CitationDate";
+        
+        public static final String GEOBOX = "GeographicalExtent";
+        public static final String VERTICAL = "VerticalExtent";
+        public static final String VERTICAL_CRS = "VerticalCRS";
+        public static final String TEMPORAL = "TemporalExtent";
+        
+        public static final String ASSOCIATED_RES = "AssociatedResourcesLink";
+        public static final String DATA_STORAGE_LINK = "DataStorageLink";
+        public static final String ADDITIONAL_INFO = "AdditionalInfo";
+        public static final String DISTRIBUTION_LINK = "DistributionLink";
+        
+        public static final String DISTRIBUTION_FORMAT = "DistributionFormat";
+        public static final String RESOURCE_FORMAT = "DataStorageFormat";
+        
+        public static final String SPACIAL_EXTENT_DESC = "SpatialExtentDescription";
+        public static final String HORIZONTAL_SPACIAL_REFSYSTEM = "HorizontalSpatialReferenceSystem";
     }
 }

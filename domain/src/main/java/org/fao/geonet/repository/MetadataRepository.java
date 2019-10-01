@@ -23,6 +23,7 @@
 
 package org.fao.geonet.repository;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -80,4 +81,10 @@ public interface MetadataRepository extends GeonetRepository<Metadata, Integer>,
     @Transactional
     @Query("UPDATE " + Metadata.TABLENAME + " m SET m.dataInfo.popularity = m.dataInfo.popularity + 1 WHERE m.id = ?1")
     void incrementPopularity(int mdId);
+    
+    /**
+     * @return
+     */
+    @Query(value = "select nextval('metadataid')", nativeQuery = true)
+    BigInteger getGaid();
 }

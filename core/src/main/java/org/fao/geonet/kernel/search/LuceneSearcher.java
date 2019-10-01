@@ -105,6 +105,7 @@ import org.fao.geonet.kernel.search.lucenequeries.DateRangeQuery;
 import org.fao.geonet.kernel.search.spatial.SpatialFilter;
 import org.fao.geonet.kernel.setting.SettingInfo;
 import org.fao.geonet.languages.LanguageDetector;
+import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.OperationAllowedRepository;
 import org.fao.geonet.repository.SourceRepository;
 import org.fao.geonet.repository.UserGroupRepository;
@@ -163,7 +164,7 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
     private Set<String> _tokenizedFieldSet;
     private LuceneConfig _luceneConfig;
     private String _boostQueryClass;
-
+    private static MetadataRepository _metadataRepository;
 
     /**
      * Filter geometry object WKT, used in the logger ugly way to store this object, as
@@ -185,6 +186,7 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         _luceneConfig = luceneConfig;
         _boostQueryClass = _luceneConfig.getBoostQueryClass();
         _tokenizedFieldSet = luceneConfig.getTokenizedField();
+        _metadataRepository = ApplicationContextHolder.get().getBean(MetadataRepository.class);
     }
 
     //
@@ -787,6 +789,9 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
     private static Element getMetadataFromIndex(Document doc, String id, boolean dumpAllField, String searchLang,
                                                 Set<String> multiLangSearchTerm, Map<String, String> dumpFields,
                                                 Set<String> extraDumpFields) {
+    	
+    	String title = "";
+    	
         // Retrieve the info element
         String schema = doc.get("_schema");
         String source = doc.get("_source");
@@ -796,7 +801,11 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         if (createDate != null) createDate = createDate.toUpperCase();
         String changeDate = doc.get("_changeDate");
         if (changeDate != null) changeDate = changeDate.toUpperCase();
-
+        
+        if(("s").equals(doc.get("_isTemplate"))){
+        	Metadata m = _metadataRepository.findOneByUuid(uuid);
+        	title = m.getDataInfo().getTitle();
+        }
         // Root element is using root element name if not using only the index content (ie. dumpAllField)
         // probably because the XSL need that info later ?
         Element md = new Element("metadata");
@@ -809,6 +818,7 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         addElement(info, Edit.Info.Elem.CREATE_DATE, createDate);
         addElement(info, Edit.Info.Elem.CHANGE_DATE, changeDate);
         addElement(info, Edit.Info.Elem.SOURCE, source);
+		addElement(info, Edit.Info.Elem.TITLE, title);
 
         HashSet<String> addedTranslation = new LinkedHashSet<String>();
         if ((dumpAllField || dumpFields != null) && searchLang != null && multiLangSearchTerm != null) {
@@ -1338,6 +1348,24 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
      */
     private void computeQuery(ServiceContext srvContext, Element request, ServiceConfig config) throws Exception {
 
+    	/* Display only my records in "Manage my metadata" tab - start */
+    	Content myRecord = request.getChild(Geonet.SearchResult.MY_RECORD);
+		if (myRecord != null) {
+			UserSession _userSesion = srvContext.getUserSession();
+			if (myRecord.getValue().equals("true") && _userSesion.getProfile() != Profile.Administrator) {
+				String owner = null;
+				if (_userSesion != null) {
+					owner = _userSesion.getUserId();
+				}
+				if (owner != null) {
+					request.addContent(new Element(Geonet.IndexFieldNames.OWNER).addContent(owner));
+				}
+			}
+
+			request.removeChild(Geonet.SearchResult.MY_RECORD);
+		}
+		/* Display only my records in "Manage my metadata" tab - end */
+    	
 //		resultType is not specified in search params - it's in config?
         Content child = request.getChild(Geonet.SearchResult.RESULT_TYPE);
         String resultType;
@@ -1348,6 +1376,12 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
             child.detach();
         }
 
+        //Search multiple eCatId separated by comma 
+        Element eCatId = request.getChild(Geonet.SearchResult.ECAT_ID);
+        if (eCatId != null) {
+        	eCatId.setText(eCatId.getText().replace(",", " or "));
+        }
+        
         _summaryConfig = _luceneConfig.getSummaryTypes().get(resultType);
 
         final Element summaryItemsEl = request.getChild(Geonet.SearchResult.SUMMARY_ITEMS);
@@ -1572,6 +1606,15 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         _filter = new CachingWrapperFilter(filter);
 
         String sortBy = Util.getParam(request, Geonet.SearchResult.SORT_BY, Geonet.SearchResult.SortBy.RELEVANCE);
+        
+        //Sort by Change date with Asc and Desc
+        if(sortBy.startsWith(Geonet.SearchResult.SortBy.DATE)){
+        	sortBy = Geonet.SearchResult.SortBy.DATE;
+        }
+        if(sortBy.startsWith(Geonet.SearchResult.SortBy.TITLE)){
+        	sortBy = Geonet.SearchResult.SortBy.TITLE;
+        }
+        
         boolean sortOrder = (Util.getParam(request, Geonet.SearchResult.SORT_ORDER, "").equals(""));
         LOGGER.debug("Sorting by : {}", sortBy);
 

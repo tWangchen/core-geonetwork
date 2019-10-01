@@ -67,6 +67,9 @@ import org.fao.geonet.exceptions.UnAuthorizedException;
 import org.fao.geonet.kernel.DataManager;
 import org.fao.geonet.kernel.GeonetworkDataDirectory;
 import org.fao.geonet.kernel.datamanager.IMetadataManager;
+import org.fao.geonet.kernel.search.MetaSearcher;
+import org.fao.geonet.kernel.search.SearchManager;
+import org.fao.geonet.kernel.search.SearcherType;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.lib.Lib;
 import org.fao.geonet.repository.GroupRepository;
@@ -533,6 +536,28 @@ public class Importer {
         }
     }
 
+    public static boolean eCatIdExist(String gaid, ServiceContext context, GeonetContext gc) {
+		int count = 0;
+		Element params = new Element("request");
+		Element eCatId = new Element("eCatId");
+		eCatId.setText(gaid);
+		params.addContent(eCatId);
+		ServiceConfig config = new ServiceConfig();
+		SearchManager searchMan = gc.getBean(SearchManager.class);
+		try {
+			 
+			try (MetaSearcher searcher = searchMan.newSearcher(SearcherType.LUCENE, Geonet.File.SEARCH_LUCENE)) {
+	            searcher.search(context, params, config);
+	            Element summary = searcher.getSummary();
+	            count = summary.getChild("summary").getAttribute("count").getIntValue();
+	        }
+		} catch (Exception e) {
+			Log.error(Geonet.DATA_MANAGER, " Exception while eCat search, " + e.getMessage());
+		}
+		
+		return count > 0;
+	}
+
     public static void importRecord(String uuid,
                                     MEFLib.UuidAction uuidAction, List<Element> md, String schema, int index,
                                     String source, String sourceName, Map<String, String> sourceTranslations, ServiceContext context,
@@ -541,6 +566,7 @@ public class Importer {
 
         GeonetContext gc = (GeonetContext) context.getHandlerContext(Geonet.CONTEXT_NAME);
         DataManager dm = gc.getBean(DataManager.class);
+		String gaid = "";
         IMetadataManager metadataManager = gc.getBean(IMetadataManager.class);
 
         if (uuid == null || uuid.equals("")
@@ -553,6 +579,14 @@ public class Importer {
 
             // --- set uuid inside metadata
             md.add(index, dm.setUUID(schema, uuid, md.get(index)));
+            
+            if(MetadataType.METADATA.equals(isTemplate)){
+				//create new eCatId
+		        gaid = dm.getGAID();
+	        	// --- set gaid inside metadata
+				md.add(index, dm.setGAID(schema, gaid, md.get(index)));
+			}
+            
         } else {
             if (sourceName == null)
                 sourceName = "???";
@@ -568,6 +602,60 @@ public class Importer {
             }
         }
 
+        /* ============= Joseph Added - Creating eCatId while importing metadata - Start ========= */
+        
+		if(uuidAction != MEFLib.UuidAction.GENERATEUUID && MetadataType.METADATA.equals(isTemplate)){
+			gaid = dm.extractGAID(schema, md.get(index));
+			//If eCatId is non-numeric, set as empty
+			if(!gaid.isEmpty() && !org.apache.commons.lang.StringUtils.isNumeric(gaid))
+				gaid = "";
+			
+			boolean isExist = false;
+			if(!gaid.isEmpty())
+				isExist = eCatIdExist(gaid, context, gc);
+			
+			Log.debug(Geonet.DATA_MANAGER, "Metadata with eCatId "+ gaid + " exist: " + isExist);
+			
+			try{
+				boolean uuidExist = dm.existsMetadataUuid(uuid);
+				String oldGaid = "";
+				boolean sameGaid = false;
+				
+				//UUID action is overwrite and record exist, get the existing eCatId to add into metadata. 
+				//Otherwise eCatId will be lost while deleting and new eCatId will generated
+				if(uuidAction == MEFLib.UuidAction.OVERWRITE && uuidExist){
+					String mId = dm.getMetadataId(uuid);
+	    			Element metadata = dm.getMetadata(mId);
+	    			if(uuidExist){
+	    					oldGaid = dm.extractGAID(schema, metadata);
+	    					if(oldGaid.equals(gaid))
+	    						sameGaid = true;
+	    					
+	    					gaid = oldGaid;
+	    					Log.debug(Geonet.DATA_MANAGER, "Set old eCatId: " + gaid);
+	    			}
+				}
+				
+				if(isExist && !gaid.isEmpty() && !sameGaid){
+					throw new IllegalArgumentException(" Existing metadata with eCatId " + gaid + " could not be deleted. Current transaction is aborted.");
+				}else{
+					if(gaid.isEmpty()){
+						gaid = dm.getGAID();
+						Log.debug(Geonet.DATA_MANAGER, "Generated new eCatId: " + gaid);
+					}
+				}
+				
+				// --- set gaid inside metadata
+				md.add(index, dm.setGAID(schema, gaid, md.get(index)));	
+			}catch(IllegalArgumentException iae){
+	        	throw new IllegalArgumentException(iae.getMessage());
+	        }catch(Exception e){
+				throw new Exception(" Error is: " + e.getMessage());
+			}
+			
+		}
+		/* ============= Joseph Added - Creating eCatId while importing metadata - End ========= */
+		
         try {
             if (dm.existsMetadataUuid(uuid) && uuidAction != MEFLib.UuidAction.NOTHING) {
                 // user has privileges to replace the existing metadata
