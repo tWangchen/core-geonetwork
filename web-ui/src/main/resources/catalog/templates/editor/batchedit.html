@@ -10,22 +10,110 @@
       <li role="presentation"
           data-ng-class="{'active' : selectedStep === 1}"
           data-ng-click="setStep(1)">
+        <a href="" data-translate="">Upload CSV</a></li>
+      <li role="presentation"
+          data-ng-class="{'active' : selectedStep === 2 }"
+          data-ng-click="setStep(2)">
         <a href="" data-translate="">chooseASet</a></li>
       <li role="presentation"
-          data-ng-class="{'active': selectedStep === 2, 'disabled': searchResults.selectedCount < 1}"
-          data-ng-click="searchResults.selectedCount > 0 && setStep(2)">
+          data-ng-class="{'active': selectedStep === 3, 'disabled': searchResults.selectedCount < 1 }"
+          data-ng-click="searchResults.selectedCount > 0 && setStep(3)">
         <a href="" data-translate="">defineEdits</a></li>
       <li role="presentation"
-          data-ng-class="{'active' : selectedStep === 3, 'disabled': searchResults.selectedCount < 1}"
-          data-ng-click="searchResults.selectedCount > 0 && setStep(3)">
+          data-ng-class="{'active' : selectedStep === 4, 'disabled': searchResults.selectedCount < 1}"
+          data-ng-click="searchResults.selectedCount > 0 && setStep(4)">
         <a href="" data-translate="">confirmAndSave</a></li>
       <li class="gn-batch-editor-info">{{searchResults.selectedCount}} <span data-translate="">recordsInSelection</span>
       </li>
     </ul>
     <br/>
 
+	<div class="panel panel-default" data-ng-class="{'hidden' : selectedStep !== 1}">
+		<div class="panel-body">
+			<p class="alert alert-info" data-translate="">Batch Edit records by uploading CSV file.</p>
+			<p ng-show="modewarning" class="alert alert-danger" data-translate="">Warning: Selecting "Remove existing elements and Add" option will remove existing elements and add new elements.</p>
+			
+			<div class="row">
+				<div class="col-sm-2">
+					<label>Description: </label>
+				</div>
+				<div class="col-sm-6">
+					<input type="text" class="form-control" data-ng-model="upload_desc">
+				</div>
+			</div>
+			<br/>
+			<div class="row">
+				<div class="col-sm-2">
+					<label>Select update option: </label>
+				</div>
+				<div class="col-sm-6">
+					<select ng-init="updatemode = updateModes[0]"
+						ng-model="updatemode" ng-change="changedValue(updatemode)"
+						data-ng-options="mode as mode.value for mode in updateModes"></select>
+				</div>
+			</div>
+			<br/>
+      		<div class="row">
+				<div class="col-sm-2">
+					<label>Backup metadata: </label>
+				</div>
+				<div class="col-sm-6">
+					<input type="checkbox" data-ng-model="upload_backup">
+				</div>
+			</div>
+			<br/>
+			<div class="row">
+				<div class="col-sm-2">
+					<span class="btn btn-success btn-block fileinput-button">
+					  <i class="fa fa-upload"/>&nbsp;<span data-translate="">Choose file</span>
+							<input type="file" onchange="angular.element(this).scope().setFile(this)">
+					  <!--<input type="file" multiple="true" id="md-import-csv" name="file">-->
+					</span>
+					
+				</div>
+				<div ng-show="isfileSelected">
+						<label>{{theFile.name}}</label>&nbsp;&nbsp;<i class="fa fa-times" data-ng-click="clear()"/>
+					</div>
+					
+			</div>
+			<div class="row">
+				<div class="alert alert-warning"
+							 data-ng-show="unsupportedFile"
+							 data-translate="">Only csv format is supported
+				</div>		
+			</div>
+			<br/>
+			<div data-ng-hide="isCompleted">
+              <h4 class="text-warning" data-translate="">Batch Editing inprogress, Records processed : {{processRecords}}</h4>
+
+              <div class="progress progress-striped active">
+                <div class="progress-bar" style="width: 100%"/>
+              </div>
+
+            </div>
+            
+			<div class="row">
+				<div class="col-sm-10">
+					<button class="btn btn-success" data-gn-click-and-spin="uploadcsv()"><i class="fa fa-edit"/>&nbsp;<span data-translate="">Apply Batch Edit</span></button>
+				</div>
+				<div class="col-sm-1">
+					<button class="btn btn-default" data-gn-click-and-spin="refresh()"><i class="fa fa-refresh"/>&nbsp;<span data-translate="">Refresh</span></button>
+				</div>
+				<div class="col-sm-1">
+					<button class="btn btn-danger" data-gn-click-and-spin="purge()"><i class="fa fa-trash"/>&nbsp;<span data-translate="">Purge</span></button>
+				</div>
+			</div>
+			
+			 <!--<div data-ng-show="processReport"
+             data-gn-batch-report="processReport"/>-->
+			 
+			<div data-ng-show="processBatchEditReport"
+				data-gn-batch-edit-report="processBatchEditReport"/>
+		</div>
+	
+	</div>
     <div class="panel panel-default"
-         data-ng-class="{'hidden' : selectedStep !== 1}">
+         data-ng-class="{'hidden' : selectedStep !== 2}">
       <div class="panel-body">
         <p class="alert alert-info"
            data-translate="">chooseASetOfRecordHelp</p>
@@ -94,6 +182,19 @@
                      data-ng-show="isFilterTagsDisplayed"></div>
               </div>
             </div>
+			<div class="row" ng-if= "user.isUserAdminOrMore()">
+				<div class="col-md-6">
+					<div class="input-group gn-form-any">
+					<span class="input-group-addon"><label>Search by XPath...</label></span>
+				  	<input type="text"  class="form-control"  data-ng-model="obj.xpath"  placeholder="Search by XPath..." />
+					<div class="input-group-btn">
+					  <button type="button"  data-ng-click="triggerXPathSearch()"  class="btn btn-primary">
+						&nbsp;&nbsp;<i class="fa fa-search"></i>&nbsp;&nbsp;</button>
+					</div>
+				  </div>
+				</div>
+			</div>
+            <br/>
             <div class="row"
                  data-ng-show="searchResults.records.length > 0">
               <div class="col-md-offset-3 col-md-4 relative">
@@ -125,15 +226,23 @@
                 </div>
               </div>
               <div class="col-md-9">
+                <div class="gn-results-heading">
+                  <div data-gn-facet-breadcrumb="currentFacets"></div>
+                </div>
             <span class="loading fa fa-spinner fa-spin"
                   data-ng-show="searching"></span>
-
+		    <span class="loading fa fa-spinner fa-spin"
+					data-ng-show="stat.searching"></span>
                 <div class="alert alert-warning" role="alert"
                      ng-if="!searching && searchResults.count == 0">
                   <i class="fa fa-frown-o"></i>
                   <span data-translate="">zarooResult</span>
                 </div>
-
+				<div class="alert alert-warning" role="alert"
+	                	ng-if="stat.background">
+	            	<i class="fa fa-frown-o"></i>
+	            	<span data-translate="">Another Xpath search executing in the backgorund. Try after sometime.</span>
+	          	</div>
                 <div data-ng-show="searchResults.records.length > 0"
                      data-gn-results-container=""
                      data-search-results="searchResults"
@@ -147,7 +256,7 @@
 
 
     <div class="panel panel-default"
-         data-ng-class="{'hidden' : selectedStep !== 2}">
+         data-ng-class="{'hidden' : selectedStep !== 3}">
       <div class="panel-body">
 
         <p class="alert alert-info"

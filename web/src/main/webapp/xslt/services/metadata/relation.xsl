@@ -44,6 +44,9 @@
       <!-- online and thumbnail are extracted from schema extract-relations.xsl -->
       <!--<xsl:message><xsl:copy-of select="."/></xsl:message> -->
       <xsl:apply-templates mode="relation" select="/root/relations/*"/>
+      
+      <!-- Joseph added - Currently implemented for iso19115-3 standard, refer tpl-brief.xsl --> 
+      <xsl:apply-templates mode="association" select="/root/relations/associated"/>
     </related>
   </xsl:template>
 
@@ -150,10 +153,10 @@
     </fcats>
   </xsl:template>
 
-
+  <!-- GA - Removed associated from match -->
   <xsl:template mode="relation" match="related|services|datasets|children|
                       parent|sources|hasfeaturecats|
-                      siblings|associated|sources|hassources">
+                      siblings|sources|hassources">
     <xsl:variable name="type" select="name(.)"/>
 
     <xsl:if test="response/metadata|response/sibling">
@@ -186,9 +189,6 @@
               <xsl:value-of
                 select="concat(util:getSettingValue('nodeUrl'), 'api/records/', $uuid)"/>
             </url>
-            <logo>
-              <xsl:value-of select="$metadata/logo"/>
-            </logo>
             <description>
               <value lang="{$lang}">
                 <xsl:value-of select="$metadata/abstract"/>
@@ -208,9 +208,6 @@
               <initiativeType>
                 <xsl:value-of select="../@initiative"/>
               </initiativeType>
-            </xsl:if>
-            <xsl:if test="$type = 'associated'">
-              <xsl:copy-of select="$metadata/*[starts-with(name(), 'agg_')]"/>
             </xsl:if>
           </item>
         </xsl:for-each>

@@ -22,6 +22,8 @@
               <div class="gn-record-details text-muted">
                 <small><span data-translate="">owner</span>:</small>
                 <small>{{::md.getOwnername()}}</small>
+				<span data-ng-if="md.geteCatId()" title="{{'eCatId' | translate}}">&nbsp;&nbsp;<b><i style="font-size: 14px;">({{md.geteCatId()}})</i></b></span>
+
                 &centerdot;
                 <small data-translate="">updatedOn</small>
                 <small class="text-muted"

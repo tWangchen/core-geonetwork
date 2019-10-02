@@ -180,11 +180,56 @@
       <field name="_op0" tagName="publishedForGroup"/>
       <field name="_groupOwner" tagName="groupOwner"/>
       <field name="_logo" tagName="logo"/>
+      <field name="crs" tagName="crs"/>
       <field name="standardName" tagName="standardName"/>
       <field name="_groupWebsite" tagName="groupWebsite"/>
       <field name="featureTypes" tagName="featureTypes"/>
       <field name="versionIdentifier" tagName="versionIdentifier"/>
       <field name="_draft" tagName="draft"/>
+      <field name="attributeTable" tagName="attributeTable"/>
+      <field name="eCatId" tagName="eCatId"/>
+      <field name="author" tagName="author"/>
+      <field name="publisher" tagName="publisher"/>
+      <field name="legalConstraints" tagName="legalConstraints"/>
+	<!-- Martins additions start -->
+	  <field name="issueIdentification" tagName="issueIdentification"/>
+	  <field name="seriesName" tagName="seriesName"/>
+	  <field name="fees" tagName="fees"/>
+	  <field name="tempExtentBegin" tagName="tempExtentBegin"/>
+	  <field name="tempExtentEnd" tagName="tempExtentEnd"/>
+	  <field name="lineageStatement" tagName="lineageStatement"/>
+	  <field name="parentTitle" tagName="parentTitle"/>
+	  <field name="parenteCatID" tagName="parenteCatID"/>
+	  <field name="storedFormat" tagName="storedFormat"/>
+	  <field name="FormatVersion" tagName="FormatVersion"/>
+	  <field name="linkLocation" tagName="linkLocation"/>
+	  <field name="linkDesc" tagName="linkDesc"/>
+	  <field name="vertExtentMin" tagName="vertExtentMin"/>
+	  <field name="vertExtentMax" tagName="vertExtentMax"/>
+	  <field name="vertExtentRef" tagName="vertExtentRef"/>
+	  <field name="DOI" tagName="DOI"/>
+	  <field name="PID" tagName="PID"/>
+	  <field name="resourceProvider" tagName="resourceProvider"/>
+	  <field name="custodian" tagName="custodian"/>
+	  <field name="ownerCited" tagName="ownerCited"/>
+	  <field name="user" tagName="user"/>
+	  <field name="distributor" tagName="distributor"/>
+	  <field name="originator" tagName="originator"/>
+	  <field name="pointOfContact" tagName="pointOfContact"/>
+	  <field name="principalInvestigator" tagName="principalInvestigator"/>
+	  <field name="processor" tagName="processor"/>
+	  <field name="coAuthor" tagName="coAuthor"/>
+	  <field name="sponsor" tagName="sponsor"/>
+	  <field name="collaborator" tagName="collaborator"/>
+	  <field name="editor" tagName="editor"/>
+	  <field name="mediator" tagName="mediator"/>
+	  <field name="rightsHolder" tagName="rightsHolder"/>
+	  <field name="contributor" tagName="contributor"/>
+	  <field name="funder" tagName="funder"/>
+	  <field name="stakeholder" tagName="stakeholder"/>
+    <field name="Associations" tagName="Associations"/>
+
+	<!-- Martins additions end -->
     </dumpFields>
   </search>
 

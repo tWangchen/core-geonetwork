@@ -103,6 +103,8 @@
   <xsl:variable name="nodeUrl"
                 select="util:getSettingValue('nodeUrl')"/>
 
+  <xsl:variable name="isIntranet" select="util:isIntranet()"/>
+  
   <!-- URL for webapp root -->
   <xsl:variable name="baseURL" select="/root/gui/baseUrl"/>
   <!-- Full URL with protocol, host and port -->

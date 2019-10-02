@@ -162,11 +162,12 @@
           dateTo: '='
         },
         link: function linkFn(scope, element, attr) {
-          var today = moment();
+          
           scope.format = 'YYYY-MM-DD';
           scope.options = ['today', 'yesterday', 'thisWeek', 'thisMonth',
             'last3Months', 'last6Months', 'thisYear'];
           scope.setPeriod = function(option) {
+        	var today = moment();
             if (option === 'today') {
               var date = today.format(scope.format);
               scope.dateFrom = date;
@@ -192,7 +193,7 @@
               scope.dateFrom = today.clone().startOf('year')
                 .format(scope.format);
             }
-            scope.dateTo = today.clone().add(1, 'day').format(scope.format);
+            scope.dateTo = today.add(1, 'day').format(scope.format);
           };
         }
       };

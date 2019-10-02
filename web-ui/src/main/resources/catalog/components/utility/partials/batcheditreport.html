@@ -1,0 +1,65 @@
+<div class="panel panel-default"
+     data-ng-show="processBatchEditReport"
+     data-ng-class="processReportWarning ? 'panel-warning' : 'panel-success'">
+
+	 <div data-ng-repeat="report in reports">
+        <div class="panel panel-default">
+          <div class="panel-body">
+			<p data-ng-show="report.message" class="{{report.class}}" translate="">
+              {{report.message}}
+            </p>
+			</div>
+		</div>
+    </div>
+			 
+  <div class="panel-body">
+  <div style="color: #666;font-size: 16px;font-weight: 600;">Batch Edit History
+	<a href ng-click="decrementLimit()"><i class="fa fa-minus-circle"></i>&nbsp;<span data-translate="">Less</span></a>&nbsp;
+	<a href ng-click="incrementLimit()"><i class="fa fa-plus-circle"></i>&nbsp;<span data-translate="">More</span></a>
+  </div>
+  
+  <div data-ng-repeat="bereport in processBatchEditReport | limitTo: limit">
+	
+	<div class="panel-group">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 style="padding-top:5px;display:inline-block" class="panel-title">
+					<button type="button" class="btn" ng-click="showReport(bereport.dateTime)" data-toggle="collapse" data-target="{{'#object-' + bereport.dateTime}}">Batch Edit on {{bereport.dateTime | custommessage}}, <b>Details:</b> {{bereport.desc}}</button>
+				</h4>
+				<button style="margin-top:10px;float:right" class="btn btn-info" data-gn-click-and-spin="recall(bereport.dateTime)"><span data-translate="" class="ng-scope">Recall</span></button>
+			</div>
+		 </div>
+	  </div>
+	  
+	  
+	  <div id="{{ 'object-' + bereport.dateTime }}" class="collapse out">
+		<div data-ng-repeat="dreport in detailReport">
+			<div style="display:table">
+				<div style="display:table-row-group">
+					<div class="alert alert-danger">Error Report</div>
+					<div data-ng-repeat="err in dreport.errorReport">
+						<div style="display:table-row">
+							<div style="display:table-cell;padding: 3px 10px;">{{err.id}}</div>
+							<div data-ng-repeat="md_err in err.metadataErrors track by $index">
+								<div style="display:table-cell" class="text-right">{{md_err}}</div>
+							</div>
+						</div>
+						<hr>
+					</div>
+					<div class="alert alert-info">Info Report</div>
+					<div data-ng-repeat="info in dreport.infoReport">
+						<div style="display:table-row">
+							<div style="display:table-cell;padding: 3px 10px;">{{info.id}}</div>
+							<div data-ng-repeat="md_info in info.metadataInfos track by $index">
+								<div style="display:table-cell" class="text-right">{{md_info}}</div>
+							</div>
+						</div>
+						<hr>
+					</div>
+				</div>
+			</div>
+		  </div>
+		</div>
+	</div>
+  </div>
+</div>

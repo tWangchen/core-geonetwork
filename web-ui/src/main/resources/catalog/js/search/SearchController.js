@@ -153,6 +153,52 @@
         })()
       };
 
+      $scope.obj = {
+   		   xpath: ''
+   	   };
+      $scope.stat = {
+   		   searching: false,
+   		   background:false
+   	   };
+      $scope.triggerXPathSearch = function(){
+          $scope.stat.searching = true;
+          $http.get('../api/records/search/status').success(function(data){
+            if (data) {
+              $scope.stat.searching = false;
+              $scope.stat.background = true;
+              console.log("Another Xpath search executing in the backgorund");
+            }else{
+              angular.extend($scope.obj, $scope.searchObj.params);
+              $http.post('../api/records/search/xpath',  $scope.obj);
+              checkIsSearching();
+            }
+          })
+       };
+   	  
+   	   function checkIsSearching(){
+   		    
+   			// Check if completed
+   			return $http.get('../api/records/search/status').
+   				success(function(data) {
+   				  if (data) {
+   					$timeout(checkIsSearching, 1000);
+   				  }else{
+   					  $http.get('../api/records/search/xpath',{}).success(function(data){
+   						  $scope.stat.searching = false;
+   						  var eCatIds = {
+   							  eCatId : ''
+   						  }
+   						  
+   						  eCatIds.eCatId = (data.length == 0) ? 'xxxx' : data.slice(0, 1000).join(',');
+   						  
+   						  angular.extend($scope.searchObj.params, eCatIds);
+   						  $scope.$broadcast('search');
+   						  
+   					  })
+   				  }
+   				});
+   		  };
+   	  
       /**
        * Keep a reference on main cat scope
        * @return {*}

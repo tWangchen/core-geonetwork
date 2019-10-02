@@ -33,7 +33,7 @@
 
 
   var module = angular.module('gn_mdactions_service', [
-    'gn_share', 'gn_category', 'gn_popup'
+    'gn_share', 'gn_category', 'gn_popup', 'checklist-model'
   ]);
 
   module.service('gnMetadataActions', [
@@ -52,10 +52,11 @@
     '$q',
     '$http',
     'gnConfig',
+    '$timeout',
     function($rootScope, $timeout, $location, gnHttp,
              gnMetadataManager, gnAlertService, gnSearchSettings,
              gnUtilityService, gnShareService, gnPopup, gnMdFormatter,
-             $translate, $q, $http, gnConfig) {
+             $translate, $q, $http, gnConfig, $timeout) {
 
       var windowName = 'geonetwork';
       var windowOption = '';
@@ -69,6 +70,24 @@
           msg: msg,
           type: 'success'
         });
+      };
+
+      /**
+       * Open a popup and compile object content.
+       * Bind to an event to close the popup.
+       * @param {Object} o popup config
+       * @param {Object} scope to build content uppon
+       * @param {string} eventName
+       */
+      var openModal = function(o, scope, eventName) {
+        var popup = gnPopup.create(o, scope);
+        var myListener = $rootScope.$on(eventName,
+            function(e, o) {
+              $timeout(function() {
+                popup.close();
+              }, 0);
+              myListener();
+            });
       };
 
       var callBatch = function(service) {
@@ -153,10 +172,143 @@
         location.replace(url);
       };
 
-      this.exportCSV = function(bucket) {
-        window.open(gnHttp.getService('csv') +
-            '?bucket=' + bucket, windowName, windowOption);
+      this.openExportColumns = function(scope, bucket) {
+
+		  scope.columns = [
+			  'Title',
+			  'Abstract',
+			  'MetadataScope',
+			  'ParentMetadata',
+			  'CitationDate',
+			  'Purpose',
+			  'Status',
+			  'Keyword',
+			  'Keyword-Thesaurus',
+			  'MaintenanceFrequency',
+			  'TopicCategory',
+			  'ResponsibleParty',
+			  'ResourceContact',
+			  'MetadataContact',
+			  'GeographicalExtent',
+			  'SpatialExtentDescription',
+			  'HorizontalSpatialReferenceSystem',
+			  'VerticalExtent',
+			  'VerticalCRS',
+			  'TemporalExtent',
+			  'MetadataSecurityConstraint',
+			  'ResourceSecurityConstraint',
+			  'ResourceLegalConstraint',
+			  'UseLimitations',
+			  'DistributionLink',
+			  'DistributionFormat',
+			  'DataStorageLink',
+			  //'DataStorageFormat',
+			  'Lineage',
+			  'SourceDescription',
+			  'AssociatedResourcesLink',
+			  'AdditionalInfo',
+			  'ServiceParameter',
+			  'ConnectPoint',
+			  'ServiceType',
+			  'ServiceTypeVersion',
+			  'CouplingType',
+			  'OperationName',
+			  'DistributedComputingPlatform',
+			  'OperationDescription'
+		  ];
+		 
+		  scope.csv = {
+			columns: []
+		  };
+		  scope.exporting = false;
+		  scope.errMsg = false;
+		  scope.errMsgStr = '';
+		  
+		  scope.checkAll = function() {
+			scope.csv.columns = angular.copy(scope.columns);
+		  };
+		  scope.uncheckAll = function() {
+			scope.csv.columns = [];
+		  };
+		  
+		  scope.fileloc;
+		  
+		  scope.exportCSV = function() {
+			  console.log('export....');
+			  return $http.put('../api/records/download/csv?bucket=' + bucket + '&exportParams=' + scope.csv.columns)
+						  .then(function(response){
+							  scope.fileloc = response.data;
+							  scope.exporting = true;
+							  checkIsCompleted();	
+						  });
+		  };
+		  
+		  
+		  function checkIsCompleted(){
+			  
+			// Check if completed
+			return $http.get('../api/records/download/status').
+				success(function(data) {
+					
+					isCompleted = data;
+				  if (!isCompleted) {
+					$timeout(checkIsCompleted, 1000);
+				  }else{
+					  return $http.get('../api/records/download/csv?filename=' +  encodeURIComponent(scope.fileloc)).success(function(response) {
+								saveFile(response);
+						})
+						.error(function(err){
+							scope.exporting = false;
+							scope.errMsg = true;
+							scope.errMsgStr = err;
+						});
+				  }
+				});
+		  };
+		  
+		  function saveFile(response){
+			 
+			  	var dataBlob = response;
+				if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+				  // for IE
+				  
+					var csvData = new Blob([content], { type: 'text/csv' });
+				   	window.navigator.msSaveOrOpenBlob(dataBlob, 'metadata_records.csv');
+				} else {
+				   
+					// for Non-IE (chrome, firefox etc.)
+					var binaryData = [];
+					binaryData.push(dataBlob);
+					var urlObject = window.URL.createObjectURL(new Blob(binaryData, {type: "text/csv"}))
+	
+					var downloadLink = angular.element('<a>Download</a>');
+					downloadLink.css('display','none');
+					downloadLink.attr('href', urlObject);
+					downloadLink.attr('download', 'metadata_records.csv');
+					angular.element(document.body).append(downloadLink);
+					downloadLink[0].click();
+	
+					// cleanup
+					downloadLink.remove();
+					URL.revokeObjectURL(urlObject);
+				}
+				scope.exporting = false;
+		  };
+		  
+        openModal({
+          title: 'Column Selection',
+          content: '<div>' + 
+		  '<button type="button" class="btn btn-default btn-sm" ng-click="checkAll()">Check all</button>&nbsp;' + 
+		  '<button type="button" class="btn btn-default btn-sm" ng-click="uncheckAll()">Uncheck all</button>&nbsp;' +
+		  '<button type="button" class="btn btn-default btn-sm" ng-click="exportCSV()">Export</button></div>' +
+		  '<div style="padding-left: 50px"><i class="fa fa-spinner fa-spin fa-3x fa-fw" ng-if="exporting"></i></div>' +
+		  '<div style="padding-left: 10px;color:red" ng-if="errMsg"><label>{{errMsgStr}}</label></div>' +
+		  '<div ng-repeat="c in columns">' + 
+		  '<input type="checkbox" checklist-model="csv.columns" checklist-value="c"><label>{{c}}</label></div>',
+          className: ''
+        }, scope, 'exportSelection');
       };
+	  
       this.validateMd = function(md, bucket) {
 
         $rootScope.$broadcast('operationOnSelectionStart');
@@ -403,13 +555,48 @@
         return defer.promise;
       };
 
+this.getCitation = function(md){
+        var citationUrl = '';
+        if(angular.isArray(md.author) && md.author.length > 0){
+          citationUrl = md.author.join(', ') + ' ';
+        }else{
+          if(md.author){
+            citationUrl = md.author + ' ';
+          }
+        }
+
+        if(md.publicationDate){
+          var date = new Date(md.publicationDate);
+          citationUrl += date.getFullYear() + '. ';
+        }
+        
+        citationUrl += md.title + '. ';
+
+        if(md.issueIdentification){
+          citationUrl = citationUrl + 'Record ' + md.issueIdentification + '. ';
+        }
+
+        citationUrl += 'Geoscience Australia, Canberra. ';
+        
+        if(md.DOI){
+          citationUrl += md.DOI;
+        }
+
+        gnUtilityService.getPermalink(md.title || md.defaultTitle, citationUrl);
+      };
       /**
        * Get html formatter link for the given md
        * @param {Object} md
        */
       this.getPermalink = function(md) {
-        var url = $location.absUrl().split('#')[0] + '#/metadata/' +
-            md.getUuid();
+        //var url = $location.absUrl().split('#')[0] + '#/metadata/' + md.getUuid();
+    	  
+    	var url;
+  		if(md.getType() == 'service'){
+  			url = "http://pid.geoscience.gov.au/service/ga/"+ md.geteCatId();
+  		}else{
+  			url = "http://pid.geoscience.gov.au/dataset/ga/"+ md.geteCatId();
+  		}
         gnUtilityService.getPermalink(md.title || md.defaultTitle, url);
       };
 

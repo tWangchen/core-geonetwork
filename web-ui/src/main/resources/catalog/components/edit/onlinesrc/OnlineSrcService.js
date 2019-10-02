@@ -622,9 +622,17 @@
           gnBatchProcessing.runProcessMd(
               setParams('services-remove', params)).
               then(function(data) {
-                $rootScope.$broadcast('StatusUpdated', {
-                  title: $translate.instant('serviceDetachedToCurrentRecord'),
-                  timeout: 3
+
+                var asso_params = {
+                  uuid: gnCurrentEdit.uuid,
+                  code: onlinesrc.id,
+                  type:'UUID'
+                };
+                return gnBatchProcessing.runProcessMd(setParams('association-remove', asso_params)).then(function(){
+                  $rootScope.$broadcast('StatusUpdated', {
+                    title: $translate.instant('serviceDetachedToCurrentRecord'),
+                    timeout: 3
+                  });
                 });
                 service.reload = true;
               }, function(error) {
@@ -713,6 +721,44 @@
           };
           runProcess(this,
               setParams('sibling-remove', params));
+        },
+
+        removeAssociation: function(onlinesrc) {
+          var params = {
+            uuid: gnCurrentEdit.uuid,
+            code: onlinesrc.id,
+            type: onlinesrc.identifierDesc,
+            associationType: onlinesrc.associationType
+          };
+          runProcess(this,
+              setParams('association-remove', params));
+        },
+
+        updateAssociation: function(onlinesrc, popupid) {
+
+          var addAssociationFn = function() {
+            var qParams = setParams('association-add', onlinesrc);
+            return runProcess(this, qParams).then(function() {
+              closePopup(popupid);
+            });
+          };
+
+          var params = {
+            uuid: gnCurrentEdit.uuid,
+            code: onlinesrc.preCode,
+            type: onlinesrc.preType,
+            associationType:onlinesrc.preAssociation
+          };
+
+
+          return gnBatchProcessing.runProcessMd(setParams('association-remove', params)).then(addAssociationFn, function(error){
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('runProcessError'),
+              error: error,
+              timeout: 0,
+              type: 'danger'
+            });
+          });
         },
 
         /**

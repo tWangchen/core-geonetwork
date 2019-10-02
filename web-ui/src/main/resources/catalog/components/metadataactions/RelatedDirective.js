@@ -197,6 +197,40 @@
 
               scope.isLayerProtocol = gnRelatedResources.isLayerProtocol;
 
+              //Joseph added - To remove displaying file location for external ecat
+              scope.isIntranet = function() {
+        				return gnGlobalSettings.isIntranet;
+        			  };
+  			  
+        			  if (!String.prototype.startsWith) {
+      				  String.prototype.startsWith = function(searchString, position) {
+      					position = position || 0;
+      					return this.indexOf(searchString, position) === position;
+      				 };
+      			  }
+				
+      			  scope.display = function(r) {
+      				  var dis = !r.url.startsWith('file') || (r.url.startsWith('file') && gnGlobalSettings.isIntranet);
+      				  return dis;
+      			  };
+			  
+        			scope.getClass = function(title) {
+        				 if(title.eng){
+      					  if(title.eng.toLowerCase() === 'purchase this product'){
+      						  return 'btn btn-NETO btn-sm btn-block';
+      					  }
+      				  }
+      				  return 'btn btn-openLink btn-sm btn-block';
+				
+      			  };
+      			  scope.isLink = function(title){
+      				  if(title.eng){
+                            if(title.eng.toLowerCase() === 'purchase this product'){
+                                    return false;
+                            }
+      				  }
+      				  return true;
+      			  };
               scope.config = gnRelatedResources;
 
               scope.$watchCollection('md', function(n, o) {

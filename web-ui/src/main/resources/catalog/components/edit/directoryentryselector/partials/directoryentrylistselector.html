@@ -53,6 +53,10 @@
   </div>
   <div class="row bottom-bar">
     <div class="col-md-12">
+      <div data-ng-hide="stateObj.selectRecords.length < 1">
+        <span style="font-size:20px;color:#3276b1"><strong>Choose a contact role</strong></span>
+      </div>
+      
       <div class="btn btn-default"
            data-ng-hide="isContact"
            data-gn-click-and-spin="addSelectedEntry()"

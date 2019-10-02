@@ -324,6 +324,47 @@
               post: function(scope, element, attrs) {
                 scope.popupid = attrs['gnPopupid'];
 
+                var schemaConfig = {
+                  
+                  'iso19115-3': {
+                    display: 'radio',
+                    types: [ 
+                      {
+                        label: 'addOnlinesrc',
+                        copyLabel: 'name',
+                        sources: {
+                          filestore: true
+                        },
+                        icon: 'fa gn-icon-onlinesrc',
+                        process: 'onlinesrc-add',
+                        fields: {
+                          'url': {},
+                          'protocol': {
+                            value: 'WWW:LINK-1.0-http--link'
+                          },
+                          'name': {},
+                          'desc': {},
+                          'function': {value: 'download'},
+                          'formatname': {},
+                          'edition': {},
+                          'filecomp': {}
+                        }
+                      }, {
+                      label: 'addThumbnail',
+                      sources: {
+                        filestore: true,
+                        thumbnailMaker: true
+                      },
+                      icon: 'fa gn-icon-thumbnail',
+                      fileStoreFilter: '*.{jpg,JPG,jpeg,JPEG,png,PNG,gif,GIF}',
+                      process: 'thumbnail-add',
+                      fields: {
+                        'url': {},
+                        'desc': {}
+                      }
+                    }]
+                  }
+                };
                 scope.config = null;
                 scope.linkType = null;
 
@@ -457,20 +498,16 @@
                   for (var i = 0; i < scope.config.types.length; i++) {
                     var c = scope.config.types[i];
                     if (scope.schema === 'iso19115-3') {
-                      var p = c.fields &&
-                              c.fields.protocol &&
-                              c.fields.protocol.value || '',
-                          f = c.fields &&
-                          c.fields.function &&
-                          c.fields.function.value || '',
-                          ap = c.fields &&
-                          c.fields.applicationProfile &&
-                          c.fields.applicationProfile.value || '';
-                      if (c.process.indexOf(link.type) === 0 &&
-                          p === (link.protocol || '') &&
-                          f === (link.function || '') &&
-                          ap === (link.applicationProfile || '')
-                      ) {
+                      var p = c.fields && c.fields.protocol && c.fields.protocol.value || '',
+                          f = c.fields && c.fields.function && c.fields.function.value || '', 
+                          ap = c.fields && c.fields.applicationProfile && c.fields.applicationProfile.value || '', 
+                          fn = c.fields && c.fields.formatname && c.fields.formatname.value || '', 
+                          e = c.fields && c.fields.edition && c.fields.edition.value || '', 
+                          fc = c.fields && c.fields.filecomp && c.fields.filecomp.value || ''; 
+                      if (c.process.indexOf(link.type) === 0 && p === (link.protocol || '') &&
+                          f === (link.function || '') && ap === (link.applicationProfile || '')
+                          && fn === (link.formatname || '') && e === (link.edition || '')
+                          && fc === (link.filecomp || '')) {
                         return c;
                       }
                     } else {
@@ -611,6 +648,9 @@
                         name: fields.name,
                         desc: fields.desc,
                         applicationProfile: linkToEdit.applicationProfile,
+                        formatname: linkToEdit.formatname,
+                        edition: linkToEdit.edition,
+                        filecomp: linkToEdit.filecomp,
                         function: linkToEdit.function,
                         selectedLayers: []
                       };
@@ -668,6 +708,9 @@
                     scope.params.protocol = '';
                     scope.params.function = '';
                     scope.params.applicationProfile = '';
+                    scope.params.formatname = '';
+                    scope.params.edition = '';
+                    scope.params.filecomp = '';
                     resetProtocol();
                   }
                 };
@@ -859,12 +902,13 @@
                           });
                     }
                   } else if (url.indexOf('http') === 0) {
-                    return $http.get(url).then(function(response) {
+                    /*return $http.get(url).then(function(response) {
                       scope.isUrlOk = response.status === 200;
                     },
                     function(response) {
                       scope.isUrlOk = response.status === 500;
-                    });
+                    });*/
+                    scope.isUrlOk = true;
                   } else {
                     scope.isUrlOk = true;
                   }
@@ -1097,6 +1141,18 @@
                   };
                   scope.modelOptions =
                       angular.copy(gnGlobalSettings.modelOptions);
+                  
+                  scope.params = {
+                        url:'',
+                        _uuid:'',
+                        protocol:'WWW:LINK-1.0-http--link',
+                        name:'',
+                        desc:'Link to eCat service metadata record landing page',
+                        code:'',
+                        associationType:'dependency',
+                        identifierDesc:'eCat Identifier',
+                        process:'association-add'                        
+                      }
                 },
                 post: function postLink(scope, iElement, iAttrs) {
                   scope.mode = iAttrs['gnLinkServiceToDataset'];
@@ -1373,6 +1429,211 @@
           };
         }])
 
+	 /**
+	     * @ngdoc directive
+	     * @name gn_onlinesrc.directive:gnAddAssociatedResource
+	     * @restrict A
+	     * @requires gnOnlinesrc
+	     * @requires $Metadata
+	     * @requires gnEditor
+	     * @requires $translate
+	     *
+	     * @description
+	     * The `gnAddAssociatedResource` directive provides
+	     * a form to link to another metadata or to different associated resources as
+	     * 
+	     * <ul>
+	     *  <li>add resources</li> 
+	     *  <li>parent</li>
+	     *  <li>feature catalog</li>
+	     *  <li>source dataset</li>
+	     * </ul>
+	     * The directive contains a search form allowing one local selection or a form to enter values manually.
+	     *
+	     * On submit, the metadata is saved, the associated resources is added,
+	     * then the form and the list are refreshed.
+	     */
+       .directive('gnAddAssociatedResource', [
+          'gnOnlinesrc', 'Metadata', 'gnEditor', '$translate', 'gnGlobalSettings',
+          function(gnOnlinesrc, Metadata, gnEditor, $translate, gnGlobalSettings) {
+            return {
+              restrict: 'A',
+              scope: {},
+              templateUrl: '../../catalog/components/edit/onlinesrc/' +
+                  'partials/addAssociatedRes.html',
+              compile: function compile(tElement, tAttrs, transclude) {
+                return {
+                  pre: function preLink(scope) {
+                    scope.isResOk = false;
+                    scope.selectionType = {
+                      ECAT_RECORD : 'eCat Record',
+                      OTHER: 'Other'
+                    };
+                    scope.searchObj = {
+                      any: '',
+                      params: {}
+                    };
+                    scope.modelOptions = angular.copy(gnGlobalSettings.modelOptions);
+                    scope.metadata = null;
+                    scope.isMdRecord = true;
+                    scope.params = {
+                      url:'',
+                      _uuid:'',
+                      protocol:'WWW:LINK-1.0-http--link',
+                      name:'',
+                      desc:'',
+                      code:'',
+                      associationType:'',
+                      identifierDesc:'',
+                      process:'association-add',
+                      preCode:'',
+                      preType:'',
+                      preAssociation:''
+                    }
+
+                    scope.associationTypes = [];
+                    
+                    scope.associationTypes.push(scope.selectionType.ECAT_RECORD);
+                    scope.associationTypes.push(scope.selectionType.OTHER);
+                    
+                    scope.model = {};
+                    scope.model.selectedType = scope.selectionType.ECAT_RECORD;
+                  
+                  },
+                  post: function postLink(scope, iElement, iAttrs) {
+                    scope.mode = iAttrs['gnAddAssociatedResource'];
+                    scope.popupid = '#addassociatedres-popup';
+                    scope.btn = {};
+                    scope.stateObj = {};
+                    scope.onlinesrcService = gnOnlinesrc;
+                    scope.config = {
+                      associationType: null
+                    };
+                    // Append * for like search
+                    scope.updateParams = function() {
+                      scope.searchObj.params.any =
+                          '*' + scope.searchObj.any + '*';
+                    };
+  
+                    scope.displayType = function(){
+                      scope.isResOk = true;
+                      if(scope.model.selectedType === scope.selectionType.ECAT_RECORD){
+                        scope.isMdRecord = true;
+                        if(!scope.metadata){
+                          scope.isResOk = false;
+                        }
+                        scope.model.selectedType = scope.selectionType.ECAT_RECORD;
+                      }else{
+                        
+                        scope.isMdRecord = false;
+                        if(!scope.isEditing){
+                          resetForm();
+                        }                       
+                        scope.model.selectedType = scope.selectionType.OTHER;
+                      }
+                    }
+
+                    scope.addAssociatedRes = function() {
+                      
+                      if(scope.model.selectedType === scope.selectionType.ECAT_RECORD){
+                        if(scope.metadata){
+                          var md = scope.metadata;
+                          var pidUrl = 'http://pid.geoscience.gov.au/'+md.type[0]+'/ga/'+md.eCatId;
+                          scope.params.url=pidUrl;
+                          scope.params._uuid=md.getUuid();
+                          scope.params.protocol='WWW:LINK-1.0-http--link';
+                          scope.params.name=md.title;
+                          scope.params.desc='Link to eCat metadata record landing page';
+                          scope.params.code=md.eCatId;
+                          scope.params.identifierDesc='eCat Identifier';
+                        }
+                      }
+
+                      scope.metadata = null;
+                      if(scope.isEditing){
+                        scope.params.associationType=scope.config.associationType;
+                        return scope.onlinesrcService.updateAssociation(scope.params, scope.popupid).then(function(){
+                          console.log('for editing, removed association and calling add function');
+                        });
+                      } else {
+                        scope.params.associationType=scope.config.associationType;
+                        return scope.onlinesrcService.add(
+                          scope.params, scope.popupid).then(function() {
+                          resetForm();
+                        });
+                      }
+                      
+                    };
+    
+                    scope.onAddSuccess = function() {
+                      gnEditor.refreshEditorForm();
+                      scope.onlinesrcService.reload = true;
+                    };
+                    
+                  gnOnlinesrc.register('associatedres', function(linkToEdit) {
+                    scope.isEditing = angular.isDefined(linkToEdit);
+                    scope.model.selectedType = scope.selectionType.ECAT_RECORD;
+                    if(scope.isEditing){
+                      console.log('linkToEdit.identifierDesc ---> ' + linkToEdit.identifierDesc);
+                      if(linkToEdit.identifierDesc !== 'eCat Identifier'){
+                          scope.model.selectedType = scope.selectionType.OTHER;
+                          scope.params.url=linkToEdit.url;
+                          scope.params.protocol=linkToEdit.protocol;
+                          scope.params.name=linkToEdit.title['eng'];
+                          scope.params.desc=linkToEdit.description['eng'];
+                          scope.params.identifierDesc=linkToEdit.identifierDesc;
+                          scope.isResOk = true;
+                      }
+                      scope.params.preType=linkToEdit.identifierDesc;
+                      scope.params.preAssociation=linkToEdit.associationType;
+                      scope.params.code=linkToEdit.id;
+                      scope.params.preCode=linkToEdit.id;
+                      scope.config.associationType = linkToEdit.associationType;
+                    }else{
+                      resetForm();
+                    }
+
+                    scope.displayType();
+                    $(scope.popupid).modal('show');
+                    var searchParams = {
+                      hitsPerPage: 10
+                    };
+                    scope.$broadcast('resetSearch', searchParams);
+                  });
+
+                  scope.$watchCollection('stateObj.selectRecords',
+                    function(n, o) {
+                      if (!angular.isUndefined(scope.stateObj.selectRecords) &&
+                        scope.stateObj.selectRecords.length > 0 && n != o) {
+                        scope.isResOk = true;
+                        scope.metadata = new Metadata(scope.stateObj.selectRecords[0]);
+                      }else{
+                        scope.isResOk = false;
+                      }
+                    });
+                  
+                    function resetForm(){
+                      if(scope.params){
+                        scope.params = {
+                          url:'',
+                          protocol:'WWW:LINK-1.0-http--link',
+                          name:'',
+                          desc:'',
+                          code:'',
+                          associationType:'',
+                          identifierDesc:'',
+                          process:'association-add'
+                        }
+                      }
+                    }
+
+                  }
+                };
+              }
+            };
+          }])
+
+          
       /**
      * @ngdoc directive
      * @name gn_onlinesrc.directive:gnLinkToSibling
