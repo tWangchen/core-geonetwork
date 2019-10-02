@@ -31,6 +31,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import jeeves.constants.Jeeves;
+import jeeves.server.ServiceConfig;
 import jeeves.server.UserSession;
 import jeeves.server.context.ServiceContext;
 import jeeves.services.ReadWriteController;
@@ -65,11 +67,14 @@ import org.fao.geonet.kernel.DataManager;
 import org.fao.geonet.kernel.GeonetworkDataDirectory;
 import org.fao.geonet.kernel.Schema;
 import org.fao.geonet.kernel.SchemaManager;
+import org.fao.geonet.kernel.SelectionManager;
 import org.fao.geonet.kernel.datamanager.IMetadataManager;
 import org.fao.geonet.kernel.datamanager.IMetadataUtils;
 import org.fao.geonet.kernel.mef.Importer;
 import org.fao.geonet.kernel.mef.MEFLib;
+import org.fao.geonet.kernel.search.MetaSearcher;
 import org.fao.geonet.kernel.search.SearchManager;
+import org.fao.geonet.kernel.search.SearcherType;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.lib.Lib;
@@ -82,8 +87,11 @@ import org.fao.geonet.utils.FilePathChecker;
 import org.fao.geonet.utils.IO;
 import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.JDOMParseException;
+import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.XPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -107,6 +115,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -120,6 +129,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_OPS;
 import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
@@ -509,6 +520,177 @@ public class MetadataInsertDeleteApi {
         return newId;
     }
 
+	@ApiOperation(value = "Create a new record", nickname = "multicreate")
+	@RequestMapping(value = "/duplicates", method = { RequestMethod.PUT }, produces = {
+			MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@ApiResponses(value = { @ApiResponse(code = 201, message = "Return the internal id of the newly created record."),
+			@ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_EDITOR) })
+	@PreAuthorize("hasRole('Editor')")
+	@ResponseStatus(HttpStatus.CREATED)
+	public @ResponseBody List<String> createMultiple(@RequestParam String sourceUuid, @RequestParam int count,
+			@RequestParam final String group, @ApiIgnore @ApiParam(hidden = true) HttpSession httpSession,
+			HttpServletRequest request) throws Exception{
+
+		ServiceContext context = ApiUtils.createServiceContext(request);
+        
+		SearchManager searchMan = context.getBean(SearchManager.class);
+		Element elData = getSearchParams();
+		
+		List<String> newRecords = new ArrayList<>();
+		IntStream.rangeClosed(1, count).forEach((val) -> {
+			String newId;
+			try {
+				newId = getNewId(sourceUuid, null, group, false, MetadataType.METADATA, false, httpSession, request);
+				newRecords.add(newId);
+
+			} catch (Exception e) {
+				Log.error(Geonet.DATA_MANAGER, "Error while creating record.");
+			}
+		});
+		
+		if(newRecords.size() > 0){
+			String ids = newRecords.stream().map(x -> x).collect(Collectors.joining(" or "));
+			
+			Log.debug(Geonet.SEARCH_ENGINE, "Multiple metadata create, ids: " + ids);
+			
+			MetaSearcher searcher = searchMan.newSearcher(SearcherType.LUCENE, Geonet.File.SEARCH_LUCENE);
+			
+			String sBuildSummary = elData.getChildText(Geonet.SearchResult.SUMMARY_ONLY);
+	        if (sBuildSummary != null && sBuildSummary.equals("true")) {
+	            elData.getChild(Geonet.SearchResult.SUMMARY_ONLY).setText("false");
+	        }
+	        Element _id = elData.getChild(Geonet.IndexFieldNames.ID);
+			if(_id == null){
+				elData.addContent(new Element(Geonet.IndexFieldNames.ID).setText(ids));	
+			}else{
+				elData.getChild(Geonet.IndexFieldNames.ID).setText(ids);
+			}
+			
+			ServiceConfig _config = new ServiceConfig();
+			
+			searcher.search(context, elData, _config);
+			
+			Element from = elData.getChild("from");
+			if(from == null){
+				elData.addContent(new Element("from").setText("1"));	
+			}else{
+				elData.getChild("from").setText("1");
+			}
+			
+			Element to = elData.getChild("to");
+			if(to == null){
+				elData.addContent(new Element("to").setText(searcher.getSize() + ""));	
+			}else{
+				elData.getChild("to").setText(searcher.getSize() + "");
+			}
+			
+	        Log.debug(Geonet.SEARCH_ENGINE, "Multiple metadata create, elData: " + Xml.getString(elData));
+
+	        Element result = searcher.present(context, elData, _config);
+			
+			// Update result elements to present
+	        SelectionManager.updateMDResult(context.getUserSession(), result);
+	       
+		
+			 XPath _xpath = XPath.newInstance("//mdb:MD_Metadata/mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code/gco:CharacterString");
+			_xpath.addNamespace(Geonet.Namespaces.MDB);
+			_xpath.addNamespace(Geonet.Namespaces.CIT);
+			_xpath.addNamespace(Geonet.Namespaces.MCC);
+			_xpath.addNamespace(Geonet.Namespaces.GCO_3);
+			
+			Document doc = new SAXBuilder().build(new StringReader(Xml.getString(result)));
+			
+	        List<Element> eCatids = _xpath.selectNodes(doc.getRootElement());
+	        List<String> ecatids = eCatids.stream().map(x -> x.getValue()).collect(Collectors.toList());
+	        
+	        Log.debug(Geonet.SEARCH_ENGINE, "Multiple metadata create, ecatids: " + ecatids);
+	        
+	        return ecatids;
+		}
+		
+      return null;
+		
+	}
+    
+
+	private String getNewId(String sourceUuid, String targetUuid, String group, final boolean isChildOfSource,
+			final MetadataType metadataType, final boolean isVisibleByAllGroupMembers, HttpSession httpSession,
+			HttpServletRequest request) throws Exception {
+    	AbstractMetadata sourceMetadata = ApiUtils.getRecord(sourceUuid);
+        ApplicationContext applicationContext = ApplicationContextHolder.get();
+
+        SettingManager sm = applicationContext.getBean(SettingManager.class);
+        boolean generateUuid = sm.getValueAsBool(Settings.SYSTEM_METADATACREATE_GENERATE_UUID);
+
+
+        // User assigned uuid: check if already exists
+        String metadataUuid = null;
+        if (generateUuid) {
+            if (StringUtils.isEmpty(targetUuid)) {
+                // Create a random UUID
+                metadataUuid = UUID.randomUUID().toString();
+            } else {
+                // Check if the UUID exists
+                try {
+                	AbstractMetadata checkRecord = ApiUtils.getRecord(targetUuid);
+                    if (checkRecord != null) {
+                        throw new BadParameterEx(String.format(
+                            "You can't create a new record with the UUID '%s' because a record already exist with this UUID.",
+                            targetUuid), targetUuid);
+                    }
+                } catch (ResourceNotFoundException e) {
+                    // Ignore. Ok to create a new record with the requested UUID.
+                }
+            }
+        } else {
+            metadataUuid = UUID.randomUUID().toString();
+        }
+
+
+        // TODO : Check user can create a metadata in that group
+        UserSession user = ApiUtils.getUserSession(httpSession);
+        if (user.getProfile() != Profile.Administrator) {
+            final Specifications<UserGroup> spec = where(UserGroupSpecs.hasProfile(Profile.Editor))
+                .and(UserGroupSpecs.hasUserId(user.getUserIdAsInt()))
+                .and(UserGroupSpecs.hasGroupId(Integer.valueOf(group)));
+
+            final List<UserGroup> userGroups = applicationContext.getBean(UserGroupRepository.class).findAll(spec);
+
+            if (userGroups.size() == 0) {
+                throw new SecurityException(String.format(
+                    "You can't create a record in this group. User MUST be an Editor in that group"
+                ));
+            }
+        }
+
+        DataManager dataManager = applicationContext.getBean(DataManager.class);
+        ServiceContext context = ApiUtils.createServiceContext(request);
+        String newId = dataManager.createMetadata(context,
+            String.valueOf(sourceMetadata.getId()),
+            group,
+            sm.getSiteId(),
+            context.getUserSession().getUserIdAsInt(),
+            isChildOfSource ? sourceMetadata.getUuid() : null,
+            metadataType.toString(),
+            isVisibleByAllGroupMembers,
+            metadataUuid);
+
+        dataManager.activateWorkflowIfConfigured(context, newId, group);
+
+        try {
+            copyDataDir(context, sourceMetadata.getId(), newId, Params.Access.PUBLIC);
+            copyDataDir(context, sourceMetadata.getId(), newId, Params.Access.PRIVATE);
+        } catch (IOException e) {
+            Log.warning(Geonet.DATA_MANAGER, String.format(
+                "Error while copying metadata resources. Error is %s. " +
+                    "Metadata is created but without resources from the source record with id '%d':",
+                    e.getMessage(), newId));
+        }
+        
+        return newId;
+    }
+
+
     private void copyDataDir(ServiceContext context, int oldId, String newId, String access) throws IOException {
         final Path sourceDir = Lib.resource.getDir(context, access, oldId);
         final Path destDir = Lib.resource.getDir(context, access, newId);
@@ -871,4 +1053,22 @@ public class MetadataInsertDeleteApi {
         dataManager.indexMetadata(id.get(0), true, null);
         return Pair.read(Integer.valueOf(id.get(0)), uuid);
     }
+
+	private Element getSearchParams(){
+		
+		String[][] DEFAULT_PARAMS = {
+		        {Geonet.SearchResult.RELATION, Geonet.SearchResult.Relation.OVERLAPS},
+		        {Geonet.SearchResult.EXTENDED, Geonet.Text.OFF},
+		        {Geonet.SearchResult.HITS_PER_PAGE, "10"},
+		        {Geonet.SearchResult.SIMILARITY, "1"},
+		        {Geonet.SearchResult.OUTPUT, Geonet.SearchResult.Output.FULL},
+		        };
+		
+		Element elData = new Element(Jeeves.Elem.REQUEST);
+		
+		for (String[] p : DEFAULT_PARAMS)
+            elData.addContent(new Element(p[0]).setText(p[1]));
+		
+		return elData;
+	}
 }

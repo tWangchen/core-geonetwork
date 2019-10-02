@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "report")
 @XmlType(propOrder = {
     "uuid", "startIsoDateTime", "endIsoDateTime",
-    "ellapsedTimeInSeconds", "totalTimeInSeconds"
+    "ellapsedTimeInSeconds", "totalTimeInSeconds","infos", "errors"
 })
 @XmlAccessorType(XmlAccessType.PUBLIC_MEMBER)
 public abstract class ProcessingReport
@@ -63,8 +63,8 @@ public abstract class ProcessingReport
     protected List<InfoReport> infos = Collections.synchronizedList(new ArrayList<InfoReport>());
     private ProcessingReportRegistry registry;
     private String uuid;
-    private ISODate startDateTime;
-    private ISODate endDateTime;
+    private ISODate startIsoDateTime;
+    private ISODate endIsoDateTime;
 
     public ProcessingReport() {
         this.uuid = UUID.randomUUID().toString();
@@ -87,23 +87,23 @@ public abstract class ProcessingReport
     @Override
     @XmlAttribute
     public String getStartIsoDateTime() {
-        return startDateTime.getDateAndTime();
+        return startIsoDateTime.getDateAndTime();
     }
 
     @Override
     @XmlAttribute
     public String getEndIsoDateTime() {
-        return endDateTime == null ? "" : endDateTime.getDateAndTime();
+        return endIsoDateTime == null ? "" : endIsoDateTime.getDateAndTime();
     }
 
     @Override
     public void processStart() {
-        this.startDateTime = new ISODate();
+        this.startIsoDateTime = new ISODate();
     }
 
     @Override
     public void processEnd() {
-        this.endDateTime = new ISODate();
+        this.endIsoDateTime = new ISODate();
     }
 
     @Override
@@ -115,13 +115,13 @@ public abstract class ProcessingReport
     @Override
     @XmlAttribute
     public long getEllapsedTimeInSeconds() {
-        return new ISODate().timeDifferenceInSeconds(startDateTime);
+        return new ISODate().timeDifferenceInSeconds(startIsoDateTime);
     }
 
     @Override
     @XmlAttribute
     public long getTotalTimeInSeconds() {
-        return endDateTime == null ? -1 : endDateTime.timeDifferenceInSeconds(startDateTime);
+        return endIsoDateTime == null ? -1 : endIsoDateTime.timeDifferenceInSeconds(startIsoDateTime);
     }
 
     @Override

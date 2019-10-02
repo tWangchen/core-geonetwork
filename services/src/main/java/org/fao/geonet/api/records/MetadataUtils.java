@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.ApplicationContextHolder;
 import org.fao.geonet.Constants;
 import org.fao.geonet.GeonetContext;
@@ -124,11 +125,19 @@ public class MetadataUtils {
         // Get parent record from this record
         if (schemaPlugin != null && (listOfTypes.size() == 0 ||
             listOfTypes.contains(RelatedItemType.parent))) {
-            Set<String> listOfUUIDs = schemaPlugin.getAssociatedParentUUIDs(md);
+        	//Joseph commented - Parent element is added as snippet into xml, not referenced using uuidref
+            /*Set<String> listOfUUIDs = schemaPlugin.getAssociatedParentUUIDs(md);
             if (listOfUUIDs.size() > 0) {
                 String joinedUUIDs = Joiner.on(" or ").join(listOfUUIDs);
                 relatedRecords.addContent(search(joinedUUIDs, "parent", context, from, to, fast));
-            }
+                relatedRecords.addContent(parent);
+            }*/
+        	
+        	//Joseph added - Parent element is added as snippet into xml, not referenced using uuidref
+            String parentUuid = schemaPlugin.getAssociatedParentUuid(md);
+            if(StringUtils.isNotEmpty(parentUuid))
+            	relatedRecords.addContent(search(parentUuid, "parent", context, from, to, fast));
+            
         }
 
         // Get aggregates from this record
@@ -155,7 +164,11 @@ public class MetadataUtils {
         // Search for records where an aggregate point to this record
         if (listOfTypes.size() == 0 ||
             listOfTypes.contains(RelatedItemType.associated)) {
-            relatedRecords.addContent(search(uuid, "associated", context, from, to, fast));
+            //relatedRecords.addContent(search(uuid, "associated", context, from, to, fast));
+        	
+        	//Joseph added - Associated resource element is added as snippet into xml, not referenced using uuidref
+        	Element associations = schemaPlugin.getAssociatedResourceElement(md);
+        	relatedRecords.addContent(associations);
         }
 
         // Search for services

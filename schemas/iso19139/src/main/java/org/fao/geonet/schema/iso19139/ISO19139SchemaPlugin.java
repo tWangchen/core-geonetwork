@@ -581,4 +581,16 @@ public class ISO19139SchemaPlugin
         }
         return "";
     }
+	
+	@Override
+	public String getAssociatedParentUuid(Element metadata) {
+		return "";
+	}
+
+
+	@Override
+	public Element getAssociatedResourceElement(Element metadata) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

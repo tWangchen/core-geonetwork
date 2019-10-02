@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  */
 @XmlElement(value = "metadata")
 @XmlAccessorType(XmlAccessType.PUBLIC_MEMBER)
-class InfoReport extends Report {
+public class InfoReport extends Report {
     public InfoReport(String message) {
         super(message);
     }
