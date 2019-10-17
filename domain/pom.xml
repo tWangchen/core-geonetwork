@@ -27,7 +27,7 @@
   <parent>
     <artifactId>geonetwork</artifactId>
     <groupId>org.geonetwork-opensource</groupId>
-    <version>3.7.0-SNAPSHOT</version>
+    <version>3.9.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -203,6 +203,8 @@
               <systemPropertyVariables>
                 <postgresqlPerformanceTest>true</postgresqlPerformanceTest>
               </systemPropertyVariables>
+              <runOrder>alphabetical</runOrder>
+              <forkCount>4</forkCount>
             </configuration>
           </plugin>
         </plugins>

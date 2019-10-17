@@ -135,7 +135,7 @@ import static org.springframework.data.jpa.domain.Specifications.where;
 public class MetadataInsertDeleteApi {
 
     public static final String API_PARAM_REPORT_ABOUT_IMPORTED_RECORDS = "Report about imported records.";
-    public static final String API_PARAP_RECORD_GROUP = "The group the record is attached to.";
+    public static final String API_PARAM_RECORD_GROUP = "The group the record is attached to.";
     public static final String API_PARAM_RECORD_UUID_PROCESSING = "Record identifier processing.";
     private final String API_PARAM_RECORD_TAGS = "Tags to assign to the record.";
     private final String API_PARAM_RECORD_VALIDATE = "Validate the record first and reject it if not valid.";
@@ -210,7 +210,12 @@ public class MetadataInsertDeleteApi {
 
     @ApiOperation(value = "Delete one or more records", notes = "User MUST be able to edit the record to delete it. "
             + "", nickname = "deleteRecords")
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(
+        method = RequestMethod.DELETE,
+        produces = {
+            MediaType.APPLICATION_JSON_VALUE
+        }
+    )
     @ApiResponses(value = { @ApiResponse(code = 204, message = "Report about deleted records."),
             @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_EDITOR) })
     @PreAuthorize("hasRole('Editor')")
@@ -278,7 +283,7 @@ public class MetadataInsertDeleteApi {
             @ApiParam(value = "(Server folder import only) Recursive search in folder.", required = false) @RequestParam(required = false, defaultValue = "false") final boolean recursiveSearch,
             @ApiParam(value = "(MEF file only) Assign to current catalog.", required = false) @RequestParam(required = false, defaultValue = "false") final boolean assignToCatalog,
             @ApiParam(value = API_PARAM_RECORD_UUID_PROCESSING, required = false, defaultValue = "NOTHING") @RequestParam(required = false, defaultValue = "NOTHING") final MEFLib.UuidAction uuidProcessing,
-            @ApiParam(value = API_PARAP_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
+            @ApiParam(value = API_PARAM_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
             @ApiParam(value = API_PARAM_RECORD_TAGS, required = false) @RequestParam(required = false) final String[] category,
             @ApiParam(value = API_PARAM_RECORD_VALIDATE, required = false) @RequestParam(required = false, defaultValue = "false") final boolean rejectIfInvalid,
             @ApiParam(value = API_PARAM_RECORD_XSL, required = false, defaultValue = "_none_") @RequestParam(required = false, defaultValue = "_none_") final String transformWith,
@@ -412,7 +417,7 @@ public class MetadataInsertDeleteApi {
             @ApiParam(value = "UUID of the source record to copy.", required = true) @RequestParam(required = true) String sourceUuid,
             @ApiParam(value = "Assign a custom UUID. If this UUID already exist an error is returned. "
                     + "This is enabled only if metadata create / generate UUID settings is activated.", required = false) @RequestParam(required = false) String targetUuid,
-            @ApiParam(value = API_PARAP_RECORD_GROUP, required = true) @RequestParam(required = true) final String group,
+            @ApiParam(value = API_PARAM_RECORD_GROUP, required = true) @RequestParam(required = true) final String group,
             @ApiParam(value = "Is published to all user group members? "
                     + "If not, only the author and administrator can edit the record.", required = false, defaultValue = "false") @RequestParam(required = false, defaultValue = "false")
             // TODO: Would be more flexible to add a privilege object ?
@@ -529,7 +534,7 @@ public class MetadataInsertDeleteApi {
             @ApiParam(value = API_PARAM_RECORD_TYPE, required = false, defaultValue = "METADATA") @RequestParam(required = false, defaultValue = "METADATA") final MetadataType metadataType,
             @ApiParam(value = "XML or MEF file to upload", required = false) @RequestParam(value = "file", required = false) MultipartFile[] file,
             @ApiParam(value = API_PARAM_RECORD_UUID_PROCESSING, required = false, defaultValue = "NOTHING") @RequestParam(required = false, defaultValue = "NOTHING") final MEFLib.UuidAction uuidProcessing,
-            @ApiParam(value = API_PARAP_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
+            @ApiParam(value = API_PARAM_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
             @ApiParam(value = API_PARAM_RECORD_TAGS, required = false) @RequestParam(required = false) final String[] category,
             @ApiParam(value = API_PARAM_RECORD_VALIDATE, required = false) @RequestParam(required = false, defaultValue = "false") final boolean rejectIfInvalid,
             @ApiParam(value = "(XML file only) Publish record.", required = false) @RequestParam(required = false, defaultValue = "false") final boolean publishToAll,
@@ -612,7 +617,7 @@ public class MetadataInsertDeleteApi {
             @ApiParam(value = "Map overview filename", required = false) @RequestParam(value = "overviewFilename", required = false) final String overviewFilename,
             @ApiParam(value = "Topic category", required = false) @RequestParam(value = "topic", required = false) final String topic,
             @ApiParam(value = API_PARAM_RECORD_UUID_PROCESSING, required = false, defaultValue = "NOTHING") @RequestParam(required = false, defaultValue = "NOTHING") final MEFLib.UuidAction uuidProcessing,
-            @ApiParam(value = API_PARAP_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
+            @ApiParam(value = API_PARAM_RECORD_GROUP, required = false) @RequestParam(required = false) final String group,
             HttpServletRequest request) throws Exception {
         if (StringUtils.isEmpty(xml) && StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException(String.format("A context as XML or a remote URL MUST be provided."));
@@ -838,6 +843,7 @@ public class MetadataInsertDeleteApi {
             throw ex;
         }
         int iId = Integer.parseInt(id.get(0));
+        uuid = dataManager.getMetadataUuid(iId + "");
 
         // Set template
         dataManager.setTemplate(iId, metadataType, null);
