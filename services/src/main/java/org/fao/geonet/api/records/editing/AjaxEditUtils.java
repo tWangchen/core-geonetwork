@@ -145,43 +145,6 @@ public class AjaxEditUtils extends EditUtils {
         Map<String, String> xmlInputs = new HashMap<String, String>();
         LinkedHashMap<String, AddElemValue> xmlAndXpathInputs = new LinkedHashMap<String, AddElemValue>();
 
-        // Preprocess
-        for (Map.Entry<String, String> entry: changes.entrySet()) {
-            String originalRef = entry.getKey().trim();
-            String ref = null;
-            String value = entry.getValue().trim();
-            String originalAttributeName = null;
-            String parsedAttributeName = null;
-
-            // Avoid empty key
-            if (originalRef.equals("")) {
-                continue;
-            }
-
-            // Ignore element if ref starts with "P" or "X"
-            if (originalRef.startsWith("X") || originalRef.startsWith("P")) {
-                continue;
-            }
-
-            if (refIsAttribute(originalRef)) {
-                originalAttributeName = parseRefAndGetAttribute(originalRef);
-                ref = parseRefAndGetNewRef(originalRef);
-                Pair<Namespace, String> attributePair = parseAttributeName(originalAttributeName, EditLib.COLON_SEPARATOR, id, md, editLib);
-                parsedAttributeName = attributePair.one().getPrefix() + ":" + attributePair.two();
-            } else {
-                continue;
-            }
-
-            String actualRef = ref != null ? ref : originalRef;
-            Element el = editLib.findElement(md, actualRef);
-            if (el == null) {
-                Log.error(Geonet.EDITOR, EditLib.MSG_ELEMENT_NOT_FOUND_AT_REF + originalRef);
-                continue;
-            }
-            SchemaPlugin schemaPlugin = SchemaManager.getSchemaPlugin(schema);
-            schemaPlugin.processElement(el, originalRef, parsedAttributeName, value);
-        }
-
         // --- update elements
         for (Map.Entry<String, String> entry : changes.entrySet()) {
             String ref = entry.getKey().trim();

@@ -104,21 +104,22 @@
     <gmd:descriptiveKeywords>
       <xsl:choose>
         <xsl:when test="$withXlink">
+          <xsl:variable name="multiple"
+                        select="if (contains(/root/request/id, ',')) then 'true' else 'false'"/>
           <xsl:variable name="isLocalXlink"
                         select="util:getSettingValue('system/xlinkResolver/localXlinkEnable')"/>
           <xsl:variable name="prefixUrl"
                         select="if ($isLocalXlink = 'true')
-                                then concat('local://', $node, '/')
+                                then  concat('local://', /root/gui/language)
                                 else $serviceUrl"/>
 
           <xsl:attribute name="xlink:href"
-                         select="concat(
-                                  $prefixUrl,
-                                  'api/registries/vocabularies/keyword?skipdescriptivekeywords=true&amp;thesaurus=',
-                                   if (thesaurus/key) then thesaurus/key else /root/request/thesaurus,
-                                  '&amp;id=', encode-for-uri(/root/request/id),
-                                  if (/root/request/lang) then concat('&amp;lang=', /root/request/lang) else '',
-                                  if ($textgroupOnly) then '&amp;textgroupOnly' else '')"/>
+                         select="concat($prefixUrl, '/xml.keyword.get?thesaurus=', thesaurus/key,
+                              '&amp;amp;id=', replace(/root/request/id, '#', '%23'),
+                              '&amp;amp;multiple=', $multiple,
+                              if (/root/request/lang) then concat('&amp;amp;lang=', /root/request/lang) else '',
+                              if ($textgroupOnly) then '&amp;amp;textgroupOnly' else '')"/>
+          <xsl:attribute name="xlink:show">replace</xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="to-md-keywords">
@@ -185,13 +186,15 @@
               <gmd:PT_FreeText>
                 <xsl:for-each select="$listOfLanguage">
                   <xsl:variable name="lang" select="."/>
-                  <gmd:textGroup>
-                    <gmd:LocalisedCharacterString
-                      locale="#{upper-case(util:twoCharLangCode($lang))}">
-                      <xsl:value-of
-                        select="$keyword/values/value[@language = $lang]/text()"></xsl:value-of>
-                    </gmd:LocalisedCharacterString>
-                  </gmd:textGroup>
+                  <xsl:if test="$textgroupOnly or $lang != $listOfLanguage[1]">
+                    <gmd:textGroup>
+                      <gmd:LocalisedCharacterString
+                        locale="#{upper-case(util:twoCharLangCode($lang))}">
+                        <xsl:value-of
+                          select="$keyword/values/value[@language = $lang]/text()"></xsl:value-of>
+                      </gmd:LocalisedCharacterString>
+                    </gmd:textGroup>
+                  </xsl:if>
                 </xsl:for-each>
               </gmd:PT_FreeText>
             </xsl:when>
@@ -199,19 +202,9 @@
               <!-- ... default mode -->
               <xsl:choose>
                 <xsl:when test="$withAnchor">
-                  <!-- TODO multilingual Anchor ?
-                  -->
-                  <gmx:Anchor>
-                    <xsl:attribute name="xlink:href">
-                      <xsl:choose>
-                        <xsl:when test="matches(uri, '^http.*')">
-                          <xsl:value-of select="uri"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                          <xsl:value-of select="concat($serviceUrl, 'api/registries/vocabularies/keyword?thesaurus=', thesaurus/key, '&amp;id=', uri)"/>
-                        </xsl:otherwise>
-                      </xsl:choose>
-                    </xsl:attribute>
+                  <!-- TODO multilingual Anchor ? -->
+                  <gmx:Anchor
+                    xlink:href="{$serviceUrl}/xml.keyword.get?thesaurus={thesaurus/key}&amp;id={uri}">
                     <xsl:value-of select="value"/>
                   </gmx:Anchor>
                 </xsl:when>
@@ -229,25 +222,17 @@
       <!-- If no keyword, add one to avoid invalid metadata -->
       <xsl:if test="count(//keyword[thesaurus/key = $currentThesaurus]) = 0">
         <gmd:keyword gco:nilReason="missing">
-          <xsl:choose>
-            <xsl:when test="$withAnchor">
-              <gmx:Anchor xlink:href="" />
-            </xsl:when>
-            <xsl:otherwise>
-              <gco:CharacterString />
-            </xsl:otherwise>
-          </xsl:choose>
+          <gco:CharacterString></gco:CharacterString>
         </gmd:keyword>
       </xsl:if>
 
       <xsl:copy-of
-        select="geonet:add-thesaurus-info($currentThesaurus, $withAnchor, $withThesaurusAnchor, /root/gui/thesaurus/thesauri, not(/root/request/keywordOnly))"/>
+        select="geonet:add-thesaurus-info($currentThesaurus, $withThesaurusAnchor, /root/gui/thesaurus/thesauri, not(/root/request/keywordOnly))"/>
     </gmd:MD_Keywords>
   </xsl:template>
 
   <xsl:function name="geonet:add-thesaurus-info">
     <xsl:param name="currentThesaurus" as="xs:string"/>
-    <xsl:param name="withTitleAnchor" as="xs:boolean"/>
     <xsl:param name="withThesaurusAnchor" as="xs:boolean"/>
     <xsl:param name="thesauri" as="node()"/>
     <xsl:param name="thesaurusInfo" as="xs:boolean"/>
@@ -262,18 +247,9 @@
       <gmd:thesaurusName>
         <gmd:CI_Citation>
           <gmd:title>
-            <xsl:choose>
-              <xsl:when test="$withTitleAnchor = true()">
-                <gmx:Anchor xlink:href="{$thesauri/thesaurus[key = $currentThesaurus]/defaultNamespace}">
-                  <xsl:value-of select="$thesauri/thesaurus[key = $currentThesaurus]/title"/>
-                </gmx:Anchor>
-              </xsl:when>
-              <xsl:otherwise>
-                <gco:CharacterString>
-                  <xsl:value-of select="$thesauri/thesaurus[key = $currentThesaurus]/title"/>
-                </gco:CharacterString>
-              </xsl:otherwise>
-            </xsl:choose>
+            <gco:CharacterString>
+              <xsl:value-of select="$thesauri/thesaurus[key = $currentThesaurus]/title"/>
+            </gco:CharacterString>
           </gmd:title>
 
           <xsl:variable name="thesaurusDate"
@@ -298,7 +274,7 @@
                 </gmd:date>
                 <gmd:dateType>
                   <gmd:CI_DateTypeCode
-                    codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
+                    codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode"
                     codeListValue="publication"/>
                 </gmd:dateType>
               </gmd:CI_Date>

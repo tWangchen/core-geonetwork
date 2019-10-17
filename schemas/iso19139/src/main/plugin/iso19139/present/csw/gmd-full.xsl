@@ -23,23 +23,20 @@
   ~ Rome - Italy. email: geonetwork@osgeo.org
   -->
 
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:gco="http://www.isotc211.org/2005/gco"
-                xmlns:gmd="http://www.isotc211.org/2005/gmd"
-                xmlns:srv="http://www.isotc211.org/2005/srv"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xmlns:geonet="http://www.fao.org/geonetwork"
-                exclude-result-prefixes="#all"
-                version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:geonet="http://www.fao.org/geonetwork"
+                version="1.0">
 
   <xsl:param name="displayInfo"/>
 
-  <!-- Convert ISO profile elements to their base type -->
-  <xsl:template match="*[@gco:isoType]" priority="99">
-    <xsl:element name="{@gco:isoType}">
-      <xsl:apply-templates select="@*[name() != 'gco:isoType']|*"/>
-    </xsl:element>
-  </xsl:template>
+  <!-- ============================================================================= -->
+  <!--
+      <xsl:template match="gmd:MD_Metadata">
+          <csw:IsoRecord>
+              <xsl:apply-templates select="*"/>
+          </csw:IsoRecord>
+      </xsl:template>
+  -->
+  <!-- ============================================================================= -->
 
   <xsl:template match="@*|node()[name(.)!='geonet:info']">
     <xsl:variable name="info" select="geonet:info"/>
@@ -51,5 +48,7 @@
       </xsl:if>
     </xsl:copy>
   </xsl:template>
+
+  <!-- ============================================================================= -->
 
 </xsl:stylesheet>

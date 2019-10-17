@@ -42,7 +42,8 @@
     <html ng-app="{$angularModule}" lang="{$lang2chars}" id="ng-app">
       <head>
         <title>
-            <xsl:value-of select="util:getNodeName('', $lang, true())"/>
+          <xsl:value-of select="concat($env/system/site/name, ' - ', $env/system/site/organization)"
+          />
         </title>
         <meta charset="utf-8"/>
         <meta name="viewport" content="initial-scale=1.0"/>

@@ -35,7 +35,7 @@
   -->
   <xsl:template name="menu-builder">
     <xsl:param name="config" as="node()"/>
-    <!-- <xsl:variable name="currentView" select="$config/editor/views/view[tab/@id = $tab]"/> -->
+    <xsl:variable name="currentView" select="$config/editor/views/view[tab/@id = $tab]"/>
 
     <div class="gn-scroll-spy"
          data-gn-scroll-spy="gn-editor-{$metadataId}"
@@ -102,16 +102,16 @@
                 </xsl:if>
               </xsl:for-each>
 
-              <li class="divider"/>
-              <!-- <li>
+              <li class="divider" role="menuitem"/>
+              <li role="menuitem">
                 <a data-ng-click="toggleAttributes(true)" href="">
                   <i class="fa"
                      data-ng-class="gnCurrentEdit.displayAttributes ? 'fa-check-square-o' : 'fa-square-o'"/>
                   &#160;
                   <span data-translate="">toggleAttributes</span>
                 </a>
-              </li> -->
-              <li>
+              </li>
+              <li role="menuitem">
                 <a data-ng-click="toggleTooltips(true)" href="">
                   <i class="fa"
                      data-ng-class="gnCurrentEdit.displayTooltips ? 'fa-check-square-o' : 'fa-square-o'"/>
@@ -126,12 +126,13 @@
 
       <!-- Make a tab switcher for all tabs of the current view -->
       <xsl:if test="count($currentView/tab) > 1">
-        <xsl:apply-templates mode="menu-builder" select="$currentView/tab[not(@toggle)]"/>
+        <xsl:apply-templates mode="menu-builder"
+                             select="$config/editor/views/view[tab/@id = $tab]/tab[not(@toggle)]"/>
 
 
         <!-- Some views may define tab to be grouped in an extra button -->
-        <xsl:if test="count($currentView/tab[@toggle]) > 0">
-          <li class="dropdown">
+        <xsl:if test="count($config/editor/views/view[tab/@id = $tab]/tab[@toggle]) > 0">
+          <li class="dropdown" role="menuitem">
             <a class="dropdown-toggle" data-toggle="dropdown" href=""
                title="{$i18n/moreTabs}">
               <i class="fa fa-ellipsis-h"></i>

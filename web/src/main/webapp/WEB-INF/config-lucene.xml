@@ -180,12 +180,12 @@
       <field name="_op0" tagName="publishedForGroup"/>
       <field name="_groupOwner" tagName="groupOwner"/>
       <field name="_logo" tagName="logo"/>
-      <field name="crs" tagName="crs"/>
       <field name="standardName" tagName="standardName"/>
       <field name="_groupWebsite" tagName="groupWebsite"/>
       <field name="featureTypes" tagName="featureTypes"/>
-      <field name="versionIdentifier" tagName="versionIdentifier"/>
-      <field name="_draft" tagName="draft"/>
+      <field name="crs" tagName="crs"/>
+      <field name="standardName" tagName="standardName"/>
+      <field name="_groupWebsite" tagName="groupWebsite"/>
       <field name="attributeTable" tagName="attributeTable"/>
       <field name="eCatId" tagName="eCatId"/>
       <field name="author" tagName="author"/>
@@ -230,6 +230,8 @@
     <field name="Associations" tagName="Associations"/>
 
 	<!-- Martins additions end -->
+      <field name="versionIdentifier" tagName="versionIdentifier"/>
+      <field name="_draft" tagName="draft"/>
     </dumpFields>
   </search>
 

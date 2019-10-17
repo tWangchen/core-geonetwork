@@ -221,7 +221,7 @@
 
        A custom directive is created.
   -->
-  <xsl:template mode="mode-iso19115-3"
+  <!--<xsl:template mode="mode-iso19115-3"
                 match="gco:TM_PeriodDuration|gml:duration"
                 priority="2000">
 
@@ -238,7 +238,7 @@
       <xsl:with-param name="editInfo" select="gn:element"/>
     </xsl:call-template>
 
-  </xsl:template>
+  </xsl:template>-->
 
   <!-- ===================================================================== -->
   <!-- gml:TimePeriod (format = %Y-%m-%dThh:mm:ss) -->

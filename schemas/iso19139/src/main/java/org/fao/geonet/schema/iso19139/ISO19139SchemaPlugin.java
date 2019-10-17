@@ -581,7 +581,6 @@ public class ISO19139SchemaPlugin
         }
         return "";
     }
-	
 	@Override
 	public String getAssociatedParentUuid(Element metadata) {
 		return "";

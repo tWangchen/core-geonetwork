@@ -40,9 +40,7 @@ Stylesheet used to remove a reference to a online resource.
   </xsl:template>
 
   <xsl:template
-    match="geonet:*|
-           srv:coupledResource[normalize-space(srv:SV_CoupledResource/srv:identifier/gco:CharacterString) = $uuidref]|
-           srv:operatesOn[@uuidref = $uuidref]"
+    match="geonet:*|srv:coupledResource[normalize-space(srv:SV_CoupledResource/srv:identifier/gco:CharacterString) = $uuidref]|srv:operatesOn[@uuidref = $uuidref]"
     priority="2"/>
 
 </xsl:stylesheet>

@@ -30,8 +30,6 @@
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:gmd="http://www.isotc211.org/2005/gmd"
                 xmlns:gco="http://www.isotc211.org/2005/gco"
-                xmlns:gmx="http://www.isotc211.org/2005/gmx"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
                 xmlns:util="java:org.fao.geonet.util.XslUtil"
                 xmlns:gn-fn-rel="http://geonetwork-opensource.org/xsl/functions/relations"
                 version="2.0"
@@ -42,10 +40,9 @@
   <xsl:function name="gn-fn-rel:translate">
     <xsl:param name="el"/>
     <xsl:param name="lang"/>
-    <xsl:variable name="textVal" select="$el/gco:CharacterString|$el/gmx:Anchor/text()"/>
     <xsl:choose>
-      <xsl:when test="$textVal!=''">
-        <xsl:value-of select="$textVal"/>
+      <xsl:when test="$el/gco:CharacterString!=''">
+        <xsl:value-of select="$el/gco:CharacterString"/>
       </xsl:when>
       <xsl:when
         test="($el/gmd:PT_FreeText//gmd:LocalisedCharacterString[@locale = $lang][text() != ''])[1]">
@@ -62,21 +59,15 @@
   <!-- Convert an element gco:CharacterString
   to the GN localized string structure -->
   <xsl:template mode="get-iso19139-localized-string" match="*">
-
-    <xsl:variable name="mainLanguage"
-                  select="string(ancestor::metadata/*[@gco:isoType='gmd:MD_Metadata' or name()='gmd:MD_Metadata']/
-                            gmd:language/gco:CharacterString|ancestor::metadata/*[@gco:isoType='gmd:MD_Metadata' or name()='gmd:MD_Metadata']/
-                            gmd:language/gmd:LanguageCode/@codeListValue)"/>
-
-    <xsl:for-each select="gco:CharacterString|gmx:Anchor|
+    <xsl:for-each select="gco:CharacterString|
                           gmd:PT_FreeText/*/gmd:LocalisedCharacterString">
       <xsl:variable name="localeId"
                     select="substring-after(@locale, '#')"/>
-
+      <xsl:variable name="mainLanguage"
+                    select="ancestor::gmd:MD_Metadata/gmd:language/*/@codeListValue"/>
       <value lang="{if (@locale)
-                  then ancestor::metadata/*[@gco:isoType='gmd:MD_Metadata' or name()='gmd:MD_Metadata']/gmd:locale/*[@id = $localeId]/gmd:languageCode/*/@codeListValue
+                  then ancestor::gmd:MD_Metadata/gmd:locale/*[@id = $localeId]/gmd:languageCode/*/@codeListValue
                   else if ($mainLanguage) then $mainLanguage else $lang}">
-        <xsl:copy-of select="@xlink:href"/>
         <xsl:value-of select="."/>
       </value>
     </xsl:for-each>
@@ -89,11 +80,6 @@
                 match="metadata[gmd:MD_Metadata or *[contains(@gco:isoType, 'MD_Metadata')]]"
                 priority="99">
 
-    <xsl:variable name="mainLanguage"
-                  select="string(
-                            */gmd:language/gco:CharacterString|
-                            */gmd:language/gmd:LanguageCode/@codeListValue)"/>
-
     <xsl:if test="count(*/descendant::*[name(.) = 'gmd:graphicOverview']/*) > 0">
       <thumbnails>
         <xsl:for-each select="*/descendant::*[name(.) = 'gmd:graphicOverview']/*">
@@ -102,8 +88,7 @@
               <xsl:value-of select="gmd:fileName/gco:CharacterString"/>
             </id>
             <url>
-              <xsl:apply-templates mode="get-iso19139-localized-string"
-                                   select="gmd:fileName"/>
+              <xsl:value-of select="gmd:fileName/gco:CharacterString"/>
             </url>
             <title>
               <xsl:apply-templates mode="get-iso19139-localized-string"
@@ -131,9 +116,7 @@
                                    select="gmd:name"/>
             </title>
             <url>
-              <value lang="{$mainLanguage}">
-                <xsl:value-of select="$url"/>
-              </value>
+              <xsl:value-of select="$url"/>
             </url>
             <function>
               <xsl:value-of select="gmd:function/*/@codeListValue"/>

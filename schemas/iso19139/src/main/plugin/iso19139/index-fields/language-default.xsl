@@ -28,9 +28,7 @@
                 xmlns:gmd="http://www.isotc211.org/2005/gmd"
                 xmlns:gco="http://www.isotc211.org/2005/gco"
                 xmlns:gmx="http://www.isotc211.org/2005/gmx"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                xmlns:gml="http://www.opengis.net/gml/3.2"
-                xmlns:gml320="http://www.opengis.net/gml"
+                xmlns:gml="http://www.opengis.net/gml"
                 xmlns:srv="http://www.isotc211.org/2005/srv"
                 xmlns:geonet="http://www.fao.org/geonetwork"
                 xmlns:util="java:org.fao.geonet.util.XslUtil"
@@ -55,7 +53,7 @@
   <xsl:param name="thesauriDir"/>
   <xsl:param name="inspire">false</xsl:param>
 
-  <xsl:variable name="inspire-thesaurus" select="if ($inspire!='false') then document(concat('file:///', $thesauriDir, '/external/thesauri/theme/httpinspireeceuropaeutheme-theme.rdf')) else ''"/>
+  <xsl:variable name="inspire-thesaurus" select="if ($inspire!='false') then document(concat('file:///', $thesauriDir, '/external/thesauri/theme/inspire-theme.rdf')) else ''"/>
   <xsl:variable name="inspire-theme" select="if ($inspire!='false') then $inspire-thesaurus//skos:Concept else ''"/>
 
   <!-- ========================================================================================= -->
@@ -121,18 +119,6 @@
         </xsl:otherwise>
       </xsl:choose>
 
-
-      <xsl:variable name="_defaultAbstract">
-        <xsl:call-template name="defaultAbstract">
-          <xsl:with-param name="isoDocLangId" select="$isoDocLangId"/>
-        </xsl:call-template>
-      </xsl:variable>
-
-      <Field name="_defaultAbstract"
-             string="{string($_defaultAbstract)}"
-             store="true"
-             index="true"/>
-
       <xsl:apply-templates select="/*[name(.)='gmd:MD_Metadata' or @gco:isoType='gmd:MD_Metadata']"
                            mode="metadata">
         <xsl:with-param name="langId" select="$poundLangId"/>
@@ -159,10 +145,6 @@
   <xsl:template match="*" mode="metadata">
     <xsl:param name="langId"/>
     <xsl:param name="isoLangId"/>
-
-    <xsl:for-each select="gmd:dateStamp/*">
-      <Field name="changeDate" string="{string(.)}" store="true" index="true"/>
-    </xsl:for-each>
 
     <!-- === Data or Service Identification === -->
 
@@ -264,23 +246,23 @@
 
         <xsl:for-each select="gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent|
           gmd:temporalElement/gmd:EX_SpatialTemporalExtent/gmd:extent">
-          <xsl:for-each select="gml:TimePeriod/gml:beginPosition|gml320:TimePeriod/gml320:beginPosition">
+          <xsl:for-each select="gml:TimePeriod/gml:beginPosition">
             <Field name="tempExtentBegin" string="{string(.)}" store="true" index="true"/>
           </xsl:for-each>
 
-          <xsl:for-each select="gml:TimePeriod/gml:endPosition|gml320:TimePeriod/gml320:endPosition">
+          <xsl:for-each select="gml:TimePeriod/gml:endPosition">
             <Field name="tempExtentEnd" string="{string(.)}" store="true" index="true"/>
           </xsl:for-each>
 
-          <xsl:for-each select="gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition|gml320:TimePeriod/gml320:begin/gml320:TimeInstant/gml320:timePosition">
+          <xsl:for-each select="gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition">
             <Field name="tempExtentBegin" string="{string(.)}" store="true" index="true"/>
           </xsl:for-each>
 
-          <xsl:for-each select="gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition|gml320:TimePeriod/gml320:end/gml320:TimeInstant/gml320:timePosition">
+          <xsl:for-each select="gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition">
             <Field name="tempExtentEnd" string="{string(.)}" store="true" index="true"/>
           </xsl:for-each>
 
-          <xsl:for-each select="gml:TimeInstant/gml:timePosition|gml320:TimeInstant/gml320:timePosition">
+          <xsl:for-each select="gml:TimeInstant/gml:timePosition">
             <Field name="tempExtentBegin" string="{string(.)}" store="true" index="true"/>
             <Field name="tempExtentEnd" string="{string(.)}" store="true" index="true"/>
           </xsl:for-each>
@@ -356,8 +338,7 @@
           <xsl:if test="count($keywordWithNoThesaurus) > 0">
             'keywords': [
             <xsl:for-each select="$keywordWithNoThesaurus/(gco:CharacterString|gmx:Anchor)">
-              {'value': <xsl:value-of select="concat('''', replace(., '''', '\\'''), '''')"/>,
-              'link': '<xsl:value-of select="@xlink:href"/>'}
+              <xsl:value-of select="concat('''', replace(., '''', '\\'''), '''')"/>
               <xsl:if test="position() != last()">,</xsl:if>
             </xsl:for-each>
             ]
@@ -369,9 +350,8 @@
                               group-by="gmd:thesaurusName/*/gmd:title/*/text()">
 
             '<xsl:value-of select="replace(current-grouping-key(), '''', '\\''')"/>' :[
-            <xsl:for-each select="current-group()/gmd:keyword//gmd:LocalisedCharacterString[@locale = $langId and text() != '']">
-              {'value': <xsl:value-of select="concat('''', replace(., '''', '\\'''), '''')"/>,
-              'link': '<xsl:value-of select="@xlink:href"/>'}
+            <xsl:for-each select="gmd:keyword//gmd:LocalisedCharacterString[@locale = $langId and text() != '']">
+              <xsl:value-of select="concat('''', replace(., '''', '\\'''), '''')"/>
               <xsl:if test="position() != last()">,</xsl:if>
             </xsl:for-each>
             ]
@@ -457,16 +437,43 @@
         </xsl:for-each>
       </xsl:for-each>
 
-      <xsl:for-each
-        select="gmd:graphicOverview/gmd:MD_BrowseGraphic[normalize-space(gmd:fileName/gco:CharacterString) != '']">
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+      <xsl:for-each select="gmd:graphicOverview/gmd:MD_BrowseGraphic">
         <xsl:variable name="fileName" select="gmd:fileName/gco:CharacterString"/>
-        <xsl:variable name="fileDescr" select="gmd:fileDescription/gco:CharacterString"/>
-        <xsl:variable name="thumbnailType"
-                      select="if (position() = 1) then 'thumbnail' else 'overview'"/>
-        <!-- First thumbnail is flagged as thumbnail and could be considered the main one -->
-        <Field name="image"
-               string="{concat($thumbnailType, '|', $fileName, '|', $fileDescr)}"
-               store="true" index="false"/>
+        <xsl:if test="$fileName != ''">
+          <xsl:variable name="fileDescr" select="gmd:fileDescription/gco:CharacterString"/>
+          <xsl:choose>
+            <xsl:when test="contains($fileName ,'://')">
+              <xsl:choose>
+                <xsl:when test="string($fileDescr)='thumbnail'">
+                  <Field name="image" string="{concat('thumbnail|', $fileName)}" store="true"
+                         index="false"/>
+                </xsl:when>
+                <xsl:when test="string($fileDescr)='large_thumbnail'">
+                  <Field name="image" string="{concat('overview|', $fileName)}" store="true"
+                         index="false"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <Field name="image" string="{concat('unknown|', $fileName)}" store="true"
+                         index="false"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:when>
+            <xsl:when test="string($fileDescr)='thumbnail'">
+              <!-- FIXME : relative path -->
+              <Field name="image"
+                     string="{concat($fileDescr, '|', '../../srv/eng/resources.get?uuid=', //gmd:fileIdentifier/gco:CharacterString, '&amp;fname=', $fileName, '&amp;access=public')}"
+                     store="true" index="false"/>
+            </xsl:when>
+            <xsl:when test="string($fileDescr)='large_thumbnail'">
+              <!-- FIXME : relative path -->
+              <Field name="image"
+                     string="{concat('overview', '|', '../../srv/eng/resources.get?uuid=', //gmd:fileIdentifier/gco:CharacterString, '&amp;fname=', $fileName, '&amp;access=public')}"
+                     store="true" index="false"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:if>
       </xsl:for-each>
 
       <!-- Index aggregation info and provides option to query by type of association
@@ -564,15 +571,12 @@
         <Field name="format" string="{string(.)}" store="true" index="true"/>
       </xsl:for-each>
 
-      <!-- For local atom feed services -->
-      <xsl:if test="count(gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[gmd:function/gmd:CI_OnLineFunctionCode/@codeListValue='download'])>0">
-        <Field name="has_atom" string="true" store="false" index="true"/>
-      </xsl:if>
-
       <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions">
         <xsl:variable name="tPosition" select="position()"></xsl:variable>
-
-        <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
+        <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource[
+        gmd:name/*/gmd:textGroup/gmd:LocalisedCharacterString[@locale=$langId] or
+        gmd:description/*/gmd:textGroup/gmd:LocalisedCharacterString[@locale=$langId]
+        ]">
           <xsl:variable name="download_check"><xsl:text>&amp;fname=&amp;access</xsl:text></xsl:variable>
           <xsl:variable name="linkage" select="gmd:linkage/gmd:URL" />
           <xsl:variable name="title"
@@ -606,17 +610,11 @@
           <xsl:if test="contains($protocol, 'WWW:DOWNLOAD') or contains($protocol, 'DB')
            or contains($protocol, 'FILE')  or contains($protocol, 'WFS')  or contains($protocol, 'WCS')  or contains($protocol, 'COPYFILE')">
             <Field name="download" string="true" store="false" index="true"/>
-            <Field name="_mdActions" string="mdActions-download" store="false" index="true"/>
           </xsl:if>
 
           <xsl:if test="contains($protocol, 'OGC:WMS') or contains($protocol, 'OGC:WMC') or contains($protocol, 'OGC:OWS')
                     or contains($protocol, 'OGC:OWS-C') or $wmsLinkNoProtocol">
             <Field name="dynamic" string="true" store="false" index="true"/>
-            <Field name="_mdActions" string="mdActions-view" store="false" index="true"/>
-          </xsl:if>
-
-          <xsl:if test="contains($protocol, 'OGC:WPS')">
-            <Field name="_mdActions" string="mdActions-process" store="false" index="true"/>
           </xsl:if>
 
           <!-- ignore WMS links without protocol (are indexed below with mimetype application/vnd.ogc.wms_xml) -->
@@ -711,7 +709,7 @@
     <xsl:for-each select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem">
         <xsl:for-each select="gmd:referenceSystemIdentifier/gmd:RS_Identifier">
             <xsl:variable name="crs">
-                <xsl:for-each select="gmd:codeSpace/*/text() | gmd:code/*/text()">
+                <xsl:for-each select="gmd:codeSpace/gco:CharacterString/text() | gmd:code/gco:CharacterString/text()">
                     <xsl:value-of select="."/>
                     <xsl:if test="not(position() = last())">::</xsl:if>
                 </xsl:for-each>
@@ -720,20 +718,6 @@
             <xsl:if test="$crs != ''">
                 <Field name="crs" string="{$crs}" store="true" index="true"/>
             </xsl:if>
-
-            <xsl:variable name="crsDetails">
-            {
-              "code": "<xsl:value-of select="gmd:code/*/text()"/>",
-              "codeSpace": "<xsl:value-of select="gmd:codeSpace/*/text()"/>",
-              "name": "<xsl:value-of select="gmd:code/*/@xlink:title"/>",
-              "url": "<xsl:value-of select="gmd:code/*/@xlink:href"/>"
-            }
-            </xsl:variable>
-
-            <Field name="crsDetails"
-                   string="{normalize-space($crsDetails)}"
-                   store="true"
-                   index="false"/>
         </xsl:for-each>
     </xsl:for-each>
 

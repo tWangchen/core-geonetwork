@@ -218,6 +218,9 @@
                   //  }
                   //  return defaultTab;
                   //}
+                	'iso19115-3': function (md) {
+                		return 'resourceDescription';                    
+                	}
                 };
                 if (schemaCustomConfig) {
                   var fn = schemaCustomConfig[$scope.mdSchema];

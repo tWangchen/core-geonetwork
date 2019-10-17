@@ -43,16 +43,26 @@
             TODO : less compilation
             <link href="style/app.css" rel="stylesheet" media="screen" />
 -->
-    <xsl:if test="$withD3">
-      <link href="{/root/gui/url}/static/nv.d3.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
-            media="screen"/>
-    </xsl:if>
+    <link href="{/root/gui/url}/static/gn_fonts.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
+          media="screen"/>
 
     <link href="{/root/gui/url}/static/{$customFilename}.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
           media="screen"/>
 
     <link href="{/root/gui/url}/static/bootstrap-table.min.css?v={$buildNumber}" rel="stylesheet"
           media="screen"></link>
+
+    <link href="{/root/gui/url}/static/gn_pickers.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
+          media="screen"/>
+
+    <link href="{/root/gui/url}/static/gn_inspire.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
+          media="screen"/>
+
+    <xsl:if test="$withD3">
+      <link href="{/root/gui/url}/static/nv.d3.css?v={$buildNumber}&amp;{$minimizedParam}" rel="stylesheet"
+            media="screen"/>
+    </xsl:if>
+
     <link href="{/root/gui/url}/static/ng-skos.css?v={$buildNumber}" rel="stylesheet" media="screen"></link>
     <link href="{/root/gui/url}/static/{/root/gui/nodeId}_custom_style.css?v={$buildNumber}&amp;{$minimizedParam}"
           rel="stylesheet" media="screen"/>
@@ -215,6 +225,7 @@
         var module = angular.module('gn_search');
         module.config(['gnGlobalSettings',
         function(gnGlobalSettings) {
+	gnGlobalSettings.isIntranet = <xsl:value-of select="$isIntranet"/>;
         gnGlobalSettings.shibbolethEnabled = <xsl:value-of select="$shibbolethOn"/>;
         }]);
       </script>
@@ -225,6 +236,7 @@
         var module = angular.module('gn_login');
         module.config(['gnGlobalSettings',
         function(gnGlobalSettings) {
+	gnGlobalSettings.isIntranet = <xsl:value-of select="$isIntranet"/>;
         gnGlobalSettings.shibbolethEnabled = <xsl:value-of select="$shibbolethOn"/>;
         }]);
       </script>

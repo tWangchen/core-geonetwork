@@ -65,6 +65,7 @@ import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.lib.Lib;
 import org.fao.geonet.notifier.MetadataNotifierManager;
+import org.fao.geonet.repository.ECatIdRepository;
 import org.fao.geonet.repository.MetadataRatingByIpRepository;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SimpleMetadata;
@@ -91,6 +92,8 @@ public class BaseMetadataUtils implements IMetadataUtils {
     @Autowired
     private MetadataRepository metadataRepository;
 
+    @Autowired
+    private ECatIdRepository ecatIdRepository;
     @Autowired
     private MetadataNotifierManager metadataNotifierManager;
 
@@ -299,7 +302,9 @@ public class BaseMetadataUtils implements IMetadataUtils {
     
     @Override
     public String getGAID() throws Exception {
-    	BigInteger gaid = getMetadataRepository().getGaid();
+    	Long gaid = ecatIdRepository.getGaid();
+    	if (Log.isDebugEnabled(Geonet.DATA_MANAGER))
+			Log.debug(Geonet.DATA_MANAGER, "Generated GAID '" + gaid);
         return String.valueOf(gaid);
     }
     

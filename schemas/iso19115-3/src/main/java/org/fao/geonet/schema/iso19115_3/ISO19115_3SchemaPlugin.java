@@ -189,71 +189,6 @@ public class ISO19115_3SchemaPlugin
         freeTextElement.addContent(textGroupElement);
     }
 
-    /**
-     * Remove all multingual aspect of an element. Keep the md language localized strings
-     * as default gco:CharacterString for the element.
-     *
-     * @param element
-     * @param langs Metadata languages. The main language MUST be the first one.
-     * @return
-     * @throws JDOMException
-     */
-    @Override
-    public Element removeTranslationFromElement(Element element, List<String> langs) throws JDOMException {
-        String mainLanguage = langs != null && langs.size() > 0 ? langs.get(0) : "#EN";
-
-        List<Element> nodesWithStrings = (List<Element>) Xml.selectNodes(element, "*//lan:PT_FreeText", Arrays.asList(ISO19115_3Namespaces.LAN));
-
-        for(Element e : nodesWithStrings) {
-            // Retrieve or create the main language element
-            Element mainCharacterString = ((Element)e.getParent()).getChild("CharacterString", ISO19115_3Namespaces.GCO);
-            if (mainCharacterString == null) {
-                // create it if it does not exist
-                mainCharacterString = new Element("CharacterString", ISO19115_3Namespaces.GCO);
-                ((Element)e.getParent()).addContent(0, mainCharacterString);
-            }
-
-            // Retrieve the main language value if exist
-            List<Element> mainLangElement = (List<Element>) Xml.selectNodes(
-                e,
-                "*//lan:LocalisedCharacterString[@locale='" + mainLanguage + "']",
-                Arrays.asList(ISO19115_3Namespaces.LAN));
-
-            // Set the main language value
-            if (mainLangElement.size() == 1) {
-                String mainLangString = mainLangElement.get(0).getText();
-
-                if (StringUtils.isNotEmpty(mainLangString)) {
-                    mainCharacterString.setText(mainLangString);
-                } else if (mainCharacterString.getAttribute("nilReason", ISO19115_3Namespaces.GCO) == null){
-                    ((Element)mainCharacterString.getParent()).setAttribute("nilReason", "missing", ISO19115_3Namespaces.GCO);
-                }
-            } else if (StringUtils.isEmpty(mainCharacterString.getText())) {
-                ((Element)mainCharacterString.getParent()).setAttribute("nilReason", "missing", ISO19115_3Namespaces.GCO);
-            }
-        }
-
-        // Remove unused lang entries
-        List<Element> translationNodes = (List<Element>)Xml.selectNodes(element, "*//node()[@locale]");
-        for(Element el : translationNodes) {
-            // Remove all translations if there is no or only one language requested
-            if(langs.size() <= 1 ||
-                !langs.contains(el.getAttribute("locale").getValue())) {
-                Element parent = (Element)el.getParent();
-                parent.detach();
-            }
-        }
-
-        // Remove PT_FreeText which might be emptied by above processing
-        for(Element el : nodesWithStrings) {
-            if (el.getChildren().size() == 0) {
-                el.detach();
-            }
-        }
-
-        return element;
-    }
-    
     @Override
     public String getBasicTypeCharacterStringName() {
         return "gco:CharacterString";
@@ -313,5 +248,24 @@ public class ISO19115_3SchemaPlugin
             e.printStackTrace();
         }
         return ele;
+	}
+
+	@Override
+	public Element addOperatesOn(Element serviceRecord, Map<String, String> layers, String serviceType,
+			String baseUrl) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Extent> getExtents(Element record) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Element removeTranslationFromElement(Element element, List<String> mdLang) throws JDOMException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

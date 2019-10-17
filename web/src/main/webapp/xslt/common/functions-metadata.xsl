@@ -353,24 +353,15 @@
     <xsl:param name="name" as="xs:string"/>
     <!-- The element containing the value eg. gco:Date -->
     <xsl:param name="childName" as="xs:string?"/>
-    <xsl:param name="xpath" as="xs:string?"/>
 
     <xsl:variable name="childType"
                   select="normalize-space($configuration/editor/fields/for[@name = $childName]/@use)"/>
-    <xsl:variable name="childTypeXpath"
-                  select="normalize-space($configuration/editor/fields/for[@name = $childName and @xpath = $xpath]/@use)"/>
     <xsl:variable name="type"
-                  select="normalize-space($configuration/editor/fields/for[@name = $name and not(@xpath)]/@use)"/>
-    <xsl:variable name="typeXpath"
-                  select="normalize-space($configuration/editor/fields/for[@name = $name and @xpath = $xpath]/@use)"/>
+                  select="normalize-space($configuration/editor/fields/for[@name = $name]/@use)"/>
 
     <xsl:value-of
-      select="if ($childTypeXpath != '')
-      then $childTypeXpath
-      else if ($childType != '')
+      select="if ($childType != '')
       then $childType
-      else if ($typeXpath != '')
-      then $typeXpath
       else if ($type != '')
       then $type
       else $defaultFieldType"

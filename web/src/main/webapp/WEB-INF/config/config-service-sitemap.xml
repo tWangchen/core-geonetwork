@@ -26,9 +26,7 @@
   <services package="org.fao.geonet">
 
     <service name="portal.sitemap">
-      <class name=".guiservices.metadata.Sitemap">
-      	<param name="maxItemsPage" value="500"/>
-      </class>
+      <class name=".guiservices.metadata.Sitemap"/>
       <output sheet="../xslt/services/sitemap/sitemap.xsl" contentType="text/xml; charset=UTF-8"/>
     </service>
 

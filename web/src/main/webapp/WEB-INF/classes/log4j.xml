@@ -16,7 +16,7 @@
       <param name="ConversionPattern" value="%d{ISO8601} %-5p [%c] - %m%n"/>
     </layout>
   </appender>
-  <appender name="fileAppender" class="org.apache.log4j.DailyRollingFileAppender">
+  <appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
     <param name="Threshold" value="ALL"/>
     <param name="File" value="logs/geonetwork.log"/>
     <layout class="org.apache.log4j.PatternLayout">
@@ -85,7 +85,7 @@
     <level value="ERROR"/>
   </logger>
   <logger name="geonetwork.harvester" additivity="false">
-    <level value="ERROR"/>
+    <level value="INFO"/>
     <appender-ref ref="consoleAppender"/>
     <appender-ref ref="fileAppender"/>
   </logger>

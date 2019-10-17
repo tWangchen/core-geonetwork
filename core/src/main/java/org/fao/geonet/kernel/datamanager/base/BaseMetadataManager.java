@@ -944,8 +944,24 @@ public class BaseMetadataManager implements IMetadataManager {
                 updateDatestamp.name());
 
             AbstractMetadata metadata = null;
+            boolean generateGAID = true;
+            
             if (metadataId.isPresent()) {
                 metadata = metadataUtils.findOne(metadataId.get());
+                boolean isTemplate = metadata != null && metadata.getDataInfo().getType() != MetadataType.METADATA;
+
+				// don't process templates
+				if (isTemplate) {
+					if (Log.isDebugEnabled(Geonet.DATA_MANAGER)) {
+						Log.debug(Geonet.DATA_MANAGER, "Not applying update-fixed-info for a template");
+					}
+					return md;
+				} else {
+
+					if (uuid == null) {
+						generateGAID = false;
+					}
+				}
             }
 
             String currentUuid = metadata != null ? metadata.getUuid() : null;
@@ -974,6 +990,16 @@ public class BaseMetadataManager implements IMetadataManager {
                 final Path resourceDir = Lib.resource.getDir(context, Params.Access.PRIVATE, metadataIdString);
                 env.addContent(new Element("datadir").setText(resourceDir.toString()));
             }
+            
+			// add ga-id to env if there isn't one there already - need to be careful here
+			// so that we generate a new one for duplicated/cloned and new child records
+			// so see generateGAID above
+			String gaid = metadataUtils.extractGAID(schema, md);
+
+			if ((gaid.length() == 0) || generateGAID) {
+				Log.debug(Geonet.DATA_MANAGER, "empty gaid, generateGAID: " + generateGAID);
+				env.addContent(new Element("gaid").setText(metadataUtils.getGAID()));
+			}
 
             // add user information to env if user is authenticated (should be)
             Element elUser = new Element("user");
