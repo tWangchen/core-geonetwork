@@ -153,7 +153,7 @@ public class ImageReplacedElementFactory implements ReplacedElementFactory {
 
             try {
                 return superFactory.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
-            } catch (Exception e2) {
+            } catch (Throwable e2) {
                 return new EmptyReplacedElement(cssWidth, cssHeight);
             }
         } finally {

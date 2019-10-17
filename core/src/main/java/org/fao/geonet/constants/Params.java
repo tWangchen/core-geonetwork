@@ -180,7 +180,6 @@ public final class Params {
         public static final String UPDATESERVICE = "updateservice";
     }
 
-
     /**
      * TODO javadoc.
      */

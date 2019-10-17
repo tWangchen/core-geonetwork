@@ -178,7 +178,7 @@ public class ShibbolethUserUtils {
 				udetailsmapper.saveUser(ldapUserDetails);
 
 				user = ldapUserDetails.getUser();
-			} 
+			}
 
 			return user;
 		}
