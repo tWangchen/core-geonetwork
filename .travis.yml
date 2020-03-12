@@ -1,13 +1,20 @@
-dist: trusty
-sudo: false
 language: java
 jdk:
-  - oraclejdk8
-before_install:
-  - unset _JAVA_OPTIONS
-  - export MAVEN_OPTS="-Xmx512M -XX:MaxPermSize=256M"
-cache:
-  directories:
-  - $HOME/.m2
-before_cache:
-  - rm -rf $HOME/.m2/repository/org/geonetwork-opensource
+  - openjdk8
+  
+# whitelist
+branches:
+  only:
+    - 3.10.x
+    
+script:
+    export BRANCH=/ecat3/test;
+  - mvn install -DskipTests=true
+
+addons:
+  artifacts:
+    s3_region: "ap-southeast-2"
+    paths:
+      - $TRAVIS_BUILD_DIR/web/target/geonetwork.war
+    target_paths: $BRANCH
+    
