@@ -224,6 +224,107 @@
       };
     }]);
 
+  	module.filter('custommessage', function() {
+		return function(text) {
+		  if (text) {
+				var index = text.indexOf('/');
+				var datetime = text.substring(index+1);
+				var vals = datetime.split('_');
+				
+				var changedt = vals[0] + " " + vals[1].slice(0, 2) + ":" + vals[1].slice(2);
+				console.log(changedt);
+				return changedt;
+		  } else {
+			return text;
+		  }
+		}
+	  });
+  
+	module.directive('gnBatchEditReport', ['$http', 'gnMetadataManager',
+    function($http, gnMetadataManager) {
+      return {
+        restrict: 'A',
+        replace: true,
+        scope: {
+          processBatchEditReport: '=gnBatchEditReport'
+        },
+        templateUrl: '../../catalog/components/utility/' +
+            'partials/batcheditreport.html',
+        link: function(scope, element, attrs) {
+		
+          scope.$watch('processBatchEditReport', function(n, o) {
+            if (n && n != o) {
+              scope.processReportWarning = n.notFound != 0 ||
+                  n.notOwner != 0 ||
+                  n.notProcessFound != 0 ||
+                  n.metadataErrorReport.metadataErrorReport.length != 0;
+            }
+          });
+	
+		 
+		var limitStep = -1;
+		scope.limit = limitStep;
+		scope.incrementLimit = function() {
+			scope.limit += limitStep;
+		};
+		scope.decrementLimit = function() {
+			scope.limit -= limitStep;
+		};
+		 
+		 
+		  scope.ngShowhide = false;
+		  
+		  scope.reports = [];
+		  scope.ngShowhideFun = function(flag) {
+			  if (flag) {
+				scope.ngShowhide = false;
+			  } else {
+				scope.ngShowhide = true;
+			  }
+			};
+			scope.detailReport = '';
+			scope.showReport = function(key){
+				return $http.get('../api/records/batchediting/history/'+key, {}, {
+					cache: true
+				}).success(function(data){
+					scope.detailReport = data;
+				});
+			};
+		  scope.recall = function(dateTime){
+			  if (confirm("Are you sure to recall selected batch edit?")) {
+			  var url = 'https://s3-ap-southeast-2.amazonaws.com/ga-ecat3-batchedit/'+dateTime;
+			  
+			  gnMetadataManager.getFilesFromS3(url)
+				.then(function(response) {
+						var filenames = response.data;
+						console.log('filenames.length ---> '+filenames.length);
+						var params = 's3location='+url+'&metadataType=METADATA&uuidProcessing=OVERWRITE&transformWith=_none_&assignToCatalog=on&group=&category=';
+						angular.forEach(filenames, function(filename) {
+							console.log('filename --> ' + filename);
+						  gnMetadataManager.importFromS3Bucket(params, filename).then(
+							  function(response) {
+								  var message = JSON.stringify(response.data.metadataInfos);
+									
+									if(message.length > 2){
+										scope.reports.push({'message' : JSON.stringify(response.data.metadataInfos), 'class':'alert alert-info'});	
+									}
+									
+									if(response.data.errors.length > 0){
+										scope.reports.push({'message' : response.data.errors[0].message, 'class':'alert alert-danger'});		
+									}
+							  });
+
+						});
+					  })
+				.catch(function(response) {
+				  console.error('error', response.status, response.data);
+				});
+			  }
+		  };
+        }
+      };
+    }]);
+	
   module.directive('gnDuplicateCheck', ['$translate', '$http', '$q',
     function($translate, $http, $q) {
       return {

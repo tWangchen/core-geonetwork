@@ -220,16 +220,20 @@
           var feat = new ol.Feature();
 
           element.bind('mouseenter', function() {
-
-            var feat = gnMap.getBboxFeatureFromMd(scope.md,
+            if(scope.map){
+              var feat = gnMap.getBboxFeatureFromMd(scope.md,
                 scope.map.getView().getProjection());
             if (feat) {
               scope.hoverOL.getSource().addFeature(feat);
             }
+            }
+            
           });
 
           element.bind('mouseleave', function() {
-            scope.hoverOL.getSource().clear();
+            if(scope.hoverOL){
+              scope.hoverOL.getSource().clear();
+            }            
           });
         }
       };

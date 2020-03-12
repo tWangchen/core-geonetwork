@@ -40,6 +40,7 @@ import org.fao.geonet.domain.MetadataStatus;
 import org.fao.geonet.domain.MetadataType;
 import org.fao.geonet.domain.MetadataValidation;
 import org.fao.geonet.domain.OperationAllowed;
+import org.fao.geonet.domain.Pair;
 import org.fao.geonet.domain.Profile;
 import org.fao.geonet.domain.ReservedOperation;
 import org.fao.geonet.domain.User;
@@ -56,6 +57,7 @@ import org.fao.geonet.kernel.datamanager.IMetadataValidator;
 import org.fao.geonet.kernel.schema.MetadataSchema;
 import org.fao.geonet.kernel.search.ISearchManager;
 import org.fao.geonet.repository.UserGroupRepository;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -254,6 +256,17 @@ public class DataManager {
     public String extractUUID(String schema, Element md) throws Exception {
         return metadataUtils.extractUUID(schema, md);
     }
+    
+    @Deprecated
+    public String extractGAID(String schema, Element md) throws Exception {
+        return metadataUtils.extractGAID(schema, md);
+    }
+    
+    @Deprecated
+    public String getGAID() throws Exception {
+        return metadataUtils.getGAID();
+    }
+    
 
     @Deprecated
     public String extractDefaultLanguage(String schema, Element md) throws Exception {
@@ -268,6 +281,11 @@ public class DataManager {
     @Deprecated
     public Element setUUID(String schema, String uuid, Element md) throws Exception {
         return metadataUtils.setUUID(schema, uuid, md);
+    }
+    
+    @Deprecated
+    public Element setGAID(String schema, String uuid, Element md) throws Exception {
+        return metadataUtils.setGAID(schema, uuid, md);
     }
 
     @Deprecated

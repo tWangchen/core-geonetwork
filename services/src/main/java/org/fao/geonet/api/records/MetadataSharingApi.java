@@ -30,9 +30,11 @@ import static org.fao.geonet.repository.specification.OperationAllowedSpecs.hasG
 import static org.fao.geonet.repository.specification.OperationAllowedSpecs.hasMetadataId;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +57,12 @@ import org.fao.geonet.api.records.model.GroupPrivilege;
 import org.fao.geonet.api.records.model.SharingParameter;
 import org.fao.geonet.api.records.model.SharingResponse;
 import org.fao.geonet.api.tools.i18n.LanguageUtils;
+import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.Group;
+import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.domain.MetadataStatus;
+import org.fao.geonet.domain.MetadataStatusId;
 import org.fao.geonet.domain.Operation;
 import org.fao.geonet.domain.OperationAllowed;
 import org.fao.geonet.domain.OperationAllowedId;
@@ -73,10 +78,14 @@ import org.fao.geonet.events.history.RecordOwnerChangeEvent;
 import org.fao.geonet.events.history.RecordPrivilegesChangeEvent;
 import org.fao.geonet.kernel.AccessManager;
 import org.fao.geonet.kernel.DataManager;
+import org.fao.geonet.kernel.SchemaManager;
+import org.fao.geonet.kernel.TransformManager;
 import org.fao.geonet.kernel.datamanager.IMetadataManager;
 import org.fao.geonet.kernel.datamanager.IMetadataStatus;
 import org.fao.geonet.kernel.datamanager.IMetadataUtils;
 import org.fao.geonet.kernel.datamanager.IMetadataValidator;
+import org.fao.geonet.kernel.metadata.StatusActions;
+import org.fao.geonet.kernel.metadata.StatusActionsFactory;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.repository.GroupRepository;
@@ -84,10 +93,14 @@ import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.MetadataValidationRepository;
 import org.fao.geonet.repository.OperationAllowedRepository;
 import org.fao.geonet.repository.OperationRepository;
+import org.fao.geonet.repository.StatusValueRepository;
 import org.fao.geonet.repository.UserGroupRepository;
 import org.fao.geonet.repository.UserRepository;
 import org.fao.geonet.repository.specification.MetadataValidationSpecs;
+import org.fao.geonet.repository.specification.OperationAllowedSpecs;
 import org.fao.geonet.repository.specification.UserGroupSpecs;
+import org.fao.geonet.utils.Xml;
+import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -133,13 +146,16 @@ public class MetadataSharingApi {
 
     @Autowired
     LanguageUtils languageUtils;
-
+    
     @Autowired
     DataManager dataManager;
 
     @Autowired
     AccessManager accessManager;
 
+    @Autowired
+    SchemaManager schemaManager;
+    
     @Autowired
     SettingManager sm;
 
@@ -172,14 +188,23 @@ public class MetadataSharingApi {
 
     @Autowired
     UserGroupRepository userGroupRepository;
+    
+    @Autowired
+    StatusActionsFactory statusActionsFactory;
+    
+    @Autowired
+    private StatusValueRepository statusValueRepository;
 
+    
+    @Autowired
+    TransformManager transMan;
     /**
      * What does publish mean?
      */
     @Autowired
     @Qualifier("publicationConfig")
     private Map publicationConfig;
-
+	
     @ApiOperation(
         value = "Set privileges for ALL group to publish the metadata for all users.",
         nickname = "publish")
@@ -479,6 +504,56 @@ public class MetadataSharingApi {
         }
     }
 
+	private void addMetadataWithPublishKeyword(ServiceContext context, String id, String publishKeyword) throws Exception {
+    	String schema = dataManager.getMetadataSchema(id);
+    	String publishDate = new ISODate().toString();
+		Element md = dataManager.getMetadata(id);
+		Map<String, Object> xslParameters = new HashMap<String, Object>();
+		xslParameters.put("publish_keyword", publishKeyword);
+		Path file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.SET_KEYWORD);
+		md = Xml.transform(md, file, xslParameters);
+		dataManager.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
+	}
+    private void updateMetadataWithModifiedDate(ServiceContext context, String id) throws Exception {
+    	String schema = dataManager.getMetadataSchema(id);
+		String publishDate = new ISODate().toString();
+		Element md = dataManager.getMetadata(id);
+		Map<String, Object> xslParameters = new HashMap<String, Object>();
+		xslParameters.put("date", publishDate);
+		Path file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.PUBLICATION_DATE);
+		md = Xml.transform(md, file, xslParameters);
+		dataManager.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
+	}
+    
+    private void updateStatus(ServiceContext context, Set<Integer> metadataIds, Integer status)
+			throws Exception {
+
+		// --- use StatusActionsFactory and StatusActions class to
+		// --- change status and carry out behaviours for status changes
+		
+		StatusActions sa = statusActionsFactory.createStatusActions(context);
+		
+        int author = context.getUserSession().getUserIdAsInt();
+        StatusValue statusValue = statusValueRepository.findOne(status);
+
+        for (Integer mdId : metadataIds) {
+            MetadataStatus metadataStatus = new MetadataStatus();
+
+            MetadataStatusId mdStatusId = new MetadataStatusId().setStatusId(status).setMetadataId(mdId)
+                .setChangeDate(new ISODate()).setUserId(author);
+
+            metadataStatus.setId(mdStatusId);
+            metadataStatus.setStatusValue(statusValue);
+            metadataStatus.setChangeMessage("Editing instance created");
+
+            List<MetadataStatus> listOfStatusChange = new ArrayList<>(1);
+            listOfStatusChange.add(metadataStatus);
+            sa.onStatusChange(listOfStatusChange);
+        }
+        
+        
+	}
+	
     @ApiOperation(
         value = "Get record sharing settings",
         notes = "Return current sharing options for a record.",
@@ -1060,7 +1135,7 @@ public class MetadataSharingApi {
         try {
             Set<String> records = ApiUtils.getUuidsParameterOrSelection(uuids, bucket, ApiUtils.getUserSession(session));
             report.setTotalRecords(records.size());
-
+	    	Set<Integer> metadataIds = new HashSet<Integer>();
             final ApplicationContext appContext = ApplicationContextHolder.get();
             final DataManager dataMan = appContext.getBean(DataManager.class);
             final AccessManager accessMan = appContext.getBean(AccessManager.class);
@@ -1068,6 +1143,7 @@ public class MetadataSharingApi {
 
             UserSession us = ApiUtils.getUserSession(session);
             boolean isAdmin = Profile.Administrator == us.getProfile();
+            boolean isReviewer = Profile.Reviewer == us.getProfile();
 
             ServiceContext context = ApiUtils.createServiceContext(request);
 
@@ -1085,10 +1161,40 @@ public class MetadataSharingApi {
                         skip = true;
                     }
 
-                    if (sharing.isClear()) {
-                        dataMan.deleteMetadataOper(context,
-                            String.valueOf(metadata.getId()), skip);
+		    		dataMan.deleteMetadataOper(context, String.valueOf(metadata.getId()), skip);
+                    int groupId = 0;
+                    Group g = groupRepository.findByName("editors_all");
+                    
+                    //Sharing clear - false (publish) and true (unpublish)
+                    if (sharing.isClear()){
+                    	groupId = g.getId();//Unpublished records defaulted to editors_all group  
+                    } else {//Add publication date and update category
+                    	updateMetadataWithModifiedDate(context, String.valueOf(metadata.getId()));
+                    	groupId = sharing.getPrivileges().get(0).getGroup();
                     }
+                    
+                    String publishKeyword = "";
+                    
+                    //Joseph added - To update Keyword with Publish Internal or External - Start
+                    if(groupId == 0){//group 0 - Publish Internally
+                    	publishKeyword = Geonet.Transform.PUBLISHED_INTERNAL; 
+                    }else if(groupId == 1)
+                    	publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
+                    
+                    Element md = dataMan.getMetadata(String.valueOf(metadata.getId()));
+                    md = transMan.
+                    		updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
+                    				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
+                    if(md != null){
+                    	dataMan.updateMetadata(context, String.valueOf(metadata.getId()), md, false, false, false, context.getLanguage(), new ISODate().toString(), false);
+                    }else{
+                    	addMetadataWithPublishKeyword(context, String.valueOf(metadata.getId()), publishKeyword);
+                    }
+                    //Joseph added - To update Keyword with Publish Internal or External - End
+                    
+                    //Update the owner as admin
+                    dataMan.updateMetadataOwner(metadata.getId(), us.getUserId(), String.valueOf(groupId));
+
 
                     OperationRepository operationRepository = appContext.getBean(OperationRepository.class);
                     List<Operation> operationList = operationRepository.findAll();
@@ -1102,9 +1208,16 @@ public class MetadataSharingApi {
                         ApiUtils.getUserSession(session).getUserIdAsInt(), report, request);
                     report.incrementProcessedRecords();
                     listOfUpdatedRecords.add(String.valueOf(metadata.getId()));
+		    		metadataIds.add(metadata.getId());
                 }
             }
-            dataMan.flush();
+	
+		    if (sharing.isClear())
+                updateStatus(context, metadataIds, Geonet.WorkflowStatus.DRAFT);
+            else
+            	updateStatus(context, metadataIds, Geonet.WorkflowStatus.APPROVED);
+            
+			dataMan.flush();
             dataMan.indexMetadata(listOfUpdatedRecords);
 
         } catch (Exception exception) {

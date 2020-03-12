@@ -166,6 +166,29 @@
             });
       }
 
+      //GA - To search by eCatId - start
+      var regexp = /^\d+(?:(?:[\s])?[,](?:[\s])?\d+)+?$/;
+      if($scope.searchObj.params.any){
+        var iseCatIds = regexp.test($scope.searchObj.params.any);
+        if(iseCatIds){
+          var eCatIdParam = {
+            eCatId: $scope.searchObj.params.any
+          }
+          delete $scope.searchObj.params.any;
+          angular.extend($scope.searchObj.params, eCatIdParam);
+        }
+      }
+      //GA - To search by eCatId - end
+      
+      //GA - To load only logged in users metadata records in "Manage my metadata" tab - start
+      if($location.path() == '/board'){
+          $scope.searchObj.params['onlyMyRecord'] = true;
+      }else{
+    	  delete $scope.searchObj.params['onlyMyRecord'];
+      }
+      //GA - To load only logged in users metadata records in "Manage my metadata" tab - end
+      
+      
       // Set default pagination if not set
       if ((!keepPagination &&
           !$scope.searchObj.permalink) ||
@@ -196,6 +219,10 @@
                               finalParams, null,
                               $scope.searchObj.internal).then(
           function(data) {
+            if($scope.searchObj.params.eCatId){//GA - To remove eCatId from search query after searching
+              delete $scope.searchObj.params.eCatId;
+            }
+            $scope.searching--;
             $scope.searchResults.records = [];
             for (var i = 0; i < data.metadata.length; i++) {
               $scope.searchResults.records.push(new Metadata(data.metadata[i]));
@@ -205,7 +232,8 @@
             $scope.searchResults.dimension = data.dimension;
 
             // compute page number for pagination
-            if ($scope.hasPagination) {
+            if ($scope.searchResults.records.length > 0 && 
+                  $scope.hasPagination) {
 
               var paging = $scope.paginationInfo;
 
@@ -226,9 +254,7 @@
                   );
               paging.from = (paging.currentPage - 1) * paging.hitsPerPage + 1;
             }
-          }).finally(function() {
-        $scope.searching--;
-      });
+          });
     };
 
 

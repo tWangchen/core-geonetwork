@@ -127,7 +127,7 @@
         <script src="{$uiResourcesPath}lib/style/bootstrap/dist/js/bootstrap.js?v={$buildNumber}"></script>
         <script src="{$uiResourcesPath}lib/jquery.ext/jquery-ui-slider.min.js?v={$buildNumber}"></script>
         <script src="{$uiResourcesPath}lib/proj4js-compressed.js?v={$buildNumber}"></script>
-
+	<script src="{$uiResourcesPath}lib/checklist-model.js"></script>
         <xsl:choose>
           <xsl:when test="$is3DModeAllowed">
             <script src="{$uiResourcesPath}lib/openlayers/ol.js?v={$buildNumber}"></script>
@@ -229,6 +229,7 @@
         var module = angular.module('gn_search');
         module.config(['gnGlobalSettings',
         function(gnGlobalSettings) {
+	gnGlobalSettings.isIntranet = <xsl:value-of select="$isIntranet"/>;
         gnGlobalSettings.shibbolethEnabled = <xsl:value-of select="$shibbolethOn"/>;
         }]);
       </script>
@@ -239,6 +240,7 @@
         var module = angular.module('gn_login');
         module.config(['gnGlobalSettings',
         function(gnGlobalSettings) {
+	gnGlobalSettings.isIntranet = <xsl:value-of select="$isIntranet"/>;
         gnGlobalSettings.shibbolethEnabled = <xsl:value-of select="$shibbolethOn"/>;
         }]);
       </script>

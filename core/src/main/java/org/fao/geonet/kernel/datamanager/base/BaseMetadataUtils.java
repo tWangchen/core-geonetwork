@@ -25,6 +25,7 @@ package org.fao.geonet.kernel.datamanager.base;
 
 import static org.fao.geonet.repository.specification.MetadataSpecs.hasMetadataUuid;
 
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +65,7 @@ import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.lib.Lib;
 import org.fao.geonet.notifier.MetadataNotifierManager;
+import org.fao.geonet.repository.ECatIdRepository;
 import org.fao.geonet.repository.MetadataRatingByIpRepository;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SimpleMetadata;
@@ -90,6 +92,8 @@ public class BaseMetadataUtils implements IMetadataUtils {
     @Autowired
     private MetadataRepository metadataRepository;
 
+    @Autowired
+    private ECatIdRepository ecatIdRepository;
     @Autowired
     private MetadataNotifierManager metadataNotifierManager;
 
@@ -280,6 +284,48 @@ public class BaseMetadataUtils implements IMetadataUtils {
         return uuid;
     }
 
+    @Override
+	public String extractGAID(String schema, Element md) throws Exception {
+    	Path styleSheet = metadataSchemaUtils.getSchemaDir(schema).resolve(Geonet.File.EXTRACT_GAID);
+		String gaid = "";
+		gaid = Xml.transform(md, styleSheet).getText().trim();
+		
+		if (Log.isDebugEnabled(Geonet.DATA_MANAGER))
+			Log.debug(Geonet.DATA_MANAGER, "Extracted GAID '" + gaid + "' for schema '" + schema + "'");
+
+        //--- needed to detach md from the document
+        md.detach();
+
+        return gaid;
+	}
+    
+    
+    @Override
+    public String getGAID() throws Exception {
+    	Long gaid = ecatIdRepository.getGaid();
+    	if (Log.isDebugEnabled(Geonet.DATA_MANAGER))
+			Log.debug(Geonet.DATA_MANAGER, "Generated GAID '" + gaid);
+        return String.valueOf(gaid);
+    }
+    
+    @Override
+    public Element setGAID(String schema, String gaid, Element md) throws Exception {
+        //--- setup environment
+    	
+        Element env = new Element("env");
+        
+        env.addContent(new Element("gaid").setText(gaid));
+        //--- setup root element
+
+        Element root = new Element("root");
+        root.addContent(md.detach());
+        root.addContent(env.detach());
+
+        //--- do an XSL  transformation
+        Path styleSheet = metadataSchemaUtils.getSchemaDir(schema).resolve(Geonet.File.SET_GAID);
+        return Xml.transform(root, styleSheet);
+    }
+    
     /**
      * Extract metadata default language from the metadata record using the schema XSL for default language extraction)
      */

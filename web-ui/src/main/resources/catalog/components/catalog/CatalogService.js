@@ -179,6 +179,44 @@
           });
         },
 
+		/**
+         * @ngdoc method
+         * @name gnMetadataManager#importFromXml
+         * @methodOf gnMetadataManager
+         *
+         * @description
+         * Import records from a xml string.
+         *
+         * @param {Object} data Params to send to md.insert service
+         * @return {HttpPromise} Future object
+         */
+        importFromS3Bucket: function(urlParams, s3key) {
+          return $http.put('../api/records?' + urlParams + '&s3key='+s3key, {
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+        },
+
+        /**
+         * @ngdoc method
+         * @name gnMetadataManager#importFromS3
+         * @methodOf gnMetadataManager
+         *
+         * @description
+         * Get the files from S3 Bucket.
+         *
+         * @param {Object} data Params to send to md.insert service
+         * @return {HttpPromise} Future object
+         */
+        getFilesFromS3: function(url) {
+          return $http.get('../api/records/s3files?url=' + url, {
+        	  headers: {
+	              'Accept': 'application/json'
+	            }
+          });
+        },
+        
         /**
            * @ngdoc method
            * @name gnMetadataManager#create
@@ -215,6 +253,33 @@
               });
         },
 
+/**
+         * @ngdoc method
+         * @name gnMetadataManager#create
+         * @methodOf gnMetadataManager
+         *
+         * @description
+         * Create a new multiple metadata as a copy of an existing template.
+         *
+         * @param {string} id Internal id of the metadata to be copied.
+		   * @param {integer} count No. of metadata records to create.
+         * @param {string} groupId Internal id of the group of the metadata
+         * @return {HttpPromise} Future object
+         */
+	      multicreate: function(id, count, groupId) {
+	
+	        var url = gnUrlUtils.toKeyValue({
+	          sourceUuid: id,
+			  count: count,
+	          group: groupId
+	        });
+	        return $http.put('../api/records/duplicates?' + url, {
+	          headers: {
+	            'Accept': 'application/json'
+	          }
+	        });
+	      },
+        
         /**
          * @ngdoc method
          * @name gnMetadataManager#getMdObjByUuid
@@ -637,6 +702,12 @@
       getTitle: function() {
         return this.title || this.defaultTitle;
       },
+      geteCatId: function() {
+        return this.eCatId;
+      },
+  	  getType: function() {
+        return this.type;
+      },
       isPublished: function() {
         return this['geonet:info'].isPublishedToAll === 'true';
       },
@@ -823,6 +894,9 @@
           return null;
         }
       },
+      getBoxAsPolygon1: function(i) {
+          return 'Polygon((' + i + '))';
+      },
       getOwnername: function() {
         if (this.userinfo) {
           var userinfo = this.userinfo.split('|');
@@ -835,6 +909,22 @@
           } catch (e) {
             return '';
           }
+        } else {
+          return '';
+        }
+      },
+      getWorkFlowStatus: function(){
+        var st = this.mdStatus;
+        if(st == '1'){
+          return 'Draft';
+        } else if(st == '2'){
+          return 'Approved';
+        } else if(st == '3'){
+          return 'Retired';
+        } else if(st == '4'){
+          return 'Submitted';
+        } else if(st == '5'){
+          return 'Rejected';
         } else {
           return '';
         }

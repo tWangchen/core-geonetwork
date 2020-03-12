@@ -23,9 +23,12 @@
 
 package org.fao.geonet.api.processing.report;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * A report about metadata processing.
  */
+@XmlRootElement
 public class SimpleMetadataProcessingReport extends MetadataProcessingReport {
     public SimpleMetadataProcessingReport() {
         super();

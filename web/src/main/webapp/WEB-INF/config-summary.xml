@@ -88,6 +88,8 @@
     <facet name="inspireThemeURI" indexKey="inspirethemeuri" label="inspireThemesURI"/>
     <facet name="denominator" indexKey="denominator" label="denominators"/>
     <facet name="resolution" indexKey="resolution" label="resolutions"/>
+    <facet name="topicCat" indexKey="topicCat" label="topicCats" localized="true"/>
+    <facet name="author" indexKey="author" label="authors" localized="true"/>
     <facet name="spatialRepresentationType" indexKey="cl_spatialRepresentationType"
            label="spatialRepresentationTypes"/>
     <facet name="orgName" indexKey="orgName" label="orgNames" localized="true"/>
@@ -96,19 +98,18 @@
     <facet name="metadataPOC" indexKey="metadataPOC" label="metadataPOCs"/>
     <facet name="serviceType" indexKey="serviceType" label="serviceTypes"/>
     <facet name="type" indexKey="type" label="types"/>
-    <facet name="createDateYear" indexKey="createDateYear" label="createDateYears"/>
+    <facet name="publicationDateYear" indexKey="publicationDateYear" label="publicationDateYear"/>
     <facet name="format" indexKey="format" label="formats"/>
     <facet name="title" indexKey="title" label="titles"/>
     <facet name="metadataType" indexKey="_isTemplate" label="metadataTypes"/>
     <facet name="isValid" indexKey="_valid" label="isValid"/>
-    <facet name="isValidInspire" indexKey="_valid_inspire" label="isValidInspire"/>
     <facet name="isHarvested" indexKey="_isHarvested" label="isHarvested"/>
     <facet name="mdStatus" indexKey="_status" label="mdStatus"/>
     <facet name="status" indexKey="cl_status" label="status"/>
     <facet name="sourceCatalog" indexKey="_source" label="sourceCatalog"/>
     <facet name="standard" indexKey="_schema" label="standards"/>
     <facet name="subTemplateType" indexKey="_root" label="subTemplateTypes"/>
-    <facet name="recordOwner" indexKey="recordOwner" label="recordOwner"/>
+    <!--<facet name="recordOwner" indexKey="recordOwner" label="recordOwner"/>-->
     <facet name="groupOwner" indexKey="_groupOwner" label="groupOwners"/>
     <facet name="publishedForGroup" indexKey="_groupPublished" label="publishedForGroup"/>
 	  <facet name="isPublishedToAll" indexKey="_isPublishedToAll" label="isPublishedToAll" />
@@ -129,7 +130,7 @@
 
     <facet name="maintenanceAndUpdateFrequency" indexKey="cl_maintenanceAndUpdateFrequency"
            label="maintenanceAndUpdateFrequencies"/>
-    <facet name="mdActions" indexKey="_mdActions" label="mdActions"/>
+    <facet name="mdActions" indexKey="_mdActions" label="mdActions"/> 
   </facets>
 
   <summaryTypes>
@@ -137,24 +138,25 @@
       <item facet="type" translator="codelist:gmd:MD_ScopeCode"/>
       <item facet="mdActions"/>
       <item facet="topicCat" translator="codelist:gmd:MD_TopicCategoryCode" max="20"/>
-      <item facet="inspireThemeURI" sortBy="value" sortOrder="asc" max="35"
-            translator="term:http://inspire.ec.europa.eu/theme"/>
+      <!--<item facet="inspireThemeURI" sortBy="value" sortOrder="asc" max="35"
+            translator="term:http://inspire.ec.europa.eu/theme"/>-->
       <!--<item facet="inspireTheme" sortBy="value" sortOrder="asc" max="35"/>-->
       <!--<item facet="inspireThemeWithAc" sortBy="value" sortOrder="asc" max="35"/>-->
       <item facet="keyword" max="15"/>
-      <item facet="orgName" max="25"/>
-      <item facet="sourceCatalog"
-            translator="db:org.fao.geonet.repository.SourceRepository:findOneByUuid"/>
-      <item facet="createDateYear" sortBy="value" sortOrder="desc" max="40"/>
+      <!--<item facet="orgName" max="25"/>-->
+      <!--<item facet="sourceCatalog"
+            translator="db:org.fao.geonet.repository.SourceRepository:findOneByUuid"/>-->
+      <item facet="publicationDateYear" sortBy="value" sortOrder="desc" max="40"/>
       <item facet="format" max="15" sortBy="value" sortOrder="asc"/>
-      <item facet="spatialRepresentationType"
-            translator="codelist:gmd:MD_SpatialRepresentationTypeCode"/>
-      <item facet="maintenanceAndUpdateFrequency"
-            translator="codelist:gmd:MD_MaintenanceFrequencyCode"/>
-      <item facet="status" translator="codelist:gmd:MD_ProgressCode"/>
+      <!-- <item facet="spatialRepresentationType"
+            translator="codelist:gmd:MD_SpatialRepresentationTypeCode"/> -->
+      <!--<item facet="maintenanceAndUpdateFrequency"
+            translator="codelist:gmd:MD_MaintenanceFrequencyCode"/>-->
+      <!--<item facet="status" translator="codelist:gmd:MD_ProgressCode"/>-->
       <item facet="serviceType"/>
       <item facet="denominator" sortBy="numValue" sortOrder="desc"/>
-      <item facet="resolution" sortBy="numValue" sortOrder="desc"/>
+      <item facet="topicCat" translator="codelist:gmd:MD_TopicCategoryCode" max="20"/>
+      <!--<item facet="resolution" sortBy="numValue" sortOrder="desc"/>-->
       <!--
       <item facet="region"
             translator="term:http://geonetwork-opensource.org/thesaurus/naturalearth-and-seavox"/>
@@ -172,10 +174,9 @@
       <item facet="sourceCatalog"
             translator="db:org.fao.geonet.repository.SourceRepository:findOneByUuid"/>
       <item facet="isValid" max="3" sortBy="value" translator="apploc:validStatus-"/>
-      <item facet="isValidInspire" max="3" sortBy="value" translator="apploc:validStatus-"/>
       <item facet="groupOwner" max="199" sortBy="value"
             translator="db:org.fao.geonet.repository.GroupRepository:findOne:int"/>
-      <item facet="recordOwner" max="45" sortBy="value"/>
+      <!--<item facet="recordOwner" max="45" sortBy="value"/>-->
       <item facet="publishedForGroup" max="199" sortBy="value"
             translator="db:org.fao.geonet.repository.GroupRepository:findOneByName"/>
       <item facet="standard" max="15" sortBy="value"/>
@@ -196,7 +197,7 @@
             translator="term:http://inspire.ec.europa.eu/theme"/>
       <item facet="keyword" max="15"/>
       <item facet="orgName" max="25"/>
-      <item facet="createDateYear" sortBy="value" sortOrder="desc" max="40"/>
+      <item facet="publicationDateYear" sortBy="value" sortOrder="desc" max="40"/>
       <item facet="format" max="15" sortBy="value" sortOrder="asc"/>
       <item facet="spatialRepresentationType"
             translator="codelist:gmd:MD_SpatialRepresentationTypeCode"/>
@@ -206,6 +207,7 @@
       <item facet="serviceType"/>
       <item facet="denominator" sortBy="numValue" sortOrder="desc"/>
       <item facet="resolution" sortBy="numValue" sortOrder="desc"/>
+      <item facet="topicCat" translator="codelist:gmd:MD_TopicCategoryCode" max="20"/>
       <!--<item facet="metadataPOC" max="15"/>-->
     </summaryType>
     <summaryType name="subtemplates">
@@ -213,7 +215,7 @@
       <item facet="groupOwner" max="99" sortBy="value"
             translator="db:org.fao.geonet.repository.GroupRepository:findOne:int"/>
       <item facet="isValid" max="3" sortBy="value" translator="apploc:validStatus-"/>
-      <item facet="recordOwner" max="45" sortBy="value"/>
+      <!--<item facet="recordOwner" max="45" sortBy="value"/>-->
     </summaryType>
     <summaryType name="contact" format="DIMENSION">
       <item facet="orgNameTree" max="99"/>
@@ -237,7 +239,7 @@
       <item facet="metadataPOC" max="15"/>
       <item facet="serviceType"/>
       <item facet="type" translator="codelist:gmd:MD_ScopeCode"/>
-      <item facet="createDateYear" sortOrder="asc" max="40"/>
+      <item facet="publicationDateYear" sortOrder="asc" max="40"/>
     </summaryType>
     <summaryType name="suggestions">
       <item facet="keyword"/>
@@ -249,8 +251,9 @@
       <item facet="orgName" max="100"/>
       <item facet="metadataPOC"/>
       <item facet="serviceType"/>
+      <item facet="author" sortBy="value" sortOrder="asc" max="100"/>
       <item facet="type" translator="codelist:gmd:MD_ScopeCode"/>
-      <item facet="createDateYear" sortOrder="asc"/>
+      <item facet="publicationDateYear" sortOrder="asc"/>
     </summaryType>
   </summaryTypes>
 

@@ -105,6 +105,10 @@
         }
       };
 
+      $scope.getAuthorSuggestions = function(val) {
+        return suggestService.getAuthorSuggestions(val);
+      };
+
       $scope.orgNameOptions = {
         mode: 'remote',
         remote: {
@@ -114,6 +118,40 @@
         }
       };
 
+      $scope.userOptions = {
+        mode: 'prefetch',
+        promise: (function() {
+          var defer = $q.defer();
+          $http.get('../api/users', {cache: true}).
+              success(function(data) {
+                var res = [];
+                for (var i = 0; i < data.length; i++) {
+                  res.push({
+                    id: data[i].id,
+                    name: data[i].name + ' ' + data[i].surname + ' (' + data[i].username + ')'
+                  });
+                }
+                defer.resolve(res);
+              });
+          return defer.promise;
+        })()
+      };
+  
+      $scope.typeOptions = [{
+		  id: 'n',
+		  label: 'Metadata'
+		}, {
+		  id: 'y',
+		  label: 'Template'
+	  }];
+
+      $scope.statusOptions = [];
+	  
+	  $http.get('../api/status', {cache: true}).
+		  success(function (data){
+		  $scope.statusOptions = data;
+	  });
+	  
       $scope.categoriesOptions = {
         mode: 'prefetch',
         promise: (function() {
@@ -153,6 +191,88 @@
         })()
       };
 
+      $scope.obj = {
+   		   xpath: ''
+   	   };
+      $scope.stat = {
+   		   searching: false,
+   		   background:false
+   	   };
+      $scope.triggerXPathSearch = function(){
+          $scope.stat.searching = true;
+          $http.get('../api/records/search/status').success(function(data){
+            if (data) {
+              $scope.stat.searching = false;
+              $scope.stat.background = true;
+              console.log("Another Xpath search executing in the backgorund");
+            }else{
+              angular.extend($scope.obj, $scope.searchObj.params);
+              $http.post('../api/records/search/xpath',  $scope.obj);
+              checkIsSearching();
+            }
+          })
+       };
+   	  
+   	   function checkIsSearching(){
+   		    
+   			// Check if completed
+   			return $http.get('../api/records/search/status').
+   				success(function(data) {
+   				  if (data) {
+   					$timeout(checkIsSearching, 1000);
+   				  }else{
+   					  $http.get('../api/records/search/xpath',{}).success(function(data){
+   						  $scope.stat.searching = false;
+   						  var eCatIds = {
+   							  eCatId : ''
+   						  }
+   						  
+   						  eCatIds.eCatId = (data.length == 0) ? 'xxxx' : data.slice(0, 1000).join(',');
+   						  
+   						  angular.extend($scope.searchObj.params, eCatIds);
+   						  $scope.$broadcast('search');
+   						  
+   					  })
+   				  }
+   				});
+   		  };
+       
+         $scope.homeSearch = function(){
+           var anytext = {
+             any : $scope.searchObj.params.any
+           }           
+          $scope.$broadcast('resetSearch', anytext);             
+        }
+        $scope.searchHomePageItem = function(type){
+        var param;
+        if(type === 'latest_publication'){
+          var today = moment();
+          var month = today.format('MM');
+          var year = today.format('YYYY');
+          
+          var fromDate = moment().subtract(30, 'days');
+          var fromMonth = fromDate.format('MM');
+          var fromYear = fromDate.format('YYYY');
+          var dateFrom = fromYear + '-' + fromMonth + '-' + fromDate.daysInMonth();
+          var dateTo = year + '-' + month + '-' + today.daysInMonth();
+          param = {
+            publicationDateFrom: dateFrom,
+            publicationDateTo: dateTo
+          }
+        }
+        if(type === 'ga_publication'){
+          param = {
+            'facet.q' : 'keyword/GA Publication'
+          }
+        }
+        if(type === 'edu_products'){
+          param = {
+            'facet.q' : 'keyword/Educational Product'
+          }
+        }        
+        $scope.$broadcast('resetSearch', param);        
+      }
+      
       /**
        * Keep a reference on main cat scope
        * @return {*}

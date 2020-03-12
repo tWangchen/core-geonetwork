@@ -1,0 +1,147 @@
+<div class="row">
+    <div class="pull-right">
+        <button type="button" class="adv-close" data-toggle="collapse" data-target="#adv-1"><i class="fa fa-times"></i></button>
+    </div>                
+</div>
+<div class="col-md-8 col-sm-12">
+    <form>
+        <h4>Advanced Search</h4>
+        <div class="input-group gn-search-group">
+            <div class="col-md-12">
+                <h6>Text Search</h6>
+                <div class="row">
+                    <div class="search-input">
+                        <label class="col-sm-1 control-label" data-translate="">title</label>
+                        <div class="col-sm-11">
+                            <input type="search" data-ng-keyup="$event.keyCode == 13 && toggleAndTriggerSearch()"  value="" class="form-control" data-ng-model="searchObj.params.title" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="search-input">
+                        <label class="col-sm-1 control-label" data-translate="">ecatId</label>
+                        <div class="col-sm-5">
+                            <input type="search" value="" class="form-control" data-ng-keyup="$event.keyCode == 13 && toggleAndTriggerSearch()" 
+                                data-ng-model="searchObj.params.eCatId" />
+                        </div>
+                        <label class="col-sm-1 control-label" data-translate="">keywords</label>
+                        <div class="col-sm-5">
+                            <input type="search" value="" class="form-control" gn-typeahead="keywordsOptions" 
+                                gn-values="searchObj.params.keyword" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h6>Authors</h6>
+                    <div class="search-input">
+                        <label class="col-sm-1 control-label" data-translate="">author</label>
+                        <div class="col-sm-5">
+                            <!--<input type="search" value="" class="form-control" gn-typeahead="authorOptions"
+                                gn-values="searchObj.params.author" data-ng-select="resetAuthor()" />-->
+
+                                <input type="search"
+                                        class="form-control"
+                                        data-ng-model="searchObj.params.author"
+                                        data-typeahead="author for author in getAuthorSuggestions($viewValue)"
+                                        class="form-control"
+                                        data-typeahead-min-length="1" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row" data-ng-if="isIntranet && user.isAdministrator()">
+                    <div class="search-input">
+                        <label class="col-sm-1 control-label" data-translate="">owner</label>
+                        <div class="col-sm-5">
+                            <input type="search" value="" class="form-control" gn-typeahead="userOptions"
+                                gn-values="searchObj.params._owner" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row" data-ng-if="isIntranet || user.isAdministrator()">
+                    <h6>Other Details</h6>
+                    <div class="search-input">
+                        <label class="col-sm-1 control-label" data-translate="">_status</label>
+                        <div class="col-sm-5">
+                            <select class="form-control" data-ng-model="searchObj.params._status">
+                                <option ng-repeat="status in statusOptions" value="{{status.id}}">{{status.label.eng}}
+                                </option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 control-label" data-translate="">kind</label>
+                        <div class="col-sm-5">
+                            <select class="form-control" data-ng-model="searchObj.params._isTemplate">
+                                <option ng-repeat="type in typeOptions" value="{{type.id}}">{{type.label}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h6>Date Search</h6>
+                    <div class="search-input">
+                        <div class="col-sm-9">
+                            <div data-gn-period-chooser="recordsPublishedTheLast"
+                                data-date-from="searchObj.params.publicationDateFrom"
+                                data-date-to="searchObj.params.publicationDateTo">
+                            </div>
+                            <div data-gn-period-chooser="recordsCreatedTheLast"
+                                data-date-from="searchObj.params.creationDateFrom" data-date-to="searchObj.params.creationDateTo">
+                            </div>
+                            <div data-gn-period-chooser="temporalExtentPeriod"
+                                data-date-from="searchObj.params.extFrom"
+                                data-date-to="searchObj.params.extTo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="search-btn">
+                        <div class="col-sm-12">
+                            <button type="button" data-ng-click="triggerSearch()" class="btn btn-primary btn-md"
+                                data-ng-model="searchObj.advancedMode" title="Advanced Search" btn-checkbox=""
+                                btn-checkbox-true="1" btn-checkbox-false="0" data-toggle="collapse"
+                                data-target="#adv-1">
+                                &nbsp;Search&nbsp;
+                            </button>
+                            <!--<button type="button" class="btn btn-primary btn-md" data-toggle="collapse"
+                                data-target="#adv-1">
+                                &nbsp;Close&nbsp;
+                            </button>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="col-md-4 col-sm-12">
+    <h4>Advanced Search Tips</h4>
+    <br>
+    <div>
+        <h6>Title / eCatID / Keywords</h6>
+        <p><i>Title:</i> Search Title field for presence of any word/phrase entered.</p>
+        <p><i>eCatID:</i> Multiple eCatIDs may be entered if separated by commas.</p>
+		<p><i>Keywords:</i> Provide minimum 1 characters to show predictive Keywords.</p>
+    </div>
+    <br>
+    <div>
+        <h6>Author <label data-ng-if="isIntranet && user.isAdministrator()">/ Owner</label></h6>
+        <p><i>Author:</i> Type at least one character to show the list of author names.</p>
+        <p data-ng-if="isIntranet && user.isAdministrator()"><i>Owner:</i>This predictive search provides the owner who created the record.
+        </p>
+    </div>
+    <br>
+    <div data-ng-if="isIntranet || user.isAdministrator()">
+        <h6>Status / Kind</h6>
+        <p>This search is only for internal Geoscience Australia users.</p>
+        <p><i>Status:</i>  Provides the workflow status of metadata.</p>         
+        <p><i>Kind:</i> Provides the option to select between metadata and template.</p><br>
+    </div>
+    
+    <div>
+        <h6>Creation Date / Publication Date / Temporal Extent Period</h6>
+        <p>To search for records by Created/Published/Temporal Extent Period use the 'Date Range' option.
+            By selecting the caret <span><i class="fa fa-caret-down" aria-hidden="true"></i></span> you are able to specify a date range. The options are: Today/Yesterday/This week/This month/Last 3
+            months/Last 6 months/This year.</p>
+    </div>
+</div>
+<br>

@@ -125,6 +125,9 @@
                  path="*/gmd:MD_Keywords/gmd:type/gmd:MD_KeywordTypeCode/@codeListValue"/>
         </parameter>
 
+	<!-- Joseph Added for querying based on eCatId -->
+	<parameter name="AlternateIdentifier" field="eCatId" type="SupportedISOQueryables" />
+        
         <!-- - - - - - - - - - - - - - - - - -->
         <!-- Additional queryable properties -->
         <!-- (both services and datasets)    -->

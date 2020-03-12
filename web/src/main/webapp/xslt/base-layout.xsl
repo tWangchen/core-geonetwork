@@ -42,12 +42,13 @@
     <html ng-app="{$angularModule}" lang="{$lang2chars}" id="ng-app">
       <head>
         <title>
-            <xsl:value-of select="util:getNodeName('', $lang, true())"/>
+          <xsl:value-of select="concat($env/system/site/name, ' - ', $env/system/site/organization)"
+          />
         </title>
         <meta charset="utf-8"/>
-        <meta name="viewport" content="initial-scale=1.0"/>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
-
+		<meta name="google-site-verification" content="ow4ivXDUu_r1uORJo-yzarJ96F_g73oovtp17Qg6BbM" />
         <meta name="description" content=""/>
         <meta name="keywords" content=""/>
 
@@ -84,10 +85,8 @@
               <xsl:call-template name="no-js-alert"/>
             </xsl:if>
             <!-- AngularJS application -->
-            <xsl:if test="$angularApp != 'gn_search' and $angularApp != 'gn_viewer' and $angularApp != 'gn_formatter_viewer'">
-              <div class="navbar navbar-default gn-top-bar"
-                   role="navigation"
-                   data-ng-hide="layout.hideTopToolBar"
+            <xsl:if test="$angularApp != 'gn_search' and $angularApp != 'gn_viewer' and $angularApp != 'gn_formatter_viewer' and $angularApp != 'gn_editor'">
+              <div data-ng-hide="layout.hideTopToolBar"
                    data-ng-include="'{$uiResourcesPath}templates/top-toolbar.html'"></div>
             </xsl:if>
 

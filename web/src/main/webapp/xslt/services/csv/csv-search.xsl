@@ -73,6 +73,48 @@
   <xsl:include href="../../common/profiles-loader-tpl-brief.xsl"/>
   <xsl:include href="../../common/profiles-loader-tpl-csv.xsl"/>
 
+  <xsl:param name="Title" select="false"/>
+  <xsl:param name="Abstract" select="false"/>
+  <xsl:param name="MetadataScope" select="false"/>
+  <xsl:param name="ParentMetadata" select="false"/>
+  <xsl:param name="CitationDate" select="false"/>
+  <xsl:param name="Purpose" select="false"/>
+  <xsl:param name="Status" select="false"/>
+  <!--<xsl:param name="imageChecked" />-->
+  <xsl:param name="Keyword" select="false"/>
+  <xsl:param name="Keyword-Thesaurus" select="false"/>
+  <xsl:param name="MaintenanceFrequency" select="false"/>
+  <xsl:param name="TopicCategory" select="false"/>
+  <xsl:param name="ResponsibleParty" select="false"/>
+  <xsl:param name="ResourceContact" select="false"/>
+ 
+  <xsl:param name="MetadataContact" select="false"/>
+  <xsl:param name="GeographicalExtent" select="false"/>
+  <xsl:param name="SpatialExtentDescription" select="false"/>
+  <xsl:param name="HorizontalSpatialReferenceSystem" select="false"/>
+  <xsl:param name="VerticalExtent" select="false"/>
+  <xsl:param name="VerticalCRS" select="false"/>
+  <xsl:param name="TemporalExtent" select="false"/>
+  <xsl:param name="MetadataConstraint" select="false"/>
+  <xsl:param name="SecurityConstraint" select="false"/>
+  <xsl:param name="ResourceLegalConstraint" select="false"/>
+  <xsl:param name="UseLimitations" select="false"/>
+  <xsl:param name="DistributionLink" select="false"/>
+  <xsl:param name="DistributionFormat" select="false"/>
+  <xsl:param name="DataStorageLink" select="false"/>
+  <xsl:param name="DataStorageFormat" select="false"/>
+  <xsl:param name="Lineage" select="false"/>
+  <xsl:param name="SourceDescription" select="false"/>
+  <xsl:param name="AssociatedResourcesLink" select="false"/>
+  <xsl:param name="AdditionalInfo" select="false"/>
+  <xsl:param name="ServiceParameter" select="false"/>
+  <xsl:param name="ConnectPoint" select="false"/>
+  <xsl:param name="ServiceType" select="false"/>
+  <xsl:param name="ServiceTypeVersion" select="false"/>
+  <xsl:param name="CouplingType" select="false"/>
+  <xsl:param name="OperationName" select="false"/>
+  <xsl:param name="DistributedComputingPlatform" select="false"/>
+  <xsl:param name="OperationDescription" select="false"/>
   <!-- A template to add a new line \n with no extra space. -->
   <xsl:template name="newLine">
 <xsl:text>
@@ -138,12 +180,15 @@
           test="position()!=1 and $currentSchema=preceding-sibling::node()/geonet:info/schema"/>
         <xsl:otherwise>
           <!-- CSV header, schema and id first, then from schema column list -->
-          <xsl:text>"schema"</xsl:text>
+          <!--<xsl:text>"schema"</xsl:text>
           <xsl:value-of select="$sep"/>
           <xsl:text>"uuid"</xsl:text>
           <xsl:value-of select="$sep"/>
-          <xsl:text>"id"</xsl:text><xsl:value-of select="$sep"/><xsl:value-of
-            select="string-join($columns/schema[@name=$currentSchema]/column/normalize-space(), $sep)"/>
+          <xsl:text>"id"</xsl:text>
+		  <xsl:value-of select="$sep"/>-->
+		  <xsl:text>"uuid"</xsl:text>
+          <xsl:value-of select="$sep"/>
+		  <xsl:value-of select="string-join($columns/schema[@name=$currentSchema]/column/normalize-space(), $sep)"/>
           <xsl:call-template name="newLine"/>
         </xsl:otherwise>
       </xsl:choose>
@@ -161,10 +206,13 @@
     <xsl:param name="columns"/>
     <xsl:param name="metadata"/>
 
-    <xsl:value-of
+	<xsl:value-of
+      select="concat('&quot;', $metadata/geonet:info/uuid, '&quot;', $sep)"/>
+                  
+    <!--<xsl:value-of
       select="concat('&quot;', $metadata/geonet:info/schema, '&quot;', $sep,
                   '&quot;', $metadata/geonet:info/uuid, '&quot;', $sep,
-                  '&quot;', $metadata/geonet:info/id, '&quot;', $sep)"/>
+                  '&quot;', $metadata/geonet:info/id, '&quot;', $sep)"/>-->
 
     <xsl:for-each select="$columns">
       <xsl:variable name="currentColumn" select="@name"/>
@@ -182,10 +230,9 @@
         </xsl:otherwise>
       </xsl:choose>
       <xsl:text>"</xsl:text>
-      <!-- <xsl:value-of select="$sep"/> -->
-       <xsl:if test="position() != last()">
-                <xsl:value-of select="$sep"/>
-        </xsl:if>
+      <xsl:if test="position() != last()">
+		<xsl:value-of select="$sep"/>
+	  </xsl:if>
     </xsl:for-each>
 
     <xsl:call-template name="newLine"/>

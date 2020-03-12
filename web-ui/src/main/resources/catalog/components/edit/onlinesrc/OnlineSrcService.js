@@ -248,31 +248,32 @@
             src.lUrl = src.url[lang] ||
               src.url[mdLanguage] ||
               src.url[Object.keys(src.url)[0]];
-
-              // //Is it a draft?
-              // if(src.lUrl.indexOf("/api/records/") >= 0
-              //     &&  src.lUrl.indexOf("/api/records/")< src.lUrl.indexOf("/attachments/")) {
-              //   if(src.lUrl.indexOf("?") > 0) {
-              //     src.lUrl  += "&approved=false";
-              //   } else {
-              //     src.lUrl  += "?approved=false";
-              //   }
-              // }
+            
+              //Is it a draft?
+              if(src.lUrl.indexOf("/api/records/") >= 0 
+                  &&  src.lUrl.indexOf("/api/records/")< src.lUrl.indexOf("/attachments/")) {
+                if(src.lUrl.indexOf("?") > 0) {
+                  src.lUrl  += "&approved=false";
+                } else {
+                  src.lUrl  += "?approved=false";
+                }
+              }
+                
           });
           angular.forEach(data.thumbnails, function(img) {
             img.lUrl = img.url[lang] ||
               img.url[mdLanguage] ||
               img.url[Object.keys(img.url)[0]];
-
-              // //Is it a draft?
-              // if(img.lUrl.indexOf("/api/records/") >= 0
-              //     &&  img.lUrl.indexOf("/api/records/")< img.lUrl.indexOf("/attachments/")) {
-              //   if(img.lUrl.indexOf("?") > 0) {
-              //     img.lUrl  += "&approved=false";
-              //   } else {
-              //     img.lUrl  += "?approved=false";
-              //   }
-              // }
+            
+              //Is it a draft?
+              if(img.lUrl.indexOf("/api/records/") >= 0 
+                  &&  img.lUrl.indexOf("/api/records/")< img.lUrl.indexOf("/attachments/")) {
+                if(img.lUrl.indexOf("?") > 0) {
+                  img.lUrl  += "&approved=false";
+                } else {
+                  img.lUrl  += "?approved=false";
+                }
+              }
           });
           if (data.siblings) {
             for (var i = 0; i < data.siblings.length; i++) {
@@ -370,6 +371,8 @@
           }
           else {
             params[mode + 'Uuid'] = md.getUuid();
+            params[mode + 'eCatId'] = md.geteCatId();
+            params[mode + 'Title'] = md.getTitle();
           }
           return runProcess(this, params).then(function() {
             closePopup(popupid);
@@ -621,9 +624,17 @@
           gnBatchProcessing.runProcessMd(
               setParams('services-remove', params)).
               then(function(data) {
-                $rootScope.$broadcast('StatusUpdated', {
-                  title: $translate.instant('serviceDetachedToCurrentRecord'),
-                  timeout: 3
+
+                var asso_params = {
+                  uuid: gnCurrentEdit.uuid,
+                  code: onlinesrc.id,
+                  type:'UUID'
+                };
+                return gnBatchProcessing.runProcessMd(setParams('association-remove', asso_params)).then(function(){
+                  $rootScope.$broadcast('StatusUpdated', {
+                    title: $translate.instant('serviceDetachedToCurrentRecord'),
+                    timeout: 3
+                  });
                 });
                 service.reload = true;
               }, function(error) {
@@ -712,6 +723,44 @@
           };
           runProcess(this,
               setParams('sibling-remove', params));
+        },
+
+        removeAssociation: function(onlinesrc) {
+          var params = {
+            uuid: gnCurrentEdit.uuid,
+            code: onlinesrc.id,
+            type: onlinesrc.identifierDesc,
+            associationType: onlinesrc.associationType
+          };
+          runProcess(this,
+              setParams('association-remove', params));
+        },
+
+        updateAssociation: function(onlinesrc, popupid) {
+
+          var addAssociationFn = function() {
+            var qParams = setParams('association-add', onlinesrc);
+            return runProcess(this, qParams).then(function() {
+              closePopup(popupid);
+            });
+          };
+
+          var params = {
+            uuid: gnCurrentEdit.uuid,
+            code: onlinesrc.preCode,
+            type: onlinesrc.preType,
+            associationType:onlinesrc.preAssociation
+          };
+
+
+          return gnBatchProcessing.runProcessMd(setParams('association-remove', params)).then(addAssociationFn, function(error){
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('runProcessError'),
+              error: error,
+              timeout: 0,
+              type: 'danger'
+            });
+          });
         },
 
         /**

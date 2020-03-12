@@ -23,7 +23,17 @@
 
 package org.fao.geonet.component.csw;
 
-import jeeves.server.context.ServiceContext;
+import static org.fao.geonet.kernel.setting.SettingManager.isPortRequired;
+
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.GeonetContext;
 import org.fao.geonet.NodeInfo;
@@ -33,8 +43,10 @@ import org.fao.geonet.csw.common.Csw;
 import org.fao.geonet.csw.common.exceptions.CatalogException;
 import org.fao.geonet.csw.common.exceptions.NoApplicableCodeEx;
 import org.fao.geonet.csw.common.exceptions.VersionNegotiationFailedEx;
+import org.fao.geonet.domain.Address;
 import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.domain.Source;
+import org.fao.geonet.domain.User;
 import org.fao.geonet.kernel.AccessManager;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.csw.CatalogConfiguration;
@@ -46,8 +58,11 @@ import org.fao.geonet.kernel.search.LuceneConfig;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.lib.Lib;
+import org.fao.geonet.repository.CswCapabilitiesInfo;
+import org.fao.geonet.repository.CswCapabilitiesInfoFieldRepository;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SourceRepository;
+import org.fao.geonet.repository.UserRepository;
 import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
 import org.jdom.Comment;
@@ -57,16 +72,7 @@ import org.jdom.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.fao.geonet.kernel.setting.SettingManager.isPortRequired;
+import jeeves.server.context.ServiceContext;
 
 /**
  * TODO javadoc.
@@ -88,8 +94,6 @@ public class GetCapabilities extends AbstractOperation implements CatalogService
     private SourceRepository sourceRepository;
     @Autowired
     private MetadataRepository metadataRepository;
-    @Autowired
-    private IMetadataUtils metadataUtils;
     @Autowired
     private AccessManager accessManager;
 
@@ -179,7 +183,17 @@ public class GetCapabilities extends AbstractOperation implements CatalogService
                 currentLanguage = context.getLanguage();
             }
 
-            substitute(context, capabilities, currentLanguage);
+            final CswCapabilitiesInfoFieldRepository infoRepository = context.getBean(CswCapabilitiesInfoFieldRepository.class);
+            CswCapabilitiesInfo cswCapabilitiesInfo = infoRepository.findCswCapabilitiesInfo(currentLanguage);
+
+            // Retrieve contact data from users table
+            String contactId = gc.getBean(SettingManager.class).getValue(Settings.SYSTEM_CSW_CONTACT_ID);
+            if ((contactId == null) || (contactId.equals(""))) {
+                contactId = "-1";
+            }
+            User user = context.getBean(UserRepository.class).findOne(contactId);
+
+            substitute(context, capabilities, cswCapabilitiesInfo, user, currentLanguage);
 
             handleSections(request, capabilities);
 
@@ -323,7 +337,7 @@ public class GetCapabilities extends AbstractOperation implements CatalogService
 
     }
 
-    private void substitute(ServiceContext context, Element capab, String langId) throws Exception {
+    private void substitute(ServiceContext context, Element capab, CswCapabilitiesInfo cswCapabilitiesInfo, User contact, String langId) throws Exception {
         GeonetContext gc = (GeonetContext) context.getHandlerContext(Geonet.CONTEXT_NAME);
         SettingManager sm = gc.getBean(SettingManager.class);
 
@@ -346,15 +360,52 @@ public class GetCapabilities extends AbstractOperation implements CatalogService
 
         vars.put("$SERVLET", context.getBaseUrl());
 
-        boolean isTitleDefined = false;
-        String sourceUuid = NodeInfo.DEFAULT_NODE.equals(nodeinfo.getId()) ? sm.getSiteId() : nodeinfo.getId();
-        final Source source = sourceRepository.findOne(sourceUuid);
-        if (source != null) {
-            vars.put("$TITLE", source.getLabelTranslations().get(langId));
-            isTitleDefined = true;
+        // Set CSW contact information
+        if (contact != null) {
+            vars.put("$IND_NAME", contact.getName() + " " + contact.getSurname());
+            vars.put("$ORG_NAME", contact.getOrganisation());
+            vars.put("$POS_NAME", contact.getProfile().name());
+            vars.put("$VOICE", "");
+            vars.put("$FACSCIMILE", "");
+            final Address address = contact.getPrimaryAddress();
+            vars.put("$DEL_POINT", address.getAddress());
+            vars.put("$CITY", address.getCity());
+            vars.put("$ADMIN_AREA", address.getState());
+            vars.put("$POSTAL_CODE", address.getZip());
+            vars.put("$COUNTRY", address.getCountry());
+            vars.put("$EMAIL", contact.getEmail());
+            vars.put("$HOUROFSERVICE", "");
+            vars.put("$CONTACT_INSTRUCTION", "");
         } else {
-            vars.put("$TITLE", sm.getSiteName());
+            vars.put("$IND_NAME", "");
+            vars.put("$ORG_NAME", "");
+            vars.put("$POS_NAME", "");
+            vars.put("$VOICE", "");
+            vars.put("$FACSCIMILE", "");
+            vars.put("$DEL_POINT", "");
+            vars.put("$CITY", "");
+            vars.put("$ADMIN_AREA", "");
+            vars.put("$POSTAL_CODE", "");
+            vars.put("$COUNTRY", "");
+            vars.put("$EMAIL", "");
+            vars.put("$HOUROFSERVICE", "");
+            vars.put("$CONTACT_INSTRUCTION", "");
         }
+        boolean isTitleDefined = false;
+        if (!NodeInfo.DEFAULT_NODE.equals(nodeinfo.getId())) {
+            final Source source = sourceRepository.findOne(nodeinfo.getId());
+            if (source != null) {
+                vars.put("$TITLE", source.getLabelTranslations().get(langId));
+                isTitleDefined = true;
+            }
+        }
+        if (!isTitleDefined) {
+            vars.put("$TITLE", cswCapabilitiesInfo.getTitle());
+        }
+        vars.put("$ABSTRACT", cswCapabilitiesInfo.getAbstract());
+        vars.put("$FEES", cswCapabilitiesInfo.getFees());
+        vars.put("$ACCESS_CONSTRAINTS", cswCapabilitiesInfo.getAccessConstraints());
+
         vars.put("$LOCALE", langId);
 
         Lib.element.substitute(capab, vars);

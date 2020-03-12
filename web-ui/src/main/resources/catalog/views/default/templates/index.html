@@ -1,52 +1,45 @@
-<header class="gn-header"
-        data-ng-show="gnCfg.mods.header.enabled && gnCfg.mods.header.isLogoInHeader">
-  <div data-ng-class="fluidHeaderLayout ? 'container-fluid' : 'container'">
-    <div class=row>
-      <div class="col-md-12 text-{{gnCfg.mods.header.logoInHeaderPosition}}">
-        <a data-gn-active-tb-item="{{gnCfg.mods.home.appUrl}}">
-          <img class="{{gnCfg.mods.header.logoInHeaderPosition}}"
-               alt="{{'siteLogo' | translate}}"
-               data-ng-src="{{gnUrl}}../images/logos/{{info['node/id'] || info['system/site/siteId']}}.png?random{{info['system/site/lastUpdate']}}"/>
-          </a>
-      </div>
-    </div>
-  </div>
-</header>
-<div class="navbar navbar-default gn-top-bar"
-     role="navigation"
-     data-ng-show="gnCfg.mods.header.enabled"
-     data-ng-include="'../../catalog/templates/top-toolbar.html'"
-     xmlns="http://www.w3.org/1999/html">
+
+<div class="gn-nav" role="navigation"
+  data-ng-include="'../../catalog/templates/top-toolbar.html'" xmlns="http://www.w3.org/1999/html">
 </div>
 
-<div class="gn-search-page"
-     role="main"
-     data-ng-controller="GnSearchController">
+<div class="gn-search-page" data-ng-controller="GnSearchController">
   <cookiewarning></cookiewarning>
-  <div class=""
-       data-ng-controller="gnsDefault">
+  <div class="" data-ng-controller="gnsDefault">
     <gn-extend-mainctrl></gn-extend-mainctrl>
 
-    <div data-gn-saved-selections="">
-      <div data-ng-include="'../../catalog/views/default/templates/home.html'"
-           data-ng-show="activeTab == '/home'"/>
-      <div data-ng-include="'../../catalog/views/default/templates/results.html'"
-           data-ng-show="activeTab == '/search'"/>
-      <div data-ng-if="isMapViewerEnabled && !isExternalViewerEnabled"
-           data-ng-include="'../../catalog/views/default/templates/map.html'"
-           data-ng-show="activeTab == '/map'"/>
-      <div data-ng-include="'../../catalog/views/default/templates/recordView.html'"
-           data-ng-show="activeTab == '/metadata'" class="gn-view-approved"/>
-      <div data-ng-include="'../../catalog/views/default/templates/recordView.html'"
-           data-ng-show="activeTab == '/metadraf'" class="gn-view-not-approved"/>
-      <div data-ng-include="'../../catalog/views/default/templates/page.html'"
-           data-ng-if="activeTab == '/page'"/>
-    </div>
+    <div data-ng-include="'../../catalog/views/default/templates/home.html'" data-ng-show="activeTab == '/home'" />
+    <div data-ng-include="'../../catalog/views/default/templates/results.html'" data-ng-show="activeTab == '/search'" />
+	<div data-ng-include="'../../catalog/views/default/templates/about.html'" data-ng-show="activeTab == '/about'" />
+    <div data-ng-if="isMapViewerEnabled" data-ng-include="'../../catalog/views/default/templates/map.html'"
+      data-ng-show="activeTab == '/map'" />
+    <div data-ng-include="'../../catalog/views/default/templates/recordView.html'"
+      data-ng-show="activeTab == '/metadata'" />
   </div>
 </div>
 
+<footer id="footer-main" class="footer-global">
 
-<div class="navbar navbar-default gn-bottom-bar" role="navigation"
-     data-ng-show="gnCfg.mods.footer.enabled"
-     data-ng-include="'../../catalog/views/default/templates/footer.html'">
-</div>
+  <div class="container">
+    <div class="block-group">
+
+      <nav id="footer-bottom-nav" class="block col-width-auto">
+        <ul class="nav nav-pills">
+          <!--  <li>&copy; Commonwealth of Australia</li> -->
+          <li><a href="http://www.ga.gov.au/copyright">Copyright</a></li>
+          <li><a href="http://www.ga.gov.au/privacy">Privacy</a></li>
+          <li><a href="http://www.ga.gov.au/accessibility">Accessibility</a></li>
+          <li><a href="http://www.ga.gov.au/sitemap">Sitemap</a></li>
+          <li><a href="http://www.ga.gov.au/ips">Information Publication Scheme</a></li>
+          <li><a href="http://www.ga.gov.au/ips/foi">Freedom of Information</a></li>
+        </ul>
+      </nav>
+
+      <div class="block col-lg-1-12" style="padding-top:15px;">Geoscience Australia acknowledges the
+        traditional owners of the country throughout Australia and their continuing connection to land, sea
+        and community. We pay our respect to them and their cultures and to the elders past and present.
+      </div>
+
+    </div>
+  </div>
+</footer>

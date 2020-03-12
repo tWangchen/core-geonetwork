@@ -25,6 +25,7 @@ package org.fao.geonet.util;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.vividsolutions.jts.geom.Envelope;
@@ -50,6 +51,7 @@ import org.fao.geonet.domain.LinkStatus;
 import org.fao.geonet.domain.Source;
 import org.fao.geonet.domain.UiSetting;
 import org.fao.geonet.domain.User;
+import org.fao.geonet.kernel.AccessManager;
 import org.fao.geonet.kernel.DataManager;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.ThesaurusManager;
@@ -82,9 +84,11 @@ import org.opengis.referencing.operation.MathTransform;
 import org.owasp.esapi.errors.EncodingException;
 import org.owasp.esapi.reference.DefaultEncoder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.client.ClientHttpResponse;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
@@ -717,7 +721,7 @@ public final class XslUtil {
             if (srs != null && !(srs.equals(""))) geomSrs = CRS.decode(srs);
             Parser[] parsers = GMLParsers.create();
             Parser parser = null;
-            if (geomElement.getNamespace().equals(Geonet.Namespaces.GML32)) {
+            if (geomElement.getNamespace().equals(Geonet.Namespaces.GML)) {
               parser = parsers[1];
             } else {
               parser = parsers[0];
@@ -791,6 +795,22 @@ public final class XslUtil {
             Log.error(Geonet.GEONETWORK,"XslUtil evaluate error: " + e.getMessage(), e);
             return null;
         }
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public static boolean isIntranet(){
+    	try{
+	    	ServiceContext context = ServiceContext.get();
+	    	AccessManager accessManager = ApplicationContextHolder.get().getBean(AccessManager.class);
+	    	return accessManager.isIntranet(context.getIpAddress());
+    	}catch(Exception e){
+    		Log.error(Geonet.GEONETWORK, "Unable get the IP Address");
+    		return false;
+    	}
+    	
     }
 
     public static String getSiteUrl() {

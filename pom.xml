@@ -318,7 +318,7 @@
           </excludes>
         </configuration>
       </plugin>
-      <plugin>
+      <!-- <plugin>
         <groupId>org.zeroturnaround</groupId>
         <artifactId>jrebel-maven-plugin</artifactId>
         <version>1.1.5</version>
@@ -335,7 +335,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
     </plugins>
   </build>
 
@@ -469,6 +469,11 @@
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
       </dependency>
+      <dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-lang3</artifactId>
+		<version>3.7</version>
+	  </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
@@ -757,6 +762,16 @@
         <artifactId>gt-brewer</artifactId>
         <version>${geotools.version}</version>
       </dependency>
+       <dependency>
+	    <groupId>org.geotools</groupId>
+	    <artifactId>gt-opengis</artifactId>
+	    <version>${geotools.version}</version>
+	  </dependency>
+	  <dependency>
+	    <groupId>org.geotools</groupId>
+	    <artifactId>gt-metadata</artifactId>
+	    <version>${geotools.version}</version>    
+	  </dependency>     
       <dependency>
         <groupId>org.geotools.jdbc</groupId>
         <artifactId>gt-jdbc-postgis</artifactId>

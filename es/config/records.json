@@ -1282,7 +1282,10 @@
       },
       "root": {
         "type": "keyword"
-      }
+      },
+	  "eCatId" : {
+		"type": "keyword"
+	  }
     }
   }
 }

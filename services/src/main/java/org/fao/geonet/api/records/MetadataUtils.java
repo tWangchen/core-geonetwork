@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.ApplicationContextHolder;
 import org.fao.geonet.Constants;
 import org.fao.geonet.GeonetContext;
@@ -69,6 +70,7 @@ import org.jdom.Content;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Joiner;
@@ -126,15 +128,18 @@ public class MetadataUtils {
         // Get parent record from this record
         if (schemaPlugin != null && (listOfTypes.size() == 0 ||
             listOfTypes.contains(RelatedItemType.parent))) {
-            Set<String> listOfUUIDs = schemaPlugin.getAssociatedParentUUIDs(md);
+        	//Joseph commented - Parent element is added as snippet into xml, not referenced using uuidref
+            /*Set<String> listOfUUIDs = schemaPlugin.getAssociatedParentUUIDs(md);
             if (listOfUUIDs.size() > 0) {
                 String joinedUUIDs = Joiner.on(" or ").join(listOfUUIDs);
                 relatedRecords.addContent(search(joinedUUIDs, "parent", context, from, to, fast, null));
-            }
-        }
-
-        // Brothers and sisters are not returned by default
-        // It is only on demand and output as siblings.
+                relatedRecords.addContent(parent);
+            }*/
+       
+        	//Joseph added - Parent element is added as snippet into xml, not referenced using uuidref
+	    }		
+			// Brothers and sisters are not returned by default
+            // It is only on demand and output as siblings.
         if (schemaPlugin != null && listOfTypes.contains(RelatedItemType.brothersAndSisters)) {
             Set<String> listOfUUIDs = schemaPlugin.getAssociatedParentUUIDs(md);
             if (listOfUUIDs.size() > 0) {
@@ -167,7 +172,11 @@ public class MetadataUtils {
         // Search for records where an aggregate point to this record
         if (listOfTypes.size() == 0 ||
             listOfTypes.contains(RelatedItemType.associated)) {
-            relatedRecords.addContent(search(uuid, "associated", context, from, to, fast, null));
+            //relatedRecords.addContent(search(uuid, "associated", context, from, to, fast, null));
+        	
+        	//Joseph added - Associated resource element is added as snippet into xml, not referenced using uuidref
+        	Element associations = schemaPlugin.getAssociatedResourceElement(md);
+        	relatedRecords.addContent(associations);
         }
 
         // Search for services

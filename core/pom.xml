@@ -34,6 +34,19 @@
   <artifactId>core</artifactId>
   <name>GeoNetwork core</name>
 
+<!--  To select individual SDK modules (eg:aws-java-sdk-s3), use the AWS SDK for Java BOM for Maven -->
+   <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bom</artifactId>
+        <version>1.11.618</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  
   <dependencies>
     <dependency>
       <groupId>net.objecthunter</groupId>
@@ -43,6 +56,10 @@
     <dependency>
       <groupId>org.tuckey</groupId>
       <artifactId>urlrewritefilter</artifactId>
+    </dependency>
+    <dependency>
+	<groupId>com.amazonaws</groupId>
+	<artifactId>aws-java-sdk-s3</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -213,6 +230,14 @@
       <artifactId>gt-brewer</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-opengis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-metadata</artifactId>	    
+    </dependency>
+    <dependency>
       <groupId>com.vividsolutions</groupId>
       <artifactId>jts</artifactId>
     </dependency>
@@ -286,6 +311,11 @@
       <artifactId>commons-collections</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
     </dependency>
@@ -329,6 +359,11 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jdom</groupId>
+      <artifactId>jdom2</artifactId>
+      <version>2.0.6</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -512,11 +547,6 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.11.618</version>
     </dependency>
   </dependencies>
 

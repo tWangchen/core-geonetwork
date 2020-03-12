@@ -145,7 +145,7 @@ public class SpatialIndexWriter implements FeatureListener {
         List<Polygon> allPolygons = new ArrayList<Polygon>();
         for (Element geom : (List<Element>) transform.getChildren()) {
         	Parser parser = null;
-        	if (geom.getNamespace().equals(Geonet.Namespaces.GML32)) {
+        	if (geom.getNamespace().equals(Geonet.Namespaces.GML)) {
         	  parser = parsers[1]; // geotools gml3.2 parser
         	} else {
         	  parser = parsers[0];

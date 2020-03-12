@@ -258,7 +258,7 @@ public class MetadataRegionSearchRequest extends Request {
     }
 
     private Parser getParser(Element gmlNode) {
-        if (gmlNode.getNamespace().equals(Namespaces.GML32)) {
+        if (gmlNode.getNamespace().equals(Namespaces.GML)) {
             return parsers[1]; // geotools gml3.2 parser
         } else {
             return parsers[0];

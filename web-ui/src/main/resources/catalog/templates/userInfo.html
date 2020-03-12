@@ -1,0 +1,18 @@
+<div class="useractions">
+    <div data-ng-if="authenticated" class="profile-info">
+        <p>{{user.name}} {{user.surname}}</p>
+        ({{user.profile | translate}})
+    </div>
+    
+    <div class="pull-right">
+        <a data-ng-if="authenticated" href="../../signout" class="btn btn-lg signin-btn" title="{{'signout' | translate}}">
+            <i class="fa fa-sign-out"></i>&nbsp;
+            {{'signout' | translate}}
+        </a>
+        <a data-ng-if="!authenticated && service !== 'catalog.signin' && isIntranet" href="{{pages.signin}}"
+            class="btn btn-lg signin-btn" title="{{'signIn'|translate}}" data-ng-keypress="$event">
+            <i class="fa fa-sign-in" />&nbsp;
+            {{'signIn' | translate}}
+        </a>
+    </div>
+</div>

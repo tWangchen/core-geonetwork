@@ -149,15 +149,14 @@
           </xsl:choose>
         </form>
       </div>
-      <xsl:if test="$hasSidePanel">
-        <div class="col-md-4 gn-editor-sidebar">
-          <div class="gn-editor-tools-container">
-            <xsl:apply-templates mode="form-builder"
-                                 select="$viewConfig/sidePanel/*"/>
-          </div>
+      <div class="col-md-{if ($hasSidePanel) then '4' else '0'} gn-editor-sidebar">
+        <div class="gn-editor-tools-container">
+          <xsl:apply-templates mode="form-builder"
+                               select="$viewConfig/sidePanel/*"/>
         </div>
-      </xsl:if>
+      </div>
     </div>
+
   </xsl:template>
 
 

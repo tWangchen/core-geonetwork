@@ -21,6 +21,7 @@
 package org.fao.geonet.kernel.security.shibboleth;
 
 import org.fao.geonet.ApplicationContextHolder;
+import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.kernel.security.shibboleth.ShibbolethUserUtils.MinimalUser;
 import org.fao.geonet.utils.Log;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.filter.GenericFilterBean;
+
 
 import java.io.IOException;
 

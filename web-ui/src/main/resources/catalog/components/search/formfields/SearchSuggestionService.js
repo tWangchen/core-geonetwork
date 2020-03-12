@@ -109,6 +109,15 @@
             });
           };
 
+          this.getAuthorSuggestions = function(val) {
+            var url = this.getUrl(val, 'author',
+                ('STARTSWITHFIRST'));
+
+            return $http.get(url, {
+            }).then(function(res) {
+              return res.data[1];
+            });
+          };
 
           /**
            * @ngdoc method

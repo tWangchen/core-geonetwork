@@ -391,7 +391,108 @@
 
 
       $scope.processReport = null;
-
+	    $scope.upload_desc = null;
+  	  $scope.upload_backup = false;
+      $scope.unsupportedFile = false;
+	    $scope.isfileSelected = false;
+	    $scope.setFile = function(element) {
+      $scope.$apply(function($scope) {
+      $scope.theFile = element.files[0];
+			if ($scope.theFile.name.match(/.csv$/i) !== null) {
+				$scope.isfileSelected = true;
+				$scope.unsupportedFile = false;
+			  } else {
+				$scope.unsupportedFile = true;
+				angular.element("input[type='file']").val(null);
+			  }
+        });
+      };
+	    $scope.clear = function () {
+  		  $scope.unsupportedFile = false;
+  		  $scope.isfileSelected = false;
+  		  console.log('clear.....');
+  		  angular.element("input[type='file']").val(null);
+		  };
+	  
+  	  $scope.updateModes = [
+  		{value : "Add Element", key : "add"},
+  		{value : "Remove existing elements and Add", key : "remove"}
+  	  ];
+		 
+  	  $scope.updatemode = $scope.updateModes[0];
+  	  $scope.modewarning = false;
+  	  $scope.changedValue = function(item) {
+  		$scope.updatemode = item;
+  		if($scope.updatemode.key === 'remove'){
+  			$scope.modewarning = true;
+  		}else{
+  			$scope.modewarning = false;
+  		}
+	  }   
+	  
+	  $scope.uploadcsv = function(){
+  		$scope.unsupportedFile = false;
+  		$scope.isCompleted = false;
+  		console.log('$scope.upload_desc --> ' + this.upload_desc);
+  		var fd = new FormData();
+  		fd.append("file", $scope.theFile);
+  		fd.append("mode", $scope.updatemode.key);
+  		fd.append("desc", this.upload_desc);
+  		fd.append("backup", this.upload_backup);
+  		$http.post('../api/records/batchediting/csv', fd, {
+  			headers: {'Content-Type': undefined }
+  		}).success(function(data){
+  			$timeout(checkIsCompleted, 15000);	
+  		}).error( function(err){
+  			console.log('Error.....');
+  			$scope.processReport = err.data;
+  		});
+	  };
+	  
+	  var temprecords = 0;
+	  $scope.isCompleted = true;
+	  //var updateCheckInterval = 15000;
+	  $scope.processRecords = 1;
+	  function checkIsCompleted() {
+        // Check if completed
+        return $http.get('../api/records/batchediting/report').
+            success(function(data, status) {
+				$scope.processRecords = data;
+				if($scope.processRecords === temprecords){
+					$scope.isCompleted = true;
+					$http.get('../api/records/batchediting/clear').then(function(response){});
+				}else{
+					temprecords = data;
+				}
+				
+        /*if(data.numberOfRecords == data.numberOfRecordsProcessed){
+          $scope.isCompleted = true;  
+        }*/
+        if (!$scope.isCompleted) {
+          $timeout(checkIsCompleted, 15000);
+        }
+      });
+    }
+	  
+	  
+	  /********** Batch Edit History **********/
+	  $scope.processBatchEditReport = null;
+	  $http.get('../api/records/batchediting/history').
+            success(function(data, status) {
+              	  $scope.processBatchEditReport = data;  
+            });
+		
+	   $scope.purge = function(){
+			if (confirm("Are you sure that you want to delete all history?")) {
+				$http.delete('../api/records/batchediting/purge', {}).then(function(response) {
+					$route.reload();
+				})
+			}
+		};
+		
+		$scope.refresh = function(){
+			$route.reload();
+		};
       $scope.applyChanges = function() {
         var params = [], i = 0;
         angular.forEach($scope.changes, function(field) {

@@ -41,6 +41,7 @@ import org.fao.geonet.csw.common.exceptions.NoApplicableCodeEx;
 import org.fao.geonet.domain.CustomElementSet;
 import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.domain.Pair;
+import org.fao.geonet.domain.Setting;
 import org.fao.geonet.kernel.DataManager;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.csw.CatalogConfiguration;
@@ -53,6 +54,7 @@ import org.fao.geonet.kernel.search.SearchManager;
 import org.fao.geonet.kernel.setting.SettingInfo;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.repository.CustomElementSetRepository;
+import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.util.xml.NamespaceUtils;
 import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
@@ -159,7 +161,7 @@ public class GetRecords extends AbstractOperation implements CatalogService {
         int startPos = getStartPosition(request);
 
         // optional integer, value at least 1
-        int maxRecords = getMaxRecords(request);
+        int maxRecords = getMaxRecords(request, context);
 
         Element query = request.getChild("Query", Csw.NAMESPACE_CSW);
 
@@ -680,7 +682,10 @@ public class GetRecords extends AbstractOperation implements CatalogService {
      * @return maxRecords
      * @throws InvalidParameterValueEx hmm
      */
-    private int getMaxRecords(Element request) throws InvalidParameterValueEx {
+    private int getMaxRecords(Element request, ServiceContext context) throws InvalidParameterValueEx {
+    	SettingRepository settingRepo = context.getBean(SettingRepository.class);
+        Setting se = settingRepo.findOne("system/selectionmanager/maxrecords");
+        
         String max = request.getAttributeValue("maxRecords");
         if (max == null) {
             return 10;
@@ -688,6 +693,11 @@ public class GetRecords extends AbstractOperation implements CatalogService {
         try {
             int value = Integer.parseInt(max);
             if (value >= 1) {
+                
+                Integer _maxrec = Integer.parseInt(se.getValue());
+                if(value > _maxrec){
+                	value = _maxrec;
+                }
                 return value;
             } else {
                 throw new InvalidParameterValueEx("maxRecords", max);

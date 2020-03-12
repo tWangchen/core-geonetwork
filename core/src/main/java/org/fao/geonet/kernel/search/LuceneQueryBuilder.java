@@ -39,6 +39,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.facet.FacetsConfig;
@@ -509,6 +510,11 @@ public class LuceneQueryBuilder {
         // For each field value add a clause to the main query if not a set or no multi value like spatial search or
         // add to the boolean query (will be added to the main query after looping over all values).
         for (String fieldValue : fieldValues) {
+        	
+        	if(fieldName.equals("author")){//Joseph added - To remove capitalize fieldvalue and char after dot
+        		fieldValue = upperCaseAfterdot(WordUtils.capitalizeFully(fieldValue)).concat("*");
+        	}
+        	
             if (LuceneIndexField.ANY.equals(fieldName)) {
                 addAnyTextQuery(fieldValue, similarity, (criteriaIsASet ? bq : query));
             } else if (LuceneIndexField.UUID.equals(fieldName) || SearchParameter.UUID.equals(fieldName)) {
@@ -559,6 +565,10 @@ public class LuceneQueryBuilder {
             // featured
             else if (SearchParameter.FEATURED.equals(fieldName)) {
                 featuredCriteria(fieldValue, bq);
+            }
+            //For querying non admin records
+            else if("_owner".equals(fieldName) && "0".equals(fieldValue)){
+            	addProhibitedTextField("1", fieldName, (criteriaIsASet ? bq : query));
             } else {
                 if (criteriaIsASet) {
                     // Add to the boolean query which will be added to the main query
@@ -580,6 +590,21 @@ public class LuceneQueryBuilder {
         }
     }
 
+    /**
+     * To Capitalize Character after dot. Used for searching authors
+     * @param value
+     * @return
+     */
+    private static String upperCaseAfterdot(String value) {
+        char[] array = value.toCharArray();
+        for (int i = 1; i < array.length; i++) {
+            if (Character.valueOf(array[i-1]) == '.') {
+                array[i] = Character.toUpperCase(array[i]);
+            }
+        }
+        return new String(array);
+    }
+    
     /**
      * Adds featured searchterm to query.
      */

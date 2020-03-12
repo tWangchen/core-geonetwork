@@ -46,6 +46,8 @@
 
 
   <bean id="AccessManager" class="org.fao.geonet.kernel.AccessManager" lazy-init="true"/>
+  <bean id="TransformManager" class="org.fao.geonet.kernel.TransformManager" lazy-init="true"/>
+  <bean id="CSVBatchEdit" class="org.fao.geonet.kernel.batchedit.CSVBatchEdit" lazy-init="true"/>
   <bean id="DataManager" class="org.fao.geonet.kernel.DataManager" lazy-init="true"/>
   <bean id="GeonetworkDataDirectory" class="org.fao.geonet.kernel.GeonetworkDataDirectory"
         lazy-init="true"/>

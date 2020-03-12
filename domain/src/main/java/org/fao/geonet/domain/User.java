@@ -63,6 +63,8 @@ public class User extends GeonetEntity implements UserDetails {
     private Set<String> _email = new HashSet<>();
     private Set<Address> _addresses = new LinkedHashSet<>();
     private String _organisation;
+    private String _position;
+    private String _voiceTelephone;
     private String _kind;
     private Profile _profile = Profile.RegisteredUser;
     private UserSecurity _security = new UserSecurity();
@@ -274,6 +276,34 @@ public class User extends GeonetEntity implements UserDetails {
         return this;
     }
 
+/**
+     * Return the position of the user in the organisation.
+     *
+     * @return the user's position.
+     */
+    public String getPosition() {
+        return _position;
+    }
+
+    public User setPosition(String position) {
+        this._position = position;
+        return this;
+    }
+    
+    /**
+     * Return the voice telephone of the user.
+     *
+     * @return the user's voice telephone.
+     */
+    public String getVoiceTelephone() {
+        return _voiceTelephone;
+    }
+
+    public User setVoiceTelephone(String voiceTelephone) {
+        this._voiceTelephone = voiceTelephone;
+        return this;
+    }
+	
     /**
      * Get the 'kind' of user. Just a sting representing the type or category of the user. It can be
      * customized for a particular application. An example is GOV or CONTRACTOR.
@@ -440,6 +470,12 @@ public class User extends GeonetEntity implements UserDetails {
         if (mergeNullData || StringUtils.isNotBlank(otherUser.getOrganisation())) {
             setOrganisation(otherUser.getOrganisation());
         }
+        if (mergeNullData || StringUtils.isNotBlank(otherUser.getPosition())) {
+            setPosition(otherUser.getPosition());
+        }
+        if (mergeNullData || StringUtils.isNotBlank(otherUser.getVoiceTelephone())) {
+            setVoiceTelephone(otherUser.getVoiceTelephone());
+        }
         if (mergeNullData || StringUtils.isNotBlank(otherUser.getKind())) {
             setKind(otherUser.getKind());
         }
@@ -497,6 +533,10 @@ public class User extends GeonetEntity implements UserDetails {
         if (_name != null ? !_name.equals(user._name) : user._name != null) return false;
         if (_organisation != null ? !_organisation.equals(user._organisation) : user._organisation != null)
             return false;
+        if (_position != null ? !_position.equals(user._position) : user._position != null)
+            return false;
+        if (_voiceTelephone != null ? !_voiceTelephone.equals(user._voiceTelephone) : user._voiceTelephone != null)
+            return false;
         if (_profile != user._profile) return false;
         if (!_security.equals(user._security)) return false;
         if (_surname != null ? !_surname.equals(user._surname) : user._surname != null)
@@ -518,6 +558,8 @@ public class User extends GeonetEntity implements UserDetails {
         result = 31 * result + _email.hashCode();
         result = 31 * result + _addresses.hashCode();
         result = 31 * result + (_organisation != null ? _organisation.hashCode() : 0);
+        result = 31 * result + (_position != null ? _position.hashCode() : 0);
+        result = 31 * result + (_voiceTelephone != null ? _voiceTelephone.hashCode() : 0);
         result = 31 * result + (_kind != null ? _kind.hashCode() : 0);
         result = 31 * result + (_profile != null ? _profile.hashCode() : 0);
         result = 31 * result + _security.hashCode();

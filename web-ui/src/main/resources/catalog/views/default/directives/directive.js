@@ -48,7 +48,22 @@
       };
     }
   ]);
-
+  module.directive('copyToClipboard', function () {
+    return {
+      restrict: 'A',
+      link: function (scope, elem, attrs) {
+        elem.click(function () {
+          if (attrs.copyToClipboard) {
+            var $temp_input = $("<input>");
+            $("body").append($temp_input);
+            $temp_input.val(attrs.copyToClipboard).select();
+            document.execCommand("copy");
+            $temp_input.remove();
+          }
+        });
+      }
+    };
+  });
   module.directive('gnAttributeTableRenderer', ['gnMdView',
     function(gnMdView) {
       return {
@@ -151,6 +166,20 @@
     }
   ]);
 
+  module.directive('clickCapture',['$document', function($document) {
+    return {
+      link: function(scope, elm, attrs) {
+        $document.on('click', function (e) {
+          var adv_opened = $('#adv-1').hasClass('in');
+          //Unable to find better solution. Need to find some other solution.
+          if(!$(e.target).closest('#adv-1').length && !$(e.target).is('#adv-1') && adv_opened === true 
+                && e.target.nodeName === 'DIV' && !e.target.className.includes('tt')){
+            $('#adv-1').collapse('toggle');
+          }
+        });              
+      }
+    }
+  }]);
   module.directive('gnPeriodChooser', [
     function() {
       return {

@@ -85,12 +85,11 @@ div[gn-transfer-ownership] * .list-group {
   Display button label in top tool bar using inline mode.
  */
 .gn-top-bar {
-  border-radius: 0px;
-  padding: 0 20px;
-  .navbar-collapse {
-    padding-left: 0;
-    padding-right: 0;
-  }
+    border-radius: 0px;
+    padding: 0 20px;
+    .navbar-collapse {
+ //       padding-right: 5px;
+    }
   .visible-lg {
     display: none !important;
   }
@@ -139,9 +138,9 @@ div[gn-transfer-ownership] * .list-group {
       border-right: 0;
     }
   }
-  .gn-editor-board {
+  /*.gn-editor-board {
     padding-top: 120px;
-  }
+  }*/
   .gn-editor-container, .gn-batch-editor, #gn-directory-container,
   #gn-new-metadata-container, #gn-import-container {
     padding-top: 70px;
@@ -229,14 +228,33 @@ a {
  * Logo in nav bar can't be big
  */
 .gn-logo {
-  max-height: 28px;
-  margin: -8px 0px;
+  max-height: 69px;
+  width:180px !important;
 }
 
 .gn-logo-lg {
   width: 160px !important;
 }
 
+.gn-logo-nav {
+  padding-left: 15px;
+  span.title-lg {
+    font: bold 1.2em Helvetica,Arial,Verdana,sans-serif;
+    padding-left: 50px;
+    color: #333333;
+  }
+}
+
+.gn-logo-harvest {
+  max-height: 69px;
+  width:25px !important;
+}
+/*.ga-line {
+    width: 100%;
+    height: 10px;
+    background-image: url(../catalog/views/default/images/ga-line.jpg);
+    background-size: contain;
+}*/
 /**
  * Properly break stack trace error.
  */
@@ -346,16 +364,13 @@ div.gn-scroll-spy {
     width: 90vw;
     max-height: 90vh;
     .modal-body {
-      max-height: 80vh;
+      max-height: 76vh;
       overflow: auto;
       min-height: 500px;
       .gn-modal-content {
         // height of modal body - 2 * padding - height of button(s)
-        max-height: calc(~"76vh - 30px - 28px");
+        max-height: calc(~"76vh - 30px - 30px");
         overflow: auto;
-        .img-thumbnail {
-          max-height: 250px;
-        }
       }
     }
   }
@@ -635,23 +650,29 @@ i.fa-times.delete:hover {
 
 .gn-search-page {
   .gn-status, .gn-workflow-status {
-    border: 2px solid @brand-primary;
-    display: inline-block;
-    margin-top: 5px;
-    margin-right: 5px;
-    border-radius: 20px;
-    padding: 5px 8px;
-    color: @brand-primary;
-    font-weight: 500;
-    font-size: 80%;
-    background-color: #fff;
+    border: 1px solid darken(@brand-info, 5%);
+    position: absolute;
+    min-width: 80px;
+    z-index: 999;
+    top: 35px;
+    right: 5px;
+    float: right;
+    border-radius: 6px;
+    padding: 2px;
+    -ms-transform: rotate(25deg);
+    -webkit-transform: rotate(25deg);
+    transform: rotate(25deg);
+    color: @brand-info;
+    font-weight: bold;
+    font-size: 70%;
+    background-color: rgba(255, 255, 255 , 0.7);
   }
   .gn-status-mdview, .gn-workflow-status-mdview {
+    font-size: 110%;
     position: relative;
-    margin-top: 0;
-    padding: 8px 12px;
-    font-weight: 500;
-    font-size: 90%;
+    float: right;
+    top: -52px;
+    margin-right: -20px;
   }
   /* Decide here which status should be displayed
   or not and with which colors */
@@ -667,6 +688,24 @@ i.fa-times.delete:hover {
     border-color: darken(@brand-danger, 5%);
     color: @brand-danger;
   }
+  
+  .gn-status-Approved-Internal {
+    border-color: darken(@brand-primary, 5%);
+    color: @brand-primary;
+  }
+  .gn-status-Approved-External {
+    border-color: darken(@brand-success, 5%);
+    color: @brand-success;
+  }
+  .gn-status-Draft-Internal {
+    border-color: darken(@brand-warning, 5%);
+    color: @brand-warning;
+  }
+  .gn-status-Retired-Internal {
+    border-color: darken(@brand-danger, 5%);
+    color: @brand-danger;
+  }
+  
   .gn-workflow-status {
     background-color: rgba(255, 255, 255 , 0.7);
     border-color: darken(@brand-success, 5%);
