@@ -8,8 +8,8 @@ branches:
     - 3.10.x
     
 script:
-    export BRANCH=/ecat3/test;
-  - mvn install -DskipTests=true
+  - export BRANCH=/ecat3/test
+  - mvn clean install -DskipTests -Penv-prod,es
 
 addons:
   artifacts:
