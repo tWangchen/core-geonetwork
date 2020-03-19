@@ -36,6 +36,8 @@
                 xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0"
                 xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
                 xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
+                xmlns:index="java:org.fao.geonet.kernel.search.EsSearchManager"
+                xmlns:gn-fn-index="http://geonetwork-opensource.org/xsl/functions/index"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 xmlns:daobs="http://daobs.org"
                 xmlns:saxon="http://saxon.sf.net/"
@@ -43,8 +45,11 @@
                 exclude-result-prefixes="#all"
                 version="2.0">
 
+  <!-- TODO remove dependency on 19139-->
   <xsl:import href="../../iso19139/index-fields/fn.xsl"/>
-  <xsl:import href="../../iso19139/index-fields/inspire-constant.xsl"/>
+  <xsl:import href="common/inspire-constant.xsl"/>
+  <xsl:import href="common/index-utils.xsl"/>
+
 
   <xsl:output method="xml" indent="yes"/>
 
@@ -98,6 +103,10 @@
     <xsl:variable name="identifier" as="xs:string"
                   select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code/gco:CharacterString[. != '']"/>
 
+    <xsl:variable name="lastRevisionDate" as="xs:string?"
+                  select="mdb:dateInfo/*[
+                              cit:dateType/*/@codeListValue = 'revision'
+                            ]/cit:date/gco:DateTime[. != '']"/>
 
     <xsl:variable name="mainLanguage" as="xs:string?"
                   select="mdb:defaultLocale/lan:PT_Locale/
@@ -189,6 +198,8 @@
                                 then concat(., '-01T00:00:00')
                                 else if (name() = 'gco:Date' or string-length(.) = 10)
                                 then concat(., 'T00:00:00')
+                                else if (contains(., '.'))
+                                then tokenize(., '\.')[1]
                                 else ."/>
 
           <xsl:value-of select="translate(string(
@@ -272,7 +283,8 @@
               select="cit:alternateTitle/gco:CharacterString/text()"/>
           </resourceAltTitle>
 
-          <xsl:for-each select="cit:date/cit:CI_Date[cit:date/*/text() != '']">
+          <xsl:for-each select="cit:date/cit:CI_Date[cit:date/*/text() != '' and
+                                  matches(cit:date/*/text(), '[0-9]{4}.*')]">
             <xsl:variable name="dateType"
                           select="cit:dateType/cit:CI_DateTypeCode/@codeListValue"
                           as="xs:string?"/>
@@ -366,47 +378,48 @@
                        contains(lower-case(
                        mri:thesaurusName[1]/*/cit:title[1]/*/text()
                        ), 'inspire')]
-                  /mri:keyword/gco:CharacterString[. != '']"/>
+                  /mri:keyword"/>
         <xsl:for-each
           select="$inspireKeywords">
+          <xsl:variable name="position" select="position()"/>
+          <xsl:for-each select="gco:CharacterString[. != '']">
 
-          <xsl:variable name="inspireTheme" as="xs:string"
-                        select="text()"/>
-                        <!--select="solr:analyzeField('synInspireThemes', text())"/>-->
+            <xsl:variable name="inspireTheme" as="xs:string"
+                          select="text()"/>
 
-          <inspireTheme_syn>
-            <xsl:value-of select="text()"/>
-          </inspireTheme_syn>
-          <inspireTheme>
-            <xsl:value-of select="$inspireTheme"/>
-          </inspireTheme>
-
-          <!--
-          WARNING: Here we only index the first keyword in order
-          to properly compute one INSPIRE annex.
-          -->
-          <xsl:if test="position() = 1">
-            <inspireThemeFirst_syn>
+            <inspireTheme_syn>
               <xsl:value-of select="text()"/>
-            </inspireThemeFirst_syn>
-            <inspireThemeFirst>
+            </inspireTheme_syn>
+            <inspireTheme>
               <xsl:value-of select="$inspireTheme"/>
-            </inspireThemeFirst>
-            <inspireAnnexForFirstTheme>
-              <xsl:value-of select="$inspireTheme"/>
-                <!--select="solr:analyzeField('synInspireAnnexes', $inspireTheme)"/>-->
-            </inspireAnnexForFirstTheme>
-          </xsl:if>
-          <inspireAnnex>
-            <xsl:value-of select="$inspireTheme"/>
-            <!--select="solr:analyzeField('synInspireAnnexes', $inspireTheme)"/>-->
-          </inspireAnnex>
+            </inspireTheme>
+
+            <!--
+            WARNING: Here we only index the first keyword in order
+            to properly compute one INSPIRE annex.
+            -->
+            <xsl:if test="position() = 1">
+              <inspireThemeFirst_syn>
+                <xsl:value-of select="text()"/>
+              </inspireThemeFirst_syn>
+              <inspireThemeFirst>
+                <xsl:value-of select="$inspireTheme"/>
+              </inspireThemeFirst>
+              <inspireAnnexForFirstTheme>
+                <xsl:value-of
+                  select="$inspireTheme"/>
+              </inspireAnnexForFirstTheme>
+            </xsl:if>
+            <inspireAnnex>
+              <xsl:value-of select="text()"/>
+            </inspireAnnex>
+          </xsl:for-each>
         </xsl:for-each>
 
-        <numberOfInspireTheme>
+        <inspireThemeNumber>
           <xsl:value-of
             select="count($inspireKeywords)"/>
-        </numberOfInspireTheme>
+        </inspireThemeNumber>
 
         <hasInspireTheme>
           <xsl:value-of
@@ -421,6 +434,11 @@
                         */mri:MD_Keywords/
                           mri:keyword/lan:PT_FreeText/lan:textGroup/
                             lan:LocalisedCharacterString"/>
+
+        <tagNumber>
+          <xsl:value-of select="count($keywords)"/>
+        </tagNumber>
+
         <xsl:for-each
           select="$keywords">
           <tag>
@@ -483,7 +501,7 @@
               <!-- Try to build a thesaurus key based on the name
               by removing space - to be improved. -->
               <xsl:when test="normalize-space($thesaurusName) != ''">
-                <!--<xsl:value-of select="replace($thesaurusName, ' ', '')"/>-->
+                <xsl:value-of select="replace($thesaurusName, '[^a-zA-Z0-9]', '')"/>
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
@@ -492,10 +510,14 @@
             <!-- Index keyword characterString including multilingual ones
              and element like gmx:Anchor including the href attribute
              which may contains keyword identifier. -->
+            <xsl:variable name="thesaurusField"
+                          select="concat('thesaurus_', replace($key, '[^a-zA-Z0-9]', ''))"/>
+
+
             <xsl:for-each select="*[normalize-space() != '']|
                                   */@xlink:href[normalize-space() != '']|
                                   lan:PT_FreeText/lan:textGroup/lan:LocalisedCharacterString[normalize-space() != '']">
-              <xsl:element name="thesaurus_{replace($key, '[^a-zA-Z0-9]', '')}">
+              <xsl:element name="{$thesaurusField}">
                 <xsl:value-of select="normalize-space(.)"/>
               </xsl:element>
             </xsl:for-each>
@@ -521,7 +543,7 @@
 
           <xsl:for-each select="mri:distance/gco:Distance[. != '']">
             <resolutionDistance>
-              <xsl:value-of select="concat(., @uom)"/>
+              <xsl:value-of select="concat(., ' ', @uom)"/>
             </resolutionDistance>
           </xsl:for-each>
         </xsl:for-each>
@@ -616,35 +638,33 @@
                               -90 &lt;= number($n) and number($n) &lt;= 90">
                 <xsl:choose>
                   <xsl:when test="$e = $w and $s = $n">
-                    <geom>
-                      <xsl:text>POINT(</xsl:text>
-                      <xsl:value-of select="concat($w, ' ', $s)"/>
-                      <xsl:text>)</xsl:text>
-                    </geom>
+                    <location><xsl:value-of select="concat($s, ',', $w)"/></location>
                   </xsl:when>
                   <xsl:when
                     test="($e = $w and $s != $n) or ($e != $w and $s = $n)">
                     <!-- Probably an invalid bbox indexing a point only -->
-                    <geom>
-                      <xsl:text>POINT(</xsl:text>
-                      <xsl:value-of select="concat($w, ' ', $s)"/>
-                      <xsl:text>)</xsl:text>
-                    </geom>
+                    <location><xsl:value-of select="concat($s, ',', $w)"/></location>
                   </xsl:when>
                   <xsl:otherwise>
                     <geom>
-                      <xsl:text>POLYGON((</xsl:text>
-                      <xsl:value-of select="concat($w, ' ', $s)"/>
+                      <xsl:text>{"type": "polygon",</xsl:text>
+                      <xsl:text>"coordinates": [</xsl:text>
+                      <xsl:value-of select="concat('[', $w, ',', $s, ']')"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat($e, ' ', $s)"/>
+                      <xsl:value-of select="concat('[', $e, ',', $s, ']')"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat($e, ' ', $n)"/>
+                      <xsl:value-of select="concat('[', $e, ',', $n, ']')"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat($w, ' ', $n)"/>
+                      <xsl:value-of select="concat('[', $w, ',', $n, ']')"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat($w, ' ', $s)"/>
-                      <xsl:text>))</xsl:text>
+                      <xsl:value-of select="concat('[', $w, ',', $s, ']')"/>
+                      <xsl:text>]}</xsl:text>
                     </geom>
+
+                    <location><xsl:value-of select="concat(
+                                              (number($s) + number($n)) div 2,
+                                              ',',
+                                              (number($w) + number($e)) div 2)"/></location>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:when>
@@ -697,7 +717,7 @@
       <!-- INSPIRE Conformity -->
 
       <!-- Conformity for data sets -->
-      <xsl:choose>
+      <!--<xsl:choose>
         <xsl:when test="$isDataset">
           <xsl:for-each-group select="mdb:dataQualityInfo/*/mdq:report"
                               group-by="*/mdq:result/*/mdq:specification/cit:CI_Citation/
@@ -715,9 +735,9 @@
             </xsl:if>
           </xsl:for-each-group>
         </xsl:when>
-        <xsl:otherwise>
+        <xsl:otherwise>-->
           <!-- Conformity for services -->
-          <xsl:for-each-group select="mdb:dataQualityInfo/*/mdq:report"
+         <!-- <xsl:for-each-group select="mdb:dataQualityInfo/*/mdq:report"
                               group-by="*/mdq:result/*/mdq:specification/cit:CI_Citation/
                                             cit:title/gco:CharacterString">
 
@@ -735,8 +755,19 @@
             </xsl:if>
           </xsl:for-each-group>
         </xsl:otherwise>
-      </xsl:choose>
+      </xsl:choose>-->
 
+      <xsl:for-each-group select="mdb:dataQualityInfo/*/mdb:report"
+                          group-by="*/mdb:result/*/mdb:specification/
+                                      */cit:title/gco:CharacterString">
+        <xsl:variable name="title" select="current-grouping-key()"/>
+        <xsl:variable name="pass" select="*/mdb:result/*/mdb:pass/gco:Boolean"/>
+        <xsl:if test="$pass">
+          <xsl:element name="conformTo_{replace(normalize-space($title), '[^a-zA-Z0-9]', '')}">
+            <xsl:value-of select="$pass"/>
+          </xsl:element>
+        </xsl:if>
+      </xsl:for-each-group>
 
       <xsl:for-each select="mdb:resourceLineage/*">
         <xsl:for-each select="mrl:lineage/mrl:LI_Lineage/
@@ -775,21 +806,35 @@
 
         <xsl:for-each select="mrd:transferOptions/*/
                                 mrd:onLine/*[cit:linkage/gco:CharacterString != '']">
+          <xsl:variable name="protocol" select="cit:protocol/gco:CharacterString/text()"/>
+
           <linkUrl>
             <xsl:value-of select="cit:linkage/gco:CharacterString"/>
           </linkUrl>
           <linkProtocol>
             <xsl:value-of select="cit:protocol/gco:CharacterString/text()"/>
           </linkProtocol>
-          <link>
-            <xsl:value-of select="cit:protocol/*/text()"/>
-            <xsl:text>|</xsl:text>
+          <xsl:element name="linkUrlProtocol{replace($protocol, '[^a-zA-Z0-9]', '')}">
             <xsl:value-of select="cit:linkage/*/text()"/>
-            <xsl:text>|</xsl:text>
-            <xsl:value-of select="normalize-space(cit:name/*/text())"/>
-            <xsl:text>|</xsl:text>
-            <xsl:value-of select="normalize-space(cit:description/*/text())"/>
+          </xsl:element>
+          <link type="object">{
+            "protocol":"<xsl:value-of select="gn-fn-index:json-escape(cit:protocol/*/text())"/>",
+            "url":"<xsl:value-of select="gn-fn-index:json-escape(cit:linkage/*/text())"/>",
+            "name":"<xsl:value-of select="gn-fn-index:json-escape(cit:name/*/text())"/>",
+            "description":"<xsl:value-of select="gn-fn-index:json-escape(cit:description/*/text())"/>"
+            }
           </link>
+
+          <xsl:if test="$operatesOnSetByProtocol and normalize-space($protocol) != ''">
+            <xsl:if test="daobs:contains($protocol, 'wms')">
+              <recordOperatedByType>view</recordOperatedByType>
+            </xsl:if>
+            <xsl:if test="daobs:contains($protocol, 'wfs') or
+                          daobs:contains($protocol, 'wcs') or
+                          daobs:contains($protocol, 'download')">
+              <recordOperatedByType>download</recordOperatedByType>
+            </xsl:if>
+          </xsl:if>
         </xsl:for-each>
       </xsl:for-each>
 
@@ -857,7 +902,7 @@
                   as="xs:string*"/>
 
     <xsl:variable name="role"
-                  select="*[1]/cit:role/*/@codeListValue"
+                  select="replace(*[1]/cit:role/*/@codeListValue, ' ', '')"
                   as="xs:string?"/>
     <xsl:if test="normalize-space($organisationName) != ''">
       <xsl:element name="Org{$fieldSuffix}">
@@ -875,72 +920,9 @@
 
 
   <!-- For each record, the main mode 'index' is called,
-  then in the document node the mode 'index-extra-fields'
-  could be used to index more fields. -->
+  -  then in the document node the mode 'index-extra-fields'
+  -  could be used to index more fields. -->
   <xsl:template mode="index-extra-fields" match="mdb:MD_Metadata">
 
-    <xsl:if
-      test="contains(mdb:metadataStandard/cit:CI_Citation/cit:title/gco:CharacterString, 'Emodnet')">
-
-      <xsl:variable name="thesaurusList">
-        <entry key="Data delivery mechanisms">dataDeliveryMechanism</entry>
-        <entry key="emodnet-checkpoint.policy.visibility">policyVisibility</entry>
-        <entry key="emodnet-checkpoint.service.extent">serviceExtent</entry>
-        <entry key="emodnet-checkpoint.visibility">visibility</entry>
-        <entry key="emodnet-checkpoint.readyness">readyness</entry>
-      </xsl:variable>
-
-      <xsl:variable name="identification" select="mdb:identificationInfo"/>
-
-      <xsl:for-each select="$thesaurusList/entry">
-        <xsl:variable name="thesaurusName" select="@key"/>
-        <xsl:variable name="fieldName" select="."/>
-
-        <xsl:for-each
-          select="$identification/*/
-                 mri:descriptiveKeywords/mri:MD_Keywords[
-                 contains(
-                     mri:thesaurusName[1]/*/cit:title[1]/gco:CharacterString/text(),
-                     $thesaurusName) or
-                 contains(
-                     mri:thesaurusName[1]/*/cit:identifier[1]/*/mcc:code/*/text(),
-                     $thesaurusName)
-                     ]/mri:keyword/gco:CharacterString">
-          <xsl:element name="extra_medsea_{$fieldName}">
-            <xsl:value-of select="text()"/>
-          </xsl:element>
-
-          <xsl:element name="extra_medsea_syn_{$fieldName}">
-            <xsl:value-of
-              select="text()"/>
-              <!--select="solr:analyzeField('extra_medsea_syn', text())"/>-->
-          </xsl:element>
-        </xsl:for-each>
-      </xsl:for-each>
-
-      <xsl:for-each select="mdb:identificationInfo/*/
-                              mri:resourceConstraints/*/
-                                mco:otherConstraints/*">
-        <xsl:element name="extra_medsea_dataPolicy">
-          <xsl:value-of select="text()"/>
-        </xsl:element>
-      </xsl:for-each>
-
-      <xsl:for-each select="mdb:identificationInfo/*/
-                              mri:resourceConstraints/*/
-                                mri:useLimitation/*">
-        <xsl:element name="extra_medsea_costBasis">
-          <xsl:value-of select="text()"/>
-        </xsl:element>
-      </xsl:for-each>
-
-      <xsl:for-each select="mdb:dataQualityInfo/*/
-                              mdq:report/mdq:DQ_DomainConsistency[mdq:nameOfMeasure/gco:CharacterString = 'Responsiveness']/
-                              mdq:result/mdq:DQ_QuantitativeResult/mdq:value/*">
-        <xsl:element name="extra_medsea_responsiveness">
-          <xsl:value-of select="text()"/>
-        </xsl:element>
-      </xsl:for-each>
-    </xsl:if>
   </xsl:template>
 </xsl:stylesheet>
