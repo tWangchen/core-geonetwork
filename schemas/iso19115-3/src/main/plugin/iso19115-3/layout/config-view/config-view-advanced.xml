@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <view name="advanced" displayIfServiceInfo="count(session[profile='Administrator'])=1"  xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/1.0">
+    
+    <sidePanel>
+        <directive data-gn-validation-report=""/>
+        <directive data-gn-onlinesrc-list=""/>
+        <directive gn-geo-publisher=""
+                   data-ng-if="gnCurrentEdit.geoPublisherConfig"
+                   data-config="{{gnCurrentEdit.geoPublisherConfig}}"
+                   data-lang="lang"/>
+        <directive data-gn-suggestion-list=""/>
+        <directive data-gn-need-help="user-guide/describing-information/creating-metadata.html"/>
+    </sidePanel>
+    
     <tab id="identificationInfo" default="true">
         <section xpath="/mdb:MD_Metadata/mdb:identificationInfo" or="identificationInfo"
             in="/mdb:MD_Metadata"/>

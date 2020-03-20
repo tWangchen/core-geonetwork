@@ -8,6 +8,18 @@
 	xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/1.0"
 	xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
 	xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0">
+	
+	<sidePanel>
+        <directive data-gn-validation-report=""/>
+        <directive data-gn-onlinesrc-list=""/>
+        <directive gn-geo-publisher=""
+                   data-ng-if="gnCurrentEdit.geoPublisherConfig"
+                   data-config="{{gnCurrentEdit.geoPublisherConfig}}"
+                   data-lang="lang"/>
+        <directive data-gn-suggestion-list=""/>
+        <directive data-gn-need-help="user-guide/describing-information/creating-metadata.html"/>
+    </sidePanel>
+    
 	<tab id="resourceDescription" default="true" mode="flat">
 		<section name=" ">
 			<!-- special template to render this field readonly - see layout-custom-fields.xsl -->

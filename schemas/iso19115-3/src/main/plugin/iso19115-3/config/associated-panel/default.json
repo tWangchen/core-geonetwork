@@ -1,0 +1,47 @@
+{
+  "config": {
+    "display": "radio",
+    "types": [
+      {
+        "label": "addOnlinesrc",
+        "copyLabel": "name",
+        "sources": {
+          "filestore": true
+        },
+        "icon": "fa gn-icon-onlinesrc",
+        "process": "onlinesrc-add",
+        "fields": {
+          "protocol": {
+            "value": "WWW:LINK-1.0-http--link"
+          },
+          "url": {},
+          "name": {},
+          "desc": {},
+          "function": {
+            "value": "download"
+          },
+          "formatname": {},
+          "edition": {},
+          "filecomp": {}
+        }
+      },
+      {
+        "label": "addThumbnail",
+        "sources": {
+          "filestore": true,
+          "thumbnailMaker": true
+        },
+        "icon": "fa gn-icon-thumbnail",
+        "fileStoreFilter": "*.{jpg,JPG,png,PNG,gif,GIF}",
+        "process": "thumbnail-add",
+        "fields": {
+          "url": {
+          },
+          "name": {
+            "param": "thumbnail_desc"
+          }
+        }
+      }
+    ]
+  }
+}
