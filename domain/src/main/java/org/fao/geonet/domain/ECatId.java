@@ -16,7 +16,7 @@ public class ECatId {
 	static final String ID_NAME = "ecat_id";
 	
 	@Id
-	@SequenceGenerator(name = ECatId.ID_NAME,sequenceName= ECatId.ID_SEQ_NAME, initialValue = 130000, allocationSize = 1)
+	@SequenceGenerator(name = ECatId.ID_NAME,sequenceName= ECatId.ID_SEQ_NAME, initialValue = 140000, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = ECatId.ID_NAME)
     @Column(name = "id", updatable = false)
     protected Long id;
