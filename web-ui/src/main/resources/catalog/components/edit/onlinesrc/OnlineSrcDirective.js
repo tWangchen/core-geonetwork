@@ -194,8 +194,8 @@
    * </ul>
    *
    */
-      .directive('gnOnlinesrcList', ['gnOnlinesrc', 'gnCurrentEdit', '$filter',
-        function(gnOnlinesrc, gnCurrentEdit, $filter) {
+      .directive('gnOnlinesrcList', ['gnOnlinesrc', 'gnCurrentEdit', '$filter','$rootScope',
+        function(gnOnlinesrc, gnCurrentEdit, $filter, $rootScope) {
           return {
             restrict: 'A',
             templateUrl: '../../catalog/components/edit/onlinesrc/' +
@@ -210,6 +210,13 @@
               scope.lang = scope.$parent.lang;
               scope.readonly = attrs['readonly'] || false;
               scope.gnCurrentEdit.associatedPanelConfigId = attrs['configId'] || 'default';
+              scope.isAdministrator = function(){
+                if($rootScope.user.profile === 'Administrator'){
+                  return true;
+                }
+                return false;            
+              }
+              
               scope.relations = {};
               scope.gnCurrentEdit.codelistFilter  = attrs['codelistFilter'];
 
@@ -324,7 +331,7 @@
               post: function(scope, element, attrs) {
                 scope.popupid = attrs['gnPopupid'];
 
-                var schemaConfig = {
+                /*var schemaConfig = {
                   
                   'iso19115-3': {
                     display: 'radio',
@@ -364,7 +371,7 @@
                       }
                     }]
                   }
-                };
+                };*/
                 scope.config = null;
                 scope.linkType = null;
 
@@ -1360,7 +1367,7 @@
                   scope.linkTo = function(addOnlineSrcInDataset) {
                     if (scope.mode === 'service') {
                       return gnOnlinesrc.
-                          linkToService(scope.srcParams, scope.popupid, addOnlineSrcInDataset);
+                          linkToService(scope.srcParams, scope.popupid, addOnlineSrcInDataset, scope.params);
                     } else {
                       return gnOnlinesrc.
                           linkToDataset(scope.srcParams, scope.popupid, addOnlineSrcInDataset);

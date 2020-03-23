@@ -1,123 +1,21 @@
-<div class="panel panel-default">
-  <div class="panel-heading"
-       data-gn-slide-toggle="">
-    <i class="fa fa-link"></i><i class="icon-external-link"></i>&nbsp;
-    <span data-translate="">associatedResources</span>
-
-    <div data-gn-need-help="user-guide/associating-resources/index.html"
-         data-icon-only="true"
-         class="pull-right"></div>
+<div class="panel panel-default" data-ng-show="isAdministrator()">
+  <div class="panel-heading">
+    <h5 class="onlinesrc-title">
+      <a href=""
+         data-ng-click="onlinesrcService.onOpenPopup('onlinesrc')">
+        <i class="fa fa-link"></i><i class="icon-external-link"></i>&nbsp;
+        <span data-translate="">onlinesrc</span>&nbsp;
+        <i class="fa fa-plus"></i>
+      </a>
+    </h5>
   </div>
-  <div class="panel-body">
-    <div class="btn-toolbar">
-      <div class="btn-group"
-           data-ng-if="readonly !== true">
-        <button type="button"
-                class="btn btn-default btn-xs dropdown-toggle"
-                data-toggle="dropdown">
-          <i class="fa fa-fw fa-plus"></i>
-          <span data-translate="">add</span>
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <li data-ng-show="::isCategoryEnable('thumbnail') || isCategoryEnable('onlinesrc')">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('onlinesrc')">
-              <i class="fa gn-icon-onlinesrc"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">addOnlinesrcTitle</span>
-            </a>
-          </li>
-          <li class="dropdown-header"
-              data-translate>linkMetadata
-          </li>
-          <li data-ng-show="::isCategoryEnable('parent')">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('parent')">
-              <i class="fa gn-icon-parent"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToParent</span>
-            </a>
-          </li>
-          <li data-ng-show="::isCategoryEnable('service') && !gnCurrentEdit.isService">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('service')">
-              <i class="fa gn-icon-service"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToService</span>
-            </a>
-          </li>
-          <li data-ng-show="::isCategoryEnable('dataset') && gnCurrentEdit.isService">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('dataset')">
-              <i class="fa gn-icon-dataset"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToDataset</span>
-            </a>
-          </li>
-          <li data-ng-show="::isCategoryEnable('source')">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('source')">
-              <i class="fa gn-icon-source"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToSource</span>
-            </a>
-          </li>
-          <li data-ng-show="::isCategoryEnable('fcats')">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('fcats')">
-              <i class="fa gn-icon-fcats"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToFeatureCatalog</span>
-            </a>
-          </li>
-          <li data-ng-show="::isCategoryEnable('sibling')">
-            <a href=""
-              data-ng-click="onlinesrcService.onOpenPopup('sibling')">
-              <i class="fa gn-icon-sibling"></i>
-              <i class="icon-external-link"></i>&nbsp;
-              <span data-translate="">linkToSibling</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <!-- /.btn-toolbar -->
-    <div class="gn-onlinesrc-panel">
 
-      <!-- ******* Display Thumbnails ******* -->
-      <ul class="list-inline"
-          data-ng-show="::isCategoryEnable('thumbnail')">
-        <li class="gn-list-thumb thumbnail"
-            data-ng-repeat="thumb in relations.thumbnails">
-          <div class="thumb-small"
-               title="{{thumb.title | gnLocalized: lang}}"
-               data-gn-img-modal="thumb"
-               style="background-image: url('{{thumb.lUrl || thumb.id}}')"/>
-
-          <a href=""
-             class="onlinesrc-remove"
-             data-ng-if="readonly !== true"
-             data-ng-click="onlinesrcService.removeThumbnail(thumb)"
-             data-gn-confirm-click="{{'removeThumbnailConfirm' | translate:{url: thumb.lUrl} }}"
-             title="{{'removeThumbnail' | translate}}"
-             aria-label="{{'removeThumbnail' | translate}}">
-            <i class="btn fa fa-times text-danger"></i>
-          </a>
-          <a href=""
-             class="onlinesrc-edit"
-             data-ng-if="readonly !== true"
-             data-ng-show="allowEdits"
-             title="{{'edit' | translate}}"
-             data-ng-click="onlinesrcService.onOpenPopup('onlinesrc', thumb)">
-            <i class="btn fa fa-pencil"></i>
-          </a>
-        </li>
-      </ul>
+<div class="panel-body">
+  <div class="gn-onlinesrc-panel">
 
       <!-- ******* List of online resources ******* -->
       <h2 class="onlinesrc-title"
-          data-ng-show="::isCategoryEnable('onlinesrc') && relations.onlines && relations.onlines.length > 0">
+          data-ng-show="::isCategoryEnable('onlinesrc') && relations.onlines && relations.onlines.length > 0" data-ng-show="isAdministrator()">
           <i class="fa fa-link"></i>
           <i class="icon-external-link"></i>&nbsp;
           <span data-translate="">onlinesrc</span>
@@ -194,6 +92,134 @@
           </div>
         </li>
       </ul>
+	  <!-- ******* Display Thumbnails ******* -->
+      <ul class="list-inline"
+          data-ng-show="::isCategoryEnable('thumbnail')">
+        <li class="gn-list-thumb thumbnail"
+            data-ng-repeat="thumb in relations.thumbnails">
+          <div class="thumb-small"
+               title="{{thumb.title | gnLocalized: lang}}"
+               data-gn-img-modal="thumb"
+               style="background-image: url('{{thumb.lUrl || thumb.id}}')"/>
+
+          <a href=""
+             class="onlinesrc-remove"
+             data-ng-if="readonly !== true"
+             data-ng-click="onlinesrcService.removeThumbnail(thumb)"
+             data-gn-confirm-click="{{'removeThumbnailConfirm' | translate:{url: thumb.lUrl} }}"
+             title="{{'removeThumbnail' | translate}}"
+             aria-label="{{'removeThumbnail' | translate}}">
+            <i class="btn fa fa-times text-danger"></i>
+          </a>
+          <a href=""
+             class="onlinesrc-edit"
+             data-ng-if="readonly !== true"
+             data-ng-show="allowEdits"
+             title="{{'edit' | translate}}"
+             data-ng-click="onlinesrcService.onOpenPopup('onlinesrc', thumb)">
+            <i class="btn fa fa-pencil"></i>
+          </a>
+        </li>
+      </ul>
+   </div>
+    </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading"
+       data-gn-slide-toggle="">
+    <i class="fa fa-link"></i><i class="icon-external-link"></i>&nbsp;
+    <span data-translate="">associatedResources</span>
+
+    <div data-gn-need-help="user-guide/associating-resources/index.html"
+         data-icon-only="true"
+         class="pull-right"></div>
+  </div>
+  <div class="panel-body">
+    <div class="btn-toolbar">
+      <div class="btn-group"
+           data-ng-if="readonly !== true">
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                data-toggle="dropdown">
+          <i class="fa fa-fw fa-plus"></i>
+          <span data-translate="">add</span>
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <!--<li data-ng-show="::isCategoryEnable('thumbnail') || isCategoryEnable('onlinesrc')">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('onlinesrc')">
+              <i class="fa gn-icon-onlinesrc"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">addOnlinesrcTitle</span>
+            </a>
+          </li>-->
+		  <li>
+              <a href=""
+                 data-ng-click="onlinesrcService.onOpenPopup('associatedres')">
+                <i class="fa gn-icon-onlinesrc"></i>
+                <i class="icon-external-link"></i>&nbsp;
+                <span data-translate="">addAssociatedResource</span>
+              </a>
+            </li>
+          <li class="dropdown-header"
+              data-translate>linkMetadata
+          </li>
+          <li data-ng-show="::isCategoryEnable('parent')">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('parent')">
+              <i class="fa gn-icon-parent"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToParent</span>
+            </a>
+          </li>
+          <li data-ng-show="::isCategoryEnable('service') && !gnCurrentEdit.isService">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('service')">
+              <i class="fa gn-icon-service"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToService</span>
+            </a>
+          </li>
+          <li data-ng-show="::isCategoryEnable('dataset') && gnCurrentEdit.isService">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('dataset')">
+              <i class="fa gn-icon-dataset"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToDataset</span>
+            </a>
+          </li>
+          <li data-ng-show="::isCategoryEnable('source')">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('source')">
+              <i class="fa gn-icon-source"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToSource</span>
+            </a>
+          </li>
+          <!--<li data-ng-show="::isCategoryEnable('fcats')">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('fcats')">
+              <i class="fa gn-icon-fcats"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToFeatureCatalog</span>
+            </a>
+          </li>
+          <li data-ng-show="::isCategoryEnable('sibling')">
+            <a href=""
+              data-ng-click="onlinesrcService.onOpenPopup('sibling')">
+              <i class="fa gn-icon-sibling"></i>
+              <i class="icon-external-link"></i>&nbsp;
+              <span data-translate="">linkToSibling</span>
+            </a>
+          </li>-->
+        </ul>
+      </div>
+    </div>
+    <!-- /.btn-toolbar -->
+    <div class="gn-onlinesrc-panel">
+
+      
 
 
       <!-- ******* List of datasets ******* -->
@@ -452,14 +478,15 @@
       </ul>
 
       <!-- ******* List of associated records (reverse direction of siblings) ******* -->
-      <h2 class="onlinesrc-title"
-          data-ng-show="::isCategoryEnable('sibling') && relations.associated">
-        <i class="fa fa-sign-out"></i>
-        <i class="icon-external-link"></i>&nbsp;
-        <span data-translate="">siblings</span>&nbsp;
-      </h2>
-      <ul class="list-group"
-          data-ng-show="::isCategoryEnable('sibling') && relations.associated">
+      <h4 class="onlinesrc-title" data-ng-show="relations.associated.length">
+        <a href="" data-ng-click="onlinesrcService.onOpenPopup('associatedres')">
+          <i class="fa fa-sign-out" data-ng-class="onlinesrcService.reload ? 'fa-spin' : ''"></i>
+          <i class="icon-external-link"></i>&nbsp;
+          <span data-translate="">associatedResources</span>&nbsp;
+          <i class="fa fa-plus"></i>
+        </a>
+      </h4>
+      <ul class="list-group">
         <li class="list-group-item"
             data-ng-repeat="resource in relations.associated | orderBy:'title'">
           <div class="row">
@@ -468,6 +495,20 @@
               <a target="_blank"
                  data-ng-href="{{'../metadata/' + resource.id}}">
                 {{resource.title | gnLocalized: lang}}
+              </a>
+            </div>
+            <div class="col-md-1">
+              <a href=""
+                class="onlinesrc-remove"
+                data-ng-if="gnCurrentEdit.schemaConfig.related.readonly !== true"
+                data-ng-show="allowEdits"
+                data-ng-click="onlinesrcService.onOpenPopup('associatedres', resource)">
+               <i class="fa fa-pencil"></i>
+              </a>
+              <a href="" class="onlinesrc-remove"
+                 data-ng-if="gnCurrentEdit.schemaConfig.related.readonly !== true"
+                 data-ng-click="onlinesrcService.removeAssociation(resource)">
+                <i class="fa fa-times text-danger"></i>
               </a>
             </div>
           </div>

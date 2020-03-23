@@ -289,6 +289,60 @@
 
               <div class="col-sm-1 gn-control"></div>
             </div>
+      
+              <!-- format text field -->
+              <div id="gn-addonlinesrc-format-row" class="form-group" 
+                    data-ng-class="{ 'has-error' : !gnAddLink.formatname.$valid, 
+                                    'gn-required' : params.linkType.fields.formatname.required}"
+                    data-ng-if="key === 'formatname' && !params.linkType.fields.formatname.hidden">
+                <label for="formatname"
+                      class="col-sm-2 control-label"
+                      data-translate="">Format name</label>
+                <div class="col-sm-9">
+                  <input data-ng-model="params.formatname"
+                        id="gn-addonlinesrc-formatname-input"
+                        data-ng-required="params.linkType.fields.formatname.required"
+                        name="formatname"
+                        class="form-control"
+                        type="text">
+                </div>
+              </div>
+
+              <!-- edition text field -->
+              <div id="gn-addonlinesrc-edition-row"  class="form-group" 
+                      data-ng-class="{ 'has-error' : !gnAddLink.edition.$valid, 
+                                      'gn-required' : params.linkType.fields.edition.required}"
+                      data-ng-if="key === 'edition' && !params.linkType.fields.edition.hidden">
+                <label for="edition"
+                      class="col-sm-2 control-label"
+                      data-translate="">Edition</label>
+                <div class="col-sm-9">
+                  <input data-ng-model="params.edition"
+                        id="gn-addonlinesrc-edition-input"
+                        data-ng-required="params.linkType.fields.edition.required"
+                        name="edition"
+                        class="form-control"
+                        type="text">
+                </div>
+              </div>
+
+              <!-- File decompression technique text field -->
+              <div id="gn-addonlinesrc-filecomp-row"  class="form-group"  
+                        data-ng-class="{ 'has-error' : !gnAddLink.filecomp.$valid, 
+                                        'gn-required' : params.linkType.fields.filecomp.required}"
+                        data-ng-if="key === 'filecomp' && !params.linkType.fields.filecomp.hidden">
+                <label for="filecomp"
+                      class="col-sm-2 control-label"
+                      data-translate="">File decompression technique</label>
+                <div class="col-sm-9">
+                  <input data-ng-model="params.filecomp"
+                        id="gn-addonlinesrc-filecomp-input"
+                        data-ng-required="params.linkType.fields.filecomp.required"
+                        name="filecomp"
+                        class="form-control"
+                        type="text">
+                </div>
+              </div>
           </div>
 
         </div>

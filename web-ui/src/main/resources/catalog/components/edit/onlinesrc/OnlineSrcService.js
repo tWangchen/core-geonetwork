@@ -423,7 +423,7 @@
          * @param {Object} params for the batch
          * @param {string} popupid id of the popup to close after process.
          */
-        linkToService: function(params, popupid, addOnlineSrcInDataset) {
+        linkToService: function(params, popupid, addOnlineSrcInDataset, extraParams) {
           var scope = this;
 
           // Add link of the service in the dataset (optional)
@@ -439,7 +439,14 @@
                 protocol: qParams.protocol,
                 process: qParams.process
               }).then(function () {
+              if(extraParams.process === 'association-add'){
+                  var qParams = setParams('association-add', extraParams);
+                  runProcess(this, qParams).then(function() {
+                    closePopup(popupid);
+                  });
+                }else{
                 closePopup(popupid);
+                }
               });
             } else {
               refreshForm(this);
