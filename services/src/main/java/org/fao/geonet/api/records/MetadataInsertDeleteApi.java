@@ -23,9 +23,15 @@
 
 package org.fao.geonet.api.records;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -73,6 +79,7 @@ import org.fao.geonet.kernel.GeonetworkDataDirectory;
 import org.fao.geonet.kernel.Schema;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.SelectionManager;
+import org.fao.geonet.kernel.aws.S3Operation;
 import org.fao.geonet.kernel.datamanager.IMetadataManager;
 import org.fao.geonet.kernel.datamanager.IMetadataUtils;
 import org.fao.geonet.kernel.mef.Importer;
@@ -295,6 +302,8 @@ public class MetadataInsertDeleteApi {
     public @ResponseBody SimpleMetadataProcessingReport insert(
             @ApiParam(value = API_PARAM_RECORD_TYPE, required = false, defaultValue = "METADATA") @RequestParam(required = false, defaultValue = "METADATA") final MetadataType metadataType,
             @ApiParam(value = "XML fragment.", required = false) @RequestBody(required = false) String xml,
+			@ApiParam(value = "s3 location path.", required = false) @RequestParam(required = false) String s3location,
+			@ApiParam(value = "s3 file.", required = false) @RequestParam(required = false) String s3key,
             @ApiParam(value = "URL of a file to download and insert.", required = false) @RequestParam(required = false) String[] url,
             @ApiParam(value = "Server folder where to look for files.", required = false) @RequestParam(required = false) String serverFolder,
             @ApiParam(value = "(Server folder import only) Recursive search in folder.", required = false) @RequestParam(required = false, defaultValue = "false") final boolean recursiveSearch,
@@ -313,7 +322,40 @@ public class MetadataInsertDeleteApi {
         }
         SimpleMetadataProcessingReport report = new SimpleMetadataProcessingReport();
 
-        if (xml != null) {
+        if (s3location != null) {
+        	if(s3location.endsWith("/")){
+    			s3location = s3location.substring(0, s3location.length()-1);
+        	}
+            Element xmlContent = null;
+            try {
+            	if(s3key.equals("invalid")){
+            		report.addError(new Exception("Either s3 bucket has no public access or no files exist within the s3 bucket."));
+                	return report;
+            	}
+                xmlContent = Xml.loadFile(ApiUtils.downloadUrlInTemp(s3location + "/" + s3key));
+                String canAccess = xmlContent.getContent(0).getValue();
+                if(canAccess.equals("AccessDenied")){
+                	report.addError(new Exception("Unable to access file " + s3key + " within s3 bucket. Need to make public in order to process."));
+                	return report;
+                }
+            } catch (Exception e) {
+                report.addError(e);
+            }
+            if (xmlContent != null) {
+            	try{
+            		Pair<Integer, String> pair = loadRecord(metadataType, xmlContent, uuidProcessing, group, 
+            											category, rejectIfInvalid, false, transformWith, schema, extra, request);
+                        report.addMetadataInfos(pair.one(), String.format(
+                            "Metadata imported from URL with UUID '%s'", pair.two())
+                        );	
+            	}catch(Exception e){
+            		report.addError(e);
+            	}
+                
+            }
+            report.incrementProcessedRecords();
+       
+        }else if (xml != null) {
             Element element = null;
             try {
                 element = Xml.loadString(xml, false);
@@ -1078,6 +1120,41 @@ public class MetadataInsertDeleteApi {
         dataManager.indexMetadata(id.get(0), true, null);
         return Pair.read(Integer.valueOf(id.get(0)), uuid);
     }
+	private Path amazonS3DownLoadPath(String url) throws Exception {
+
+    	AmazonS3URI s3uri = new AmazonS3URI(url);
+		AmazonS3 s3client = AmazonS3ClientBuilder.standard().withRegion(s3uri.getRegion()).build();
+		
+		S3ObjectInputStream content = s3client.getObject(s3uri.getBucket(), s3uri.getKey())
+				.getObjectContent();
+		
+		File f = File.createTempFile(s3uri.getKey(), ".xml");
+		FileUtils.copyInputStreamToFile(content, f);
+		
+		return f.toPath();
+	}
+    	
+	@RequestMapping(path = "/s3files", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String getFiles(@RequestParam(required = false) String url, HttpServletRequest request)
+			throws Exception {
+		List<String> filenames = new ArrayList<>();
+		S3Operation op = new S3Operation();
+		List<String> s3ObjectNames = op.getBucketObjectNames(url);
+		for (String s3ObjectName : s3ObjectNames) {
+			if(s3ObjectName.contains("/")){
+				s3ObjectName = s3ObjectName.substring(s3ObjectName.lastIndexOf("/")+1);
+			}
+			if(StringUtils.isNotEmpty(s3ObjectName.trim())){
+				filenames.add(s3ObjectName);
+			}
+		}
+
+		String json = new Gson().toJson(filenames);
+		
+		return json;
+	}
 
 	private Element getSearchParams(){
 		

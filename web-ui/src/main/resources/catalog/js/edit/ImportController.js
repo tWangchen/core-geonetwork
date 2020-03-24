@@ -58,6 +58,7 @@
         file: '',
         url: '',
         serverFolder: '',
+		    s3location:'',
         recursiveSearch: false,
         rejectIfInvalid: false,
         publishToAll: false,
@@ -133,11 +134,21 @@
         }
         $scope.unsupportedFile = false;
       });
+
+	  $scope.resetImportMode = function(){
+			$scope.params.xml = '';
+			$scope.params.file = '';
+			$scope.params.url = '';
+			$scope.params.serverFolder = '';
+			$scope.params.s3location = '';
+		};
+
       $scope.importRecords = function(formId) {
         $scope.reports = [];
         $scope.error = null;
 
         if ($scope.importMode == 'uploadFile') {
+			$scope.params.xml = '';
           if ($scope.uploadScope.queue.length > 0) {
             $scope.importing = true;
             $scope.uploadScope.submit();
@@ -147,7 +158,26 @@
               message: 'noFileSelected'
             }];
           }
-        } else {
+        }else if ($scope.importMode == 'ImportFromS3') {
+			$scope.importing = true;
+			$scope.params.xml = '';
+        	$scope.importing = true;
+			gnMetadataManager.getFilesFromS3($scope.params.s3location)
+				.then(function(response) {
+						var url = $scope.params.s3location;
+						var filenames = response.data;
+						angular.forEach(filenames, function(filename) {
+						  gnMetadataManager.importFromS3Bucket(
+							  $(formId).serialize(), filename).then(
+							  onSuccessFn, onErrorFn);
+
+						});
+					  })
+				.catch(function(response) {
+				  console.error('error', response.status, response.data);
+				});
+        
+        }else {
           $scope.importing = true;
           gnMetadataManager.importFromXml(
               $(formId).serialize(), $scope.params.xml).then(
