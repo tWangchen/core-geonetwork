@@ -35,9 +35,13 @@
 			<field
 				xpath="/mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:abstract" />
 			<field
+				xpath="/mdb:MD_Metadata/mdb:resourceLineage/mrl:LI_Lineage/mrl:statement" />
+			<field
 				xpath="/mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:purpose" />
 			<field
 				xpath="/mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:status" />
+			<field
+				xpath="/mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceMaintenance" />
 			<field xpath="/mdb:MD_Metadata/mdb:metadataScope" in="/mdb:MD_Metadata" />
 			<action type="add" name="metadataScope" or="metadataScope" in="/mdb:MD_Metadata">
 				<template>

@@ -163,7 +163,7 @@
                    <gco:CharacterString></gco:CharacterString>
                 </mcc:code>
                 <mcc:codeSpace>
-                   <gco:CharacterString>Digital Object Identifier</gco:CharacterString>
+                   <gco:CharacterString>Digital Obejct Identifier</gco:CharacterString>
 				</mcc:codeSpace>
 			</mcc:MD_Identifier>
 			</cit:identifier>
@@ -271,22 +271,6 @@
       </mri:topicCategory>
       <mri:extent>
         <gex:EX_Extent>
-          <gex:temporalElement>
-            <gex:EX_TemporalExtent>
-              <gex:extent>
-                <gml:TimePeriod gml:id="A1234">
-                  <gml:beginPosition>
-                  </gml:beginPosition>
-                  <gml:endPosition>
-                  </gml:endPosition>
-                </gml:TimePeriod>
-              </gex:extent>
-            </gex:EX_TemporalExtent>
-          </gex:temporalElement>
-        </gex:EX_Extent>
-      </mri:extent>
-      <mri:extent>
-        <gex:EX_Extent>
           <gex:geographicElement>
             <gex:EX_GeographicBoundingBox>
               <gex:westBoundLongitude>
@@ -303,6 +287,18 @@
               </gex:northBoundLatitude>
             </gex:EX_GeographicBoundingBox>
           </gex:geographicElement>
+	  <gex:temporalElement>
+            <gex:EX_TemporalExtent>
+              <gex:extent>
+                <gml:TimePeriod gml:id="A1234">
+                  <gml:beginPosition>
+                  </gml:beginPosition>
+                  <gml:endPosition>
+                  </gml:endPosition>
+                </gml:TimePeriod>
+              </gex:extent>
+            </gex:EX_TemporalExtent>
+          </gex:temporalElement>
         </gex:EX_Extent>
       </mri:extent>
       <mri:resourceMaintenance>

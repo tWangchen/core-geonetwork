@@ -378,7 +378,7 @@
                        contains(lower-case(
                        mri:thesaurusName[1]/*/cit:title[1]/*/text()
                        ), 'inspire')]
-                  /mri:keyword"/>
+                  /mri:keyword/gco:CharacterString[. != '']"/>
         <xsl:for-each
           select="$inspireKeywords">
           <xsl:variable name="position" select="position()"/>
@@ -638,33 +638,35 @@
                               -90 &lt;= number($n) and number($n) &lt;= 90">
                 <xsl:choose>
                   <xsl:when test="$e = $w and $s = $n">
-                    <location><xsl:value-of select="concat($s, ',', $w)"/></location>
+                    <geom>
+                      <xsl:text>POINT(</xsl:text>
+                      <xsl:value-of select="concat($w, ' ', $s)"/>
+                      <xsl:text>)</xsl:text>
+                    </geom>
                   </xsl:when>
                   <xsl:when
                     test="($e = $w and $s != $n) or ($e != $w and $s = $n)">
                     <!-- Probably an invalid bbox indexing a point only -->
-                    <location><xsl:value-of select="concat($s, ',', $w)"/></location>
+                    <geom>
+                      <xsl:text>POINT(</xsl:text>
+                      <xsl:value-of select="concat($w, ' ', $s)"/>
+                      <xsl:text>)</xsl:text>
+                    </geom>
                   </xsl:when>
                   <xsl:otherwise>
                     <geom>
-                      <xsl:text>{"type": "polygon",</xsl:text>
-                      <xsl:text>"coordinates": [</xsl:text>
-                      <xsl:value-of select="concat('[', $w, ',', $s, ']')"/>
+                      <xsl:text>POLYGON((</xsl:text>
+                      <xsl:value-of select="concat($w, ' ', $s)"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat('[', $e, ',', $s, ']')"/>
+                      <xsl:value-of select="concat($e, ' ', $s)"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat('[', $e, ',', $n, ']')"/>
+                      <xsl:value-of select="concat($e, ' ', $n)"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat('[', $w, ',', $n, ']')"/>
+                      <xsl:value-of select="concat($w, ' ', $n)"/>
                       <xsl:text>,</xsl:text>
-                      <xsl:value-of select="concat('[', $w, ',', $s, ']')"/>
-                      <xsl:text>]}</xsl:text>
+                      <xsl:value-of select="concat($w, ' ', $s)"/>
+                      <xsl:text>))</xsl:text>
                     </geom>
-
-                    <location><xsl:value-of select="concat(
-                                              (number($s) + number($n)) div 2,
-                                              ',',
-                                              (number($w) + number($e)) div 2)"/></location>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:when>
@@ -814,15 +816,14 @@
           <linkProtocol>
             <xsl:value-of select="cit:protocol/gco:CharacterString/text()"/>
           </linkProtocol>
-          <xsl:element name="linkUrlProtocol{replace($protocol, '[^a-zA-Z0-9]', '')}">
+          <link>
+            <xsl:value-of select="cit:protocol/*/text()"/>
+            <xsl:text>|</xsl:text>
             <xsl:value-of select="cit:linkage/*/text()"/>
-          </xsl:element>
-          <link type="object">{
-            "protocol":"<xsl:value-of select="gn-fn-index:json-escape(cit:protocol/*/text())"/>",
-            "url":"<xsl:value-of select="gn-fn-index:json-escape(cit:linkage/*/text())"/>",
-            "name":"<xsl:value-of select="gn-fn-index:json-escape(cit:name/*/text())"/>",
-            "description":"<xsl:value-of select="gn-fn-index:json-escape(cit:description/*/text())"/>"
-            }
+            <xsl:text>|</xsl:text>
+            <xsl:value-of select="normalize-space(cit:name/*/text())"/>
+            <xsl:text>|</xsl:text>
+            <xsl:value-of select="normalize-space(cit:description/*/text())"/>
           </link>
 
           <xsl:if test="$operatesOnSetByProtocol and normalize-space($protocol) != ''">
@@ -920,9 +921,72 @@
 
 
   <!-- For each record, the main mode 'index' is called,
-  -  then in the document node the mode 'index-extra-fields'
-  -  could be used to index more fields. -->
+  then in the document node the mode 'index-extra-fields'
+  could be used to index more fields. -->
   <xsl:template mode="index-extra-fields" match="mdb:MD_Metadata">
 
+    <xsl:if
+      test="contains(mdb:metadataStandard/cit:CI_Citation/cit:title/gco:CharacterString, 'Emodnet')">
+
+      <xsl:variable name="thesaurusList">
+        <entry key="Data delivery mechanisms">dataDeliveryMechanism</entry>
+        <entry key="emodnet-checkpoint.policy.visibility">policyVisibility</entry>
+        <entry key="emodnet-checkpoint.service.extent">serviceExtent</entry>
+        <entry key="emodnet-checkpoint.visibility">visibility</entry>
+        <entry key="emodnet-checkpoint.readyness">readyness</entry>
+      </xsl:variable>
+
+      <xsl:variable name="identification" select="mdb:identificationInfo"/>
+
+      <xsl:for-each select="$thesaurusList/entry">
+        <xsl:variable name="thesaurusName" select="@key"/>
+        <xsl:variable name="fieldName" select="."/>
+
+        <xsl:for-each
+          select="$identification/*/
+                 mri:descriptiveKeywords/mri:MD_Keywords[
+                 contains(
+                     mri:thesaurusName[1]/*/cit:title[1]/gco:CharacterString/text(),
+                     $thesaurusName) or
+                 contains(
+                     mri:thesaurusName[1]/*/cit:identifier[1]/*/mcc:code/*/text(),
+                     $thesaurusName)
+                     ]/mri:keyword/gco:CharacterString">
+          <xsl:element name="extra_medsea_{$fieldName}">
+            <xsl:value-of select="text()"/>
+          </xsl:element>
+
+          <xsl:element name="extra_medsea_syn_{$fieldName}">
+            <xsl:value-of
+              select="text()"/>
+              <!--select="solr:analyzeField('extra_medsea_syn', text())"/>-->
+          </xsl:element>
+        </xsl:for-each>
+      </xsl:for-each>
+
+      <xsl:for-each select="mdb:identificationInfo/*/
+                              mri:resourceConstraints/*/
+                                mco:otherConstraints/*">
+        <xsl:element name="extra_medsea_dataPolicy">
+          <xsl:value-of select="text()"/>
+        </xsl:element>
+      </xsl:for-each>
+
+      <xsl:for-each select="mdb:identificationInfo/*/
+                              mri:resourceConstraints/*/
+                                mri:useLimitation/*">
+        <xsl:element name="extra_medsea_costBasis">
+          <xsl:value-of select="text()"/>
+        </xsl:element>
+      </xsl:for-each>
+
+      <xsl:for-each select="mdb:dataQualityInfo/*/
+                              mdq:report/mdq:DQ_DomainConsistency[mdq:nameOfMeasure/gco:CharacterString = 'Responsiveness']/
+                              mdq:result/mdq:DQ_QuantitativeResult/mdq:value/*">
+        <xsl:element name="extra_medsea_responsiveness">
+          <xsl:value-of select="text()"/>
+        </xsl:element>
+      </xsl:for-each>
+    </xsl:if>
   </xsl:template>
 </xsl:stylesheet>
