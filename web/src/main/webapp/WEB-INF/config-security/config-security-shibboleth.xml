@@ -53,48 +53,29 @@
   <!-- You may customize the following values by editing the file config-security-shibboleth-overrides.properties -->
   <bean id="shibbolethConfiguration"
         class="org.fao.geonet.kernel.security.shibboleth.ShibbolethUserConfiguration">
-    <property name="firstnameKey" value="${shibbolethConfiguration.firstnameKey}"/>
-    <property name="surnameKey" value="${shibbolethConfiguration.surnameKey}"/>
     <property name="usernameKey" value="${shibbolethConfiguration.usernameKey}"/>
+    <property name="surnameKey" value="${shibbolethConfiguration.surnameKey}"/>
+    <property name="firstnameKey" value="${shibbolethConfiguration.firstnameKey}"/>
     <property name="profileKey" value="${shibbolethConfiguration.profileKey}"/>
-    <property name="emailKey"      value="${shibbolethConfiguration.emailKey}"/>
     <property name="groupKey" value="${shibbolethConfiguration.groupKey}"/>
-    <property name="updateGroup" value="${shibbolethConfiguration.updateGroup}"/>
-    <property name="updateProfile" value="${shibbolethConfiguration.updateProfile}"/>
-  </bean>
-
-   <!-- replace the default entry point -->
-	<bean id="shibAuthenticationEntryPoint"
-		class="jeeves.config.springutil.JeevesNodeAwareLoginUrlEntryPoint">
-		<constructor-arg name="loginFormUrl" value="/srv/eng/catalog.signin"/>
-	</bean>
-
-  <alias name="shibAuthenticationEntryPoint" alias="defaultAuthenticationEntryPoint" />
+    <property name="emailKey" value="${shibbolethConfiguration.emailKey}"/>
     
-  <!-- The filter chain for the shib.user.login service -->
-    <alias name="shibFilterChainImplementation" alias="shibFilterChainPlaceholder" />
+    <property name="defaultGroup" value="${shibbolethConfiguration.defaultGroup}"/>
 
-	<bean id="shibFilterChainImplementation" class="org.springframework.security.web.DefaultSecurityFilterChain">
-		<constructor-arg>
-			<bean class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
-				<constructor-arg value="/srv/???/shib.user.login"/>
-			</bean>
-		</constructor-arg>
-		<constructor-arg>
-			<ref bean="shibFilterList"/>
-		</constructor-arg>
-	</bean>
+    <property name="updateProfile" value="${shibbolethConfiguration.updateProfile}"/>
+    <property name="updateGroup" value="${shibbolethConfiguration.updateGroup}"/>
+   
+    <property name="arraySeparator" value="${shibbolethConfiguration.arraySeparator}"/>
+  </bean>
   
-  <bean id="shibFilterList" class="java.util.ArrayList">
+  <bean id="filterChainFilters" class="java.util.ArrayList">
     <constructor-arg>
       <list>
         <ref bean="securityContextPersistenceFilter"/>
         <ref bean="logoutFilter"/>
         <ref bean="shibbolethPreAuthFilter"/>
-        <ref bean="basicAuthenticationFilter"/>
-        <!-- <ref bean="formLoginFilter"/> -->
-        <!-- <ref bean="requestCacheFilter"/> -->
-        <!-- <ref bean="anonymousFilter"/> -->
+        <ref bean="requestCacheFilter"/>
+        <ref bean="anonymousFilter"/>
         <ref bean="sessionMgmtFilter"/>
         <ref bean="exceptionTranslationFilter"/>
         <ref bean="filterSecurityInterceptor"/>
