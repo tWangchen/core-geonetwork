@@ -68,14 +68,37 @@
     <property name="arraySeparator" value="${shibbolethConfiguration.arraySeparator}"/>
   </bean>
   
-  <bean id="filterChainFilters" class="java.util.ArrayList">
+  <!-- replace the default entry point -->
+	<bean id="shibAuthenticationEntryPoint"
+		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<constructor-arg name="loginFormUrl" value="/srv/eng/catalog.signin"/>
+	</bean>
+	
+	<alias name="shibAuthenticationEntryPoint" alias="defaultAuthenticationEntryPoint" />
+	
+	
+	<!-- The filter chain for the shib.user.login service -->
+    <alias name="shibFilterChainImplementation" alias="shibFilterChainPlaceholder" />
+
+	<bean id="shibFilterChainImplementation" class="org.springframework.security.web.DefaultSecurityFilterChain">
+		<constructor-arg>
+			<bean class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
+				<constructor-arg value="/srv/eng/shib.user.login"/>
+			</bean>
+		</constructor-arg>
+		<constructor-arg>
+			<ref bean="shibFilterList"/>
+		</constructor-arg>
+	</bean>
+	
+  <bean id="shibFilterList" class="java.util.ArrayList">
     <constructor-arg>
       <list>
         <ref bean="securityContextPersistenceFilter"/>
         <ref bean="logoutFilter"/>
         <ref bean="shibbolethPreAuthFilter"/>
-        <ref bean="requestCacheFilter"/>
-        <ref bean="anonymousFilter"/>
+        <!-- <ref bean="requestCacheFilter"/>
+        <ref bean="anonymousFilter"/> -->
         <ref bean="sessionMgmtFilter"/>
         <ref bean="exceptionTranslationFilter"/>
         <ref bean="filterSecurityInterceptor"/>

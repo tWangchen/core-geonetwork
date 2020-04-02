@@ -107,7 +107,13 @@ public class ShibbolethUserConfiguration {
         }
         this.defaultGroup = defaultGroup;
     }
-    
+
+    /**
+     * Tell if the profile should be updated whenever the user login.
+     *
+     * This info is needed when the identificatian provider provides no real mean to tell the user
+     * profile.
+     */
     public boolean isUpdateProfile() {
         return updateProfile;
     }
