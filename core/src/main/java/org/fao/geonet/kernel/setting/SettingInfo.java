@@ -30,6 +30,8 @@ import org.apache.lucene.search.TermQuery;
 import org.fao.geonet.ApplicationContextHolder;
 
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
@@ -38,11 +40,22 @@ import static org.fao.geonet.kernel.setting.SettingManager.isPortRequired;
 //=============================================================================
 public class SettingInfo {
 
+	private Pattern pattern;
+	private Matcher matcher;
+	
+	public SettingInfo() {
+		pattern = Pattern.compile(IPADDRESS_PATTERN);
+	}
+	
     public String getSiteName() {
         SettingManager settingManager = ApplicationContextHolder.get().getBean(SettingManager.class);
 
         return settingManager.getSiteName();
     }
+    
+    private static final String IPADDRESS_PATTERN = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+			+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+			+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 
     //---------------------------------------------------------------------------
 
@@ -93,10 +106,12 @@ public class SettingInfo {
 
         sb.append(host);
 
-		if (isPortRequired(protocol, port + "")) {
-			sb.append(":");
-			sb.append(port);
-		}
+        if(validate(host) || "localhost".equals(host)){
+	        if (port != null) {
+	            sb.append(":");
+	            sb.append(port);
+	        }
+        }
 
         return sb.toString();
     }
@@ -236,7 +251,11 @@ public class SettingInfo {
         return ignoreChars.toCharArray();
     }
 
-
+    public boolean validate(final String ip) {
+		matcher = pattern.matcher(ip);
+		return matcher.matches();
+	}
+    
     public enum SearchRequestLanguage {
         OFF("off", null, null),
         PREFER_LOCALE("prefer_locale", "_locale", SHOULD),
