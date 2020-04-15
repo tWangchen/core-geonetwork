@@ -85,10 +85,10 @@ DATE            VERSION     AUTHOR              DESCRIPTION
         <sch:rule context="/mdb:MD_Metadata/mdb:parentMetadata">
             
             <sch:let name="parentId" value="cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code/gco:CharacterString"/>
-            <sch:let name="hasParentid" value="normalize-space($parentId) != ''"/>
+            <sch:let name="hasParentid" value="count($parentId) > 0"/>
             
             <sch:assert test="$hasParentid">Metadata parent identifier is not present.</sch:assert>
-            <sch:report test="$hasParentid">Metadata parent identifier is present - "<sch:value-of select="normalize-space($parentId)"/>".</sch:report>
+            <sch:report test="$hasParentid">Metadata parent identifier is present.</sch:report>
             
         </sch:rule>
     </sch:pattern>
