@@ -1135,7 +1135,7 @@ public class MetadataSharingApi {
         try {
             Set<String> records = ApiUtils.getUuidsParameterOrSelection(uuids, bucket, ApiUtils.getUserSession(session));
             report.setTotalRecords(records.size());
-	    	Set<Integer> metadataIds = new HashSet<Integer>();
+
             final ApplicationContext appContext = ApplicationContextHolder.get();
             final DataManager dataMan = appContext.getBean(DataManager.class);
             final AccessManager accessMan = appContext.getBean(AccessManager.class);
@@ -1143,7 +1143,6 @@ public class MetadataSharingApi {
 
             UserSession us = ApiUtils.getUserSession(session);
             boolean isAdmin = Profile.Administrator == us.getProfile();
-            boolean isReviewer = Profile.Reviewer == us.getProfile();
 
             ServiceContext context = ApiUtils.createServiceContext(request);
 
@@ -1161,40 +1160,10 @@ public class MetadataSharingApi {
                         skip = true;
                     }
 
-		    		dataMan.deleteMetadataOper(context, String.valueOf(metadata.getId()), skip);
-                    int groupId = 0;
-                    Group g = groupRepository.findByName("editors_all");
-                    
-                    //Sharing clear - false (publish) and true (unpublish)
-                    if (sharing.isClear()){
-                    	groupId = g.getId();//Unpublished records defaulted to editors_all group  
-                    } else {//Add publication date and update category
-                    	updateMetadataWithModifiedDate(context, String.valueOf(metadata.getId()));
-                    	groupId = sharing.getPrivileges().get(0).getGroup();
+                    if (sharing.isClear()) {
+                        dataMan.deleteMetadataOper(context,
+                            String.valueOf(metadata.getId()), skip);
                     }
-                    
-                    String publishKeyword = "";
-                    
-                    //Joseph added - To update Keyword with Publish Internal or External - Start
-                    if(groupId == 0){//group 0 - Publish Internally
-                    	publishKeyword = Geonet.Transform.PUBLISHED_INTERNAL; 
-                    }else if(groupId == 1)
-                    	publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
-                    
-                    Element md = dataMan.getMetadata(String.valueOf(metadata.getId()));
-                    md = transMan.
-                    		updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
-                    				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
-                    if(md != null){
-                    	dataMan.updateMetadata(context, String.valueOf(metadata.getId()), md, false, false, false, context.getLanguage(), new ISODate().toString(), false);
-                    }else{
-                    	addMetadataWithPublishKeyword(context, String.valueOf(metadata.getId()), publishKeyword);
-                    }
-                    //Joseph added - To update Keyword with Publish Internal or External - End
-                    
-                    //Update the owner as admin
-                    dataMan.updateMetadataOwner(metadata.getId(), us.getUserId(), String.valueOf(groupId));
-
 
                     OperationRepository operationRepository = appContext.getBean(OperationRepository.class);
                     List<Operation> operationList = operationRepository.findAll();
@@ -1208,16 +1177,9 @@ public class MetadataSharingApi {
                         ApiUtils.getUserSession(session).getUserIdAsInt(), report, request);
                     report.incrementProcessedRecords();
                     listOfUpdatedRecords.add(String.valueOf(metadata.getId()));
-		    		metadataIds.add(metadata.getId());
                 }
             }
-	
-		    if (sharing.isClear())
-                updateStatus(context, metadataIds, Geonet.WorkflowStatus.DRAFT);
-            else
-            	updateStatus(context, metadataIds, Geonet.WorkflowStatus.APPROVED);
-            
-			dataMan.flush();
+            dataMan.flush();
             dataMan.indexMetadata(listOfUpdatedRecords);
 
         } catch (Exception exception) {
