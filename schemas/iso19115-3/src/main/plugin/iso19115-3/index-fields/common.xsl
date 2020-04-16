@@ -162,7 +162,7 @@
     <!--<xsl:message><xsl:value-of select="$fieldName"/>:<xsl:value-of select="normalize-space($value)"/> (<xsl:value-of select="$langId"/>) </xsl:message>-->
     <xsl:if test="normalize-space($value) != ''">
       <Field name="{$fieldName}"
-             string="{normalize-space($value)}"
+             string="{$value}"
              store="{$store}"
              index="{$index}"/>
     </xsl:if>
@@ -204,10 +204,13 @@
   the current date time.
   -->
   <xsl:function name="gn-fn-iso19115-3:formatDateTime" as="xs:string">
-    <xsl:param name="value" as="xs:string"/>
+    <xsl:param name="value" as="xs:string?"/>
 
     <xsl:choose>
-      <xsl:when test="$value='' or lower-case($value)='unknown' or lower-case($value)='current' or lower-case($value)='now'">
+      <xsl:when test="$value='' or lower-case($value)='unknown'">
+        <xsl:value-of select="''"/>
+      </xsl:when>
+      <xsl:when test="lower-case($value)='current' or lower-case($value)='now'">
         <xsl:value-of select="format-dateTime(current-dateTime(),$df)"/>
       </xsl:when>
       <xsl:otherwise>
@@ -614,14 +617,17 @@
 
         <xsl:for-each select="mri:temporalElement/gex:EX_TemporalExtent/gex:extent">
           <xsl:for-each select="gml:TimePeriod">
-            <Field name="tempExtentBegin"
-                   string="{lower-case(gn-fn-iso19115-3:formatDateTime(gml:beginPosition|gml:begin/gml:TimeInstant/gml:timePosition))}"
-                   store="true" index="true"/>
-            <Field name="tempExtentEnd"
-                   string="{lower-case(gn-fn-iso19115-3:formatDateTime(gml:endPosition|gml:end/gml:TimeInstant/gml:timePosition))}"
-                   store="true" index="true"/>
+            <xsl:for-each select="gml:beginPosition[. != '']|gml:begin/gml:TimeInstant/gml:timePosition[. != '']">
+              <Field name="tempExtentBegin"
+                     string="{lower-case(gn-fn-iso19115-3:formatDateTime(.))}"
+                     store="true" index="true"/>
+            </xsl:for-each>
+            <xsl:for-each select="gml:endPosition[. != '']|gml:end/gml:TimeInstant/gml:timePosition[. != '']">
+              <Field name="tempExtentEnd"
+                     string="{lower-case(gn-fn-iso19115-3:formatDateTime(.))}"
+                     store="true" index="true"/>
+            </xsl:for-each>
           </xsl:for-each>
-
         </xsl:for-each>
       </xsl:for-each>
       <xsl:if test="*/gex:EX_Extent/*/gex:EX_BoundingPolygon">
@@ -860,9 +866,9 @@
           <xsl:with-param name="langId" select="$langId"/>
         </xsl:call-template>
       </xsl:for-each>
-      <!-- FIXME: Additional constraints have been created in the mco schema -->
-      <xsl:for-each select="mri:resourceConstraints">
-      	<xsl:variable name="fieldPrefix" select="local-name()"/>
+
+      <xsl:for-each select="mri:resourceConstraints/*">
+        <xsl:variable name="fieldPrefix" select="local-name()"/>
 
         <xsl:for-each
           select="mco:accessConstraints/*/@codeListValue[string(.) != 'otherRestrictions']">
@@ -1071,30 +1077,54 @@
 
     <!-- Index feature catalog as complex object in attributeTable field.
     TODO multilingual -->
-    <xsl:for-each select="$metadata/mdb:contentInfo/mrc:MD_FeatureCatalogue/mrc:featureCatalogue">
-      <xsl:variable name="attributes"
-                    select=".//gfc:carrierOfCharacteristics"/>
-      <xsl:if test="count($attributes) > 0">
-        <xsl:variable name="jsonAttributeTable">
-          [<xsl:for-each select="$attributes">
-          {"name": "<xsl:value-of select="*/gfc:code/*/text()"/>",
-          "definition": "<xsl:value-of select="*/gfc:definition/*/text()"/>",
-          "type": "<xsl:value-of select="*/gfc:valueType/gco:TypeName/gco:aName/*/text()"/>"
-          <xsl:if test="*/gfc:listedValue">
-            ,"values": [<xsl:for-each select="*/gfc:listedValue">{
-            "label": "<xsl:value-of select="*/gfc:label/*/text()"/>",
+    <xsl:variable name="jsonFeatureTypes">[
+
+      <xsl:for-each select="$metadata/mdb:contentInfo/mrc:MD_FeatureCatalogue//gfc:featureType">{
+
+        "typeName" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:typeName/text()"/>",
+        "definition" :"<xsl:value-of select="gn-fn-index:json-escape(gfc:FC_FeatureType/gfc:definition/*/text())"/>",
+        "code" :"<xsl:value-of select="gfc:FC_FeatureType/gfc:code/*/text()"/>",
+        "isAbstract" :"<xsl:value-of select="gfc:FC_FeatureType/gfc:isAbstract/*/text()"/>",
+        "aliases" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:aliases/*/text()"/>",
+        <!--"inheritsFrom" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:inheritsFrom/*/text()"/>",
+        "inheritsTo" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:inheritsTo/*/text()"/>",
+        "constrainedBy" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:constrainedBy/*/text()"/>",
+        "definitionReference" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:definitionReference/*/text()"/>",-->
+        <!-- Index attribute table as JSON object -->
+        <xsl:variable name="attributes"
+                      select="*/gfc:carrierOfCharacteristics"/>
+        <xsl:if test="count($attributes) > 0">
+          "attributeTable" : [
+          <xsl:for-each select="$attributes">
+            {"name": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:memberName/text())"/>",
+            "definition": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:definition/*/text())"/>",
             "code": "<xsl:value-of select="*/gfc:code/*/text()"/>",
-            "definition": "<xsl:value-of select="*/gfc:definition/*/text()"/>"}
+            "link": "<xsl:value-of select="*/gfc:code/*/@xlink:href"/>",
+            "type": "<xsl:value-of select="*/gfc:valueType/gco:TypeName/gco:aName/*/text()"/>"
+            <xsl:if test="*/gfc:listedValue">
+              ,"values": [
+              <xsl:for-each select="*/gfc:listedValue">{
+                "label": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:label/*/text())"/>",
+                "code": "<xsl:value-of select="*/gfc:code/*/text()"/>",
+                "definition": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:definition/*/text())"/>"}
+                <xsl:if test="position() != last()">,</xsl:if>
+              </xsl:for-each>
+              ]
+            </xsl:if>
+            }
             <xsl:if test="position() != last()">,</xsl:if>
-          </xsl:for-each>]
-          </xsl:if>}
-          <xsl:if test="position() != last()">,</xsl:if>
-        </xsl:for-each>]
-        </xsl:variable>
-        <Field name="attributeTable" index="true" store="true"
-               string="{$jsonAttributeTable}"/>
-      </xsl:if>
-    </xsl:for-each>
+          </xsl:for-each>
+          ]
+        </xsl:if>
+        }
+        <xsl:if test="position() != last()">,</xsl:if>
+      </xsl:for-each>
+      ]
+
+    </xsl:variable>
+
+    <Field name="featureTypes" index="true" store="true"
+           string="{$jsonFeatureTypes}"/>
 
 
     <Field name="hasDqMeasures" index="true" store="true"
@@ -1138,10 +1168,11 @@
 
         <xsl:for-each select="mdq:result/mdq:DQ_QuantitativeResult">
           <xsl:variable name="qmDate" select="mdq:dateTime/gco:Date/text()"/>
+          <!-- TODO: We assume one value per measure which may not be the case. -->
           <xsl:variable name="qmValue" select="mdq:value/gco:Record/text()"/>
           <xsl:variable name="qmUnit" select="mdq:valueUnit/*/gml:identifier/text()"/>
           <Field name="dqValues" index="true" store="true"
-                 string="{concat($dqId, '|', $cptName, '|', $qmId, '|', $qmName, '|', $qmDate, '|', $qmValue, '|', $qmUnit)}"/>
+                 string="{concat($dqId, '|', $cptName, '|', $qmId, '|', $qmName, '|', $qmDate, '|', string-join($qmValue, ', '), '|', $qmUnit)}"/>
 
         </xsl:for-each>
       </xsl:for-each>
