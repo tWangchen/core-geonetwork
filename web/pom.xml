@@ -150,7 +150,7 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-api</artifactId>
-    </dependency>
+   </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-xml</artifactId>

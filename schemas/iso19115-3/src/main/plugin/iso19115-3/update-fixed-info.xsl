@@ -601,7 +601,46 @@
         
       </xsl:if>
     </xsl:copy>
-    
+  </xsl:template>
+
+  <!-- For XLinked subtemplates, the lang parameter MUST be in the same order as in the record.
+  Main language first, then other locales. If not, then the default CharacterString does not contain
+  the main language. It user change the language order in the record, the lang parameter needs to
+  be reordered too.
+
+  Example of URL:
+  <gmd:pointOfContact xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="local://srv/api/registries/entries/af9e5d4e-2c1a-48c0-853f-3a771fcf9ee3?
+                               process=gmd:role/gmd:CI_RoleCode/@codeListValue~distributor&amp;
+                               lang=eng,ara,spa,rus,fre,ger,chi&amp;
+                               schema=iso19139"
+  Can also be using lang=eng&amp;lang=ara.
+  -->
+  <xsl:template match="@xlink:href[starts-with(., 'local://srv/api/registries/entries') and contains(., '?')]">
+    <xsl:variable name="urlBase"
+                  select="substring-before(., '?')"/>
+    <xsl:variable name="urlParameters"
+                  select="substring-after(., '?')"/>
+
+    <!-- Collect all parameters excluding language -->
+    <xsl:variable name="listOfAllParameters">
+      <xsl:for-each select="tokenize($urlParameters, '&amp;')">
+        <xsl:variable name="parameterName"
+                      select="tokenize(., '=')[1]"/>
+
+        <xsl:if test="$parameterName != 'lang'">
+          <param name="{$parameterName}"
+                 value="{.}"/>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+
+    <xsl:attribute name="xlink:href"
+                   select="concat(
+                    $urlBase,
+                    '?lang=', string-join(($mainLanguage, $locales//lan:LanguageCode/@codeListValue[. != $mainLanguage]), ','),
+                    '&amp;',
+                    string-join($listOfAllParameters/param/@value, '&amp;'))"/>
   </xsl:template>
   
   
@@ -667,34 +706,59 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <xsl:template match="mdb:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
       <xsl:with-param name="prefix" select="'mdb'"/>
     </xsl:call-template>
   </xsl:template>
-  
+
   <xsl:template match="gco:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
       <xsl:with-param name="prefix" select="'gco'"/>
     </xsl:call-template>
   </xsl:template>
-  
+
   <xsl:template match="gml:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
       <xsl:with-param name="prefix" select="'gml'"/>
     </xsl:call-template>
   </xsl:template>
-  
+
+  <!-- Sextant / Template adding nilReason attribut with withheld value
+  for some protocols. -->
+  <xsl:template match="cit:linkage" priority="10">
+    <xsl:choose>
+      <xsl:when test="
+				contains(lower-case(string(../cit:protocol/gco:CharacterString)), 'db') or
+				contains(lower-case(string(../cit:protocol/gco:CharacterString)), 'copyfile') or
+				contains(lower-case(string(../cit:protocol/gco:CharacterString)), 'file')">
+        <cit:linkage gco:nilReason="withheld">
+          <xsl:apply-templates select="@*"/>
+          <xsl:copy-of select="./*" />
+        </cit:linkage>
+      </xsl:when>
+      <xsl:otherwise>
+        <cit:linkage >
+          <xsl:apply-templates select="@*"/>
+          <xsl:copy-of select="./*" />
+        </cit:linkage>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <!-- Remove empty DQ elements. -->
+  <xsl:template match="mdb:dataQualityInfo[count(*) = 0]"/>
+
   <!-- copy everything else as is -->
-  
+
   <xsl:template match="@*|node()">
-    <xsl:copy>
+    <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
   </xsl:template>
-  
+
 </xsl:stylesheet>
