@@ -85,7 +85,7 @@
 
     <Field name="_title"
            string="{if ($title != '') then $title
-                    else if ($name != '') then concat($org, ' (', $name, ')')
+                    else if ($name != '') then $name
                     else if ($mail != '') then concat($org, ' (', $mail, ')')
                     else $org}"
            store="true" index="true"/>
@@ -105,6 +105,15 @@
     <Field name="_title" string="{concat($name,' @ ',$org)}" store="true" index="true"/>
 
     <Field name="personOrganisation" string="{concat($name,' @ ',$org)}" store="true" index="true"/>
+    <xsl:call-template name="subtemplate-common-fields"/>
+  </xsl:template>
+  
+  <xsl:template mode="index" match="cit:CI_Individual">
+
+    <xsl:variable name="name" select="normalize-space(cit:name/gco:CharacterString)"/>
+    
+    <Field name="_title" string="{$name}" store="true" index="true"/>
+
     <xsl:call-template name="subtemplate-common-fields"/>
   </xsl:template>
 
