@@ -35,7 +35,6 @@
   <xsl:include href="common/index-utils.xsl"/>
   <xsl:include href="common/functions-core.xsl"/>
   <xsl:include href="../layout/utility-tpl-multilingual.xsl"/>
-  <xsl:include href="index-subtemplate-fields.xsl"/>
 
 
   <!-- Thesaurus folder -->

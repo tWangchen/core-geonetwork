@@ -9,6 +9,8 @@
   <xsl:include href="process/add-extent-from-geokeywords.xsl"/>
   <xsl:include href="process/add-resource-id.xsl"/>
   <xsl:include href="process/add-contact.xsl"/>
+  <xsl:include href="process/add-columns-from-csv.xsl"/>
+  <xsl:include href="process/add-values-from-csv.xsl"/>
   <xsl:include href="process/create-featurecatalogue-from-wfs.xsl"/>
   <!--<xsl:include href="process/inspire-add-conformity.xsl"/>-->
 
@@ -17,6 +19,8 @@
     <p>add-resource-id</p>
     <p>add-contact</p>
     <p>create-featurecatalogue-from-wfs</p>
+    <p>add-columns-from-csv</p>
+    <p>add-values-from-csv</p>
     <!--<p>inspire-add-conformity</p>-->
   </xsl:variable>
   

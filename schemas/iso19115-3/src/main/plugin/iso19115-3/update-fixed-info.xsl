@@ -601,7 +601,6 @@
         
       </xsl:if>
     </xsl:copy>
-    
   </xsl:template>
   
   
@@ -667,21 +666,21 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <xsl:template match="mdb:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
       <xsl:with-param name="prefix" select="'mdb'"/>
     </xsl:call-template>
   </xsl:template>
-  
+
   <xsl:template match="gco:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
       <xsl:with-param name="prefix" select="'gco'"/>
     </xsl:call-template>
   </xsl:template>
-  
+
   <xsl:template match="gml:*">
     <xsl:call-template name="correct_ns_prefix">
       <xsl:with-param name="element" select="."/>
@@ -690,11 +689,11 @@
   </xsl:template>
   
   <!-- copy everything else as is -->
-  
+
   <xsl:template match="@*|node()">
-    <xsl:copy>
+    <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
   </xsl:template>
-  
+
 </xsl:stylesheet>
