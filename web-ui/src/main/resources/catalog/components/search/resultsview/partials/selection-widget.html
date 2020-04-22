@@ -49,7 +49,7 @@
         </a>
       </li>
       <li data-ng-show="!excludePattern.test('exportCSV')">
-        <a href="" data-ng-click="mdService.exportCSV(searchResults.selectionBucket)">
+        <a href="" data-ng-click="mdService.openExportColumns(getCatScope(), searchResults.selectionBucket)">
           <i class="fa fa-file-excel-o"></i>&nbsp;<span translate>exportCSV</span>
         </a>
       </li>
