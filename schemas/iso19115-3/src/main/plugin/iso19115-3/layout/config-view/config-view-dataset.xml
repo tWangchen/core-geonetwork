@@ -15,8 +15,8 @@
                    data-ng-if="gnCurrentEdit.geoPublisherConfig"
                    data-config="{{gnCurrentEdit.geoPublisherConfig}}"
                    data-lang="lang"/>
-        <directive data-gn-suggestion-list=""/>
-        <directive data-gn-need-help="user-guide/describing-information/creating-metadata.html"/>
+        <!-- <directive data-gn-suggestion-list=""/>
+        <directive data-gn-need-help="user-guide/describing-information/creating-metadata.html"/> -->
     </sidePanel>
     
 	<tab id="resourceDescription" default="true" mode="flat">
@@ -92,12 +92,12 @@
 		</section>
 	</tab>
 
-	<tab id="resourceMaintenance" mode="flat">
+	<!-- <tab id="resourceMaintenance" mode="flat">
 		<section name=" ">
 			<field
 				xpath="/mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceMaintenance" />
 		</section>
-	</tab>
+	</tab> -->
 
 	<!-- <tab id="resourceSpatial" mode="flat">
 		<section name=" ">
@@ -180,12 +180,12 @@
 		</section>
 	</tab>
 
-	<tab id="resourceLineageTab" mode="flat">
+	<!-- <tab id="resourceLineageTab" mode="flat">
 		<section name=" ">
 			<field
 				xpath="/mdb:MD_Metadata/mdb:resourceLineage/mrl:LI_Lineage/mrl:statement" /> 
 		</section>
-	</tab>
+	</tab> -->
 
 	<tab id="resourceFormat" mode="flat">
 		<section name=" ">
