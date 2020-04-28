@@ -13,15 +13,22 @@
   </div>
 
   <div class="gn-btn-toolbar navbar-right">
+  
+  	<button type="button" class="btn btn-default navbar-btn" title="" gn-click-and-spin="scan()"
+      data-ng-show="gnCurrentEdit.metadata.mdScopeId == 'source'">
+
+      <i class="fa fa-flag-checkered" />&nbsp;
+      <a href="sdl:{{gnCurrentEdit.metadata.eCatId}}" target="_blank">Launch SDL Console</a>
+    </button>
     <!-- If using the category selector in the editor form directly, remove this directive. -->
     <div data-gn-metadata-category-updater="mdCategories"
          data-gn-group-owner="groupOwner"
-         data-metadata-uuid="gnCurrentEdit.uuid" title="{{'categories'|translate}}"/>
+         data-metadata-uuid="gnCurrentEdit.uuid" title="{{'categories'|translate}}" hidden/>
 
-    <div data-gn-metadata-group-updater="groupOwner"
-         data-metadata-id="gnCurrentEdit.id" title="{{'group'|translate}}"/>
+    <!--<div data-gn-metadata-group-updater="groupOwner"
+         data-metadata-id="gnCurrentEdit.id" title="{{'group'|translate}}" />
 
-    <div class="btn-group" data-ng-if="gnConfig.metadata.vcs.enable">
+    <div class="btn-group" data-ng-if="gnConfig.metadata.vcs.enable" hidden>
       <button class="btn btn-default navbar-btn dropdown-toggle"
               type="button"
               data-toggle="dropdown"
@@ -42,7 +49,7 @@
           </a>
         </li>
       </ul>
-    </div>
+    </div>-->
     <!-- /.btn-group -->
 
     <data-gn-md-validation-tools></data-gn-md-validation-tools>
