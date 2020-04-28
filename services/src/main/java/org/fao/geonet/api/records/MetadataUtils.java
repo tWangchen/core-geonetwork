@@ -137,7 +137,11 @@ public class MetadataUtils {
             }*/
        
         	//Joseph added - Parent element is added as snippet into xml, not referenced using uuidref
-	    }		
+	    	String parentUuid = schemaPlugin.getAssociatedParentUuid(md);
+            if(StringUtils.isNotEmpty(parentUuid))
+            	relatedRecords.addContent(search(parentUuid, "parent", context, from, to, fast));
+            
+		}		
 			// Brothers and sisters are not returned by default
             // It is only on demand and output as siblings.
         if (schemaPlugin != null && listOfTypes.contains(RelatedItemType.brothersAndSisters)) {
