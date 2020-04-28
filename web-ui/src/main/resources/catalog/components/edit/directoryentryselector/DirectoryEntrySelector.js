@@ -381,6 +381,7 @@
                    }
                  });
                  scope.addSelectedEntry = function(role, usingXlink) {
+                   $('body').removeClass('modal-open');//Scrolling issue after adding the contact faced in 3.10.x version
                    scope.addEntry(
                    scope.stateObj.selectRecords[0],
                    role,
