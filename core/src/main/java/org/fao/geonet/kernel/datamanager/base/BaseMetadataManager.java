@@ -949,7 +949,6 @@ public class BaseMetadataManager implements IMetadataManager {
                 updateDatestamp.name());
 
             AbstractMetadata metadata = null;
-            boolean generateGAID = true;
             
             if (metadataId.isPresent()) {
                 metadata = metadataUtils.findOne(metadataId.get());
@@ -961,12 +960,7 @@ public class BaseMetadataManager implements IMetadataManager {
 						Log.debug(Geonet.DATA_MANAGER, "Not applying update-fixed-info for a template");
 					}
 					return md;
-				} else {
-
-					if (uuid == null) {
-						generateGAID = false;
-					}
-				}
+				} 
             }
 
             String currentUuid = metadata != null ? metadata.getUuid() : null;
@@ -1001,8 +995,8 @@ public class BaseMetadataManager implements IMetadataManager {
 			// so see generateGAID above
 			String gaid = metadataUtils.extractGAID(schema, md);
 
-			if ((gaid.length() == 0) || generateGAID) {
-				Log.debug(Geonet.DATA_MANAGER, "empty gaid, generateGAID: " + generateGAID);
+			if (StringUtils.isEmpty(gaid)) {
+				Log.debug(Geonet.DATA_MANAGER, "empty gaid...");
 				env.addContent(new Element("gaid").setText(metadataUtils.getGAID()));
 			}
 
