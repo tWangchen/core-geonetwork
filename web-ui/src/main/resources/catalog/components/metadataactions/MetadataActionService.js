@@ -71,24 +71,6 @@
         });
       };
 
-      /**
-       * Open a popup and compile object content.
-       * Bind to an event to close the popup.
-       * @param {Object} o popup config
-       * @param {Object} scope to build content uppon
-       * @param {string} eventName
-       */
-      var openModal = function(o, scope, eventName) {
-        var popup = gnPopup.create(o, scope);
-        var myListener = $rootScope.$on(eventName,
-            function(e, o) {
-              $timeout(function() {
-                popup.close();
-              }, 0);
-              myListener();
-            });
-      };
-
       var callBatch = function(service) {
         return gnHttp.callService(service).then(function(data) {
           alertResult(data.data);
