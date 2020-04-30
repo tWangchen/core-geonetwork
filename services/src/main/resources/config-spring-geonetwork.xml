@@ -73,6 +73,19 @@
       </array>
     </entry>
   </util:map>
+  
+  <util:map id="internalPublicationConfig"
+            key-type="java.lang.String"
+            value-type="java.lang.String[]">
+    <!-- INTRANET GROUP -->
+    <entry key="0">
+      <array>
+        <value>view</value>
+        <value>download</value>
+        <value>dynamic</value>
+      </array>
+    </entry>
+  </util:map>
 
   <bean id="RegionsDAO" class="org.fao.geonet.services.region.ThesaurusBasedRegionsDAO">
     <constructor-arg ref="languages"/>

@@ -204,6 +204,10 @@ public class MetadataSharingApi {
     @Autowired
     @Qualifier("publicationConfig")
     private Map publicationConfig;
+    
+    @Autowired
+    @Qualifier("internalPublicationConfig")
+    private Map internalPublicationConfig;
 	
     @ApiOperation(
         value = "Set privileges for ALL group to publish the metadata for all users.",
@@ -230,8 +234,38 @@ public class MetadataSharingApi {
         HttpServletRequest request
     )
         throws Exception {
-        shareMetadataWithAllGroup(metadataUuid, true, session, request);
+        shareMetadataWithAllGroup(metadataUuid, true, true, session, request);
     }
+    
+    @ApiOperation(
+            value = "Set privileges for ALL group to publish the metadata for all users.",
+            nickname = "publish")
+        @RequestMapping(
+            value = "/{metadataUuid}/intranetpublish",
+            method = RequestMethod.PUT
+        )
+        @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Settings updated."),
+            @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_CAN_EDIT)
+        })
+        @PreAuthorize("hasRole('Reviewer')")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public void intranetPublish(
+            @ApiParam(
+                value = API_PARAM_RECORD_UUID,
+                required = true)
+            @PathVariable
+                String metadataUuid,
+            @ApiIgnore
+            @ApiParam(hidden = true)
+                HttpSession session,
+            HttpServletRequest request
+        )
+            throws Exception {
+            shareMetadataWithAllGroup(metadataUuid, true, false, session, request);
+        }
+    
+    
 
     @ApiOperation(
         value = "Unsets privileges for ALL group to publish the metadata for all users.",
@@ -258,7 +292,7 @@ public class MetadataSharingApi {
         HttpServletRequest request
     )
         throws Exception {
-        shareMetadataWithAllGroup(metadataUuid, false, session, request);
+        shareMetadataWithAllGroup(metadataUuid, false, true, session, request);
     }
 
 
@@ -366,6 +400,39 @@ public class MetadataSharingApi {
         SharingParameter sharing = buildSharingForPublicationConfig(true);
         return shareSelection(uuids, bucket, sharing, session, request);
     }
+    
+    @ApiOperation(
+            value = "Publish one or more records",
+            notes = "See record sharing for more details.",
+            nickname = "publishRecords")
+        @RequestMapping(value = "/intranetpublish",
+            method = RequestMethod.PUT
+        )
+        @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Report about updated privileges."),
+            @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_EDITOR)
+        })
+        @PreAuthorize("hasRole('Editor')")
+        @ResponseStatus(HttpStatus.CREATED)
+        public
+        @ResponseBody
+        MetadataProcessingReport intranetPublish(
+            @ApiParam(value = ApiParams.API_PARAM_RECORD_UUIDS_OR_SELECTION,
+                required = false)
+            @RequestParam(required = false) String[] uuids,
+            @ApiParam(value = ApiParams.API_PARAM_BUCKET_NAME,
+                required = false)
+            @RequestParam(required = false) String bucket,
+            @ApiIgnore
+            @ApiParam(hidden = true)
+                HttpSession session,
+            HttpServletRequest request
+        )
+            throws Exception {
+
+            SharingParameter sharing = buildSharingForInternalPublicationConfig(true);
+            return shareSelection(uuids, bucket, sharing, session, request);
+        }
 
 
     @ApiOperation(
@@ -1082,7 +1149,7 @@ public class MetadataSharingApi {
      * @param session
      * @throws Exception
      */
-    private void shareMetadataWithAllGroup(String metadataUuid, boolean publish,
+    private void shareMetadataWithAllGroup(String metadataUuid, boolean publish, boolean isExternal, 
                                    HttpSession session, HttpServletRequest request) throws Exception {
         AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
         ApplicationContext appContext = ApplicationContextHolder.get();
@@ -1107,8 +1174,12 @@ public class MetadataSharingApi {
             operationMap.put(o.getName(), o.getId());
         }
 
-        SharingParameter sharing = buildSharingForPublicationConfig(publish);
-
+        SharingParameter sharing = null;
+        if(isExternal)
+        	sharing = buildSharingForPublicationConfig(publish);
+        else
+        	sharing = buildSharingForInternalPublicationConfig(publish);
+        	
         List<GroupOperations> privileges = sharing.getPrivileges();
         setOperations(sharing, dataManager, context, appContext, metadata, operationMap, privileges,
             ApiUtils.getUserSession(session).getUserIdAsInt(), null, request);
@@ -1200,12 +1271,29 @@ public class MetadataSharingApi {
      * @return
      */
     private SharingParameter buildSharingForPublicationConfig(boolean publish) {
-        SharingParameter sharing = new SharingParameter();
+        
+        return buildSharing(publicationConfig.entrySet().iterator(), publish);
+    }
+    
+    /**
+     * Creates a ref {@link SharingParameter} object with privileges to publih/un-publish
+     * metadata in {@link ReservedGroup#all} group.
+     *
+     * @param publish   Flag to add/remove sharing privileges.
+     * @return
+     */
+    private SharingParameter buildSharingForInternalPublicationConfig(boolean publish) {
+        
+    	return buildSharing(internalPublicationConfig.entrySet().iterator(), publish);
+        
+    }
+    
+    private SharingParameter buildSharing(final Iterator iterator, boolean publish) {
+    	SharingParameter sharing = new SharingParameter();
         sharing.setClear(false);
-
+        
         List<GroupOperations> privilegesList = new ArrayList<>();
-
-        final Iterator iterator = publicationConfig.entrySet().iterator();
+        
         while(iterator.hasNext()) {
             Map.Entry<String, Object[]> e = (Map.Entry<String, Object[]>) iterator.next();
             GroupOperations privAllGroup = new GroupOperations();
@@ -1231,4 +1319,14 @@ public class MetadataSharingApi {
     public Map getPublicationConfig() {
         return publicationConfig;
     }
+
+	public Map getInternalPublicationConfig() {
+		return internalPublicationConfig;
+	}
+
+	public void setInternalPublicationConfig(Map internalPublicationConfig) {
+		this.internalPublicationConfig = internalPublicationConfig;
+	}
+    
+    
 }

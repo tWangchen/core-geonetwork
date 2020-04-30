@@ -1,40 +1,79 @@
 <div data-ng-controller="GnMdViewController" class="container">
 
-  <div class="alert alert-warning" data-ng-hide="mdView.current.record" data-translate=""
-    data-translate-values="{uuid: '{{recordIdentifierRequested | htmlToPlaintext}}'}">
+  <div data-ng-if="mdView.current.record.draft == 'e' || mdView.current.record.draft == 'y'"
+       data-ng-show="user.canEditRecord(mdView.current.record)"
+       class="bg-info see-draft-alert">
+    <!-- If draft exists, show a link -->
+    <a data-ng-if="mdView.current.record.draft == 'e'"
+      class="see-draft see-draft-not-approved"
+      title=" {{('status-' + mdView.current.record.mdStatus) | translate}}"
+      data-ng-href="#/metadraf/{{md.getUuid()}}"
+      data-ng-show="user.canEditRecord(mdView.current.record)">
+      {{'seeDraft' | translate}}
+    </a>
+
+    <!-- If approved exists, show a link -->
+    <a data-ng-if="mdView.current.record.draft == 'y'"
+      class="see-draft see-draft-approved"
+      title=" {{('status-' + mdView.current.record.mdStatus) | translate}}"
+      data-ng-href="#/metadata/{{md.getUuid()}}"
+      data-ng-show="user.canEditRecord(mdView.current.record)">
+      {{'seeNoDraft' | translate}}
+    </a>
+  </div>
+  <div class="alert alert-warning" 
+      data-ng-hide="!mdView.loadDetailsFinished || mdView.current.record" 
+	  data-translate=""
+      data-translate-values="{uuid: '{{recordIdentifierRequested | htmlToPlaintext}}', url: '{{url | encodeURIComponent}}'}">
     recordNotFound
   </div>
+  <div class="row"
+        data-ng-show="!mdView.loadDetailsFinished">
+      <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+    </div>
 
   <div class="container-fluid gn-rv-container">
     <div class="row rv-action-menu" data-ng-show="mdView.current.record">
-      <div class="col-md-5">
+      <div class="col-lg-6 col-md-12 btn-group" role="group">
         <button class="btn btn-sm btn-secondary" data-ng-click="closeRecord(mdView.current.record)">
-          <i class="fa fa-search"></i>
+          <i class="fa fa-fw fa-search"></i>
           <span>{{'backTo' + (fromView || 'search') | translate}}</span>
         </button>
       </div>
-      <div class="col-md-3" data-ng-if="user.canEditRecord(mdView.current.record)">
-        <a class="btn btn-danger gn-md-delete-btn pull-right" data-ng-show="user.canEditRecord(mdView.current.record)"
-          data-gn-click-and-spin="deleteRecord(mdView.current.record)"
-          data-gn-confirm-click="{{'deleteRecordConfirm' | translate:mdView.current.record}}"
-          title="{{'delete' | translate}}">
-          <i class="fa fa-times"></i>
-        </a>
-
-        <a class="btn btn-primary gn-md-edit-btn pull-right" data-ng-show="user.canEditRecord(mdView.current.record)"
-          data-ng-href="catalog.edit#/metadata/{{mdView.current.record.getId()}}" title="{{'edit' | translate}}">
-          <i class="fa fa-pencil"></i>
-        </a>
+	  
+	  
+		
+     
+        <div class="col-lg-6 col-md-12 btn-group pull-right" role="group">
+          <a class="btn btn-default"
+            data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
+            data-gn-click-and-spin="deleteRecord(mdView.current.record)"
+            data-gn-confirm-click="{{(mdView.current.record.draft != 'y') ? 'deleteRecordConfirm' : 'deleteWorkingCopyRecordConfirm' | translate:mdView.current.record}}"
+            title="{{(mdView.current.record.draft != 'y') ? 'delete' : 'cancelWorkingCopy' | translate}}">
+            <i class="fa fa-fw fa-times"></i>
+            <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft == 'y'">cancelWorkingCopy</span>
+            <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft != 'y'">delete</span>
+          </a>
+       
+          <a class="btn btn-default gn-md-edit-btn"
+            data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
+            data-ng-href="catalog.edit#/metadata/{{mdView.current.record.getId()}}?redirectUrl=catalog.search%23%2Fmetadata%2F{{mdView.current.record.getUuid()}}"
+            title="{{'edit' | translate}}">
+            <i class="fa fa-fw fa-pencil"></i>
+            <span data-translate="" class="hidden-sm hidden-xs">edit</span>
+          </a>
+          <div class="gn-md-actions-btn pull-right" data-gn-md-actions-menu="mdView.current.record" />
       </div>
-      <div class="col-md-4">
-        <div class="gn-md-actions-btn pull-right" data-gn-md-actions-menu="mdView.current.record" />
-      </div>
+     
     </div>
     <div class="row">
       <div class="col-lg-7 col-md-12 rv-title">
         <h1>
           <i class="fa gn-icon-{{mdView.current.record.type[0]}}" />
           {{mdView.current.record.title || mdView.current.record.defaultTitle}}
+          <span class="text-muted badge"
+                data-ng-class="{'text-success': md.mdStatus == 2, 'text-warning': md.mdStatus == 4}"
+                data-ng-if="user.isEditorOrMore() && md.mdStatus<50 && isMdWorkflowEnable">{{('mdStatus-' + md.mdStatus) | translate}}</span>
         </h1>
         <ul style="line-height: 1.9">
           <li data-ng-repeat="auth in getAsArray(mdView.current.record.author) track by $index" class="tt-cursor"

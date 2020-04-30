@@ -98,6 +98,11 @@ goog.require('gn_alert');
           'fluidHeaderLayout': true,
           'showGNName': true
         },
+        'cookieWarning': {
+          'enabled': true,
+          'cookieWarningMoreInfoLink': '',
+          'cookieWarningRejectLink': ''
+        },
         'home': {
           'enabled': true,
           'appUrl': '../../{{node}}/{{lang}}/catalog.search#/home',
