@@ -44,25 +44,30 @@
 	  
 		
      
-        <div class="col-lg-6 col-md-12 btn-group pull-right" role="group">
-          <a class="btn btn-default"
-            data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
-            data-gn-click-and-spin="deleteRecord(mdView.current.record)"
-            data-gn-confirm-click="{{(mdView.current.record.draft != 'y') ? 'deleteRecordConfirm' : 'deleteWorkingCopyRecordConfirm' | translate:mdView.current.record}}"
-            title="{{(mdView.current.record.draft != 'y') ? 'delete' : 'cancelWorkingCopy' | translate}}">
-            <i class="fa fa-fw fa-times"></i>
-            <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft == 'y'">cancelWorkingCopy</span>
-            <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft != 'y'">delete</span>
-          </a>
-       
-          <a class="btn btn-default gn-md-edit-btn"
-            data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
-            data-ng-href="catalog.edit#/metadata/{{mdView.current.record.getId()}}?redirectUrl=catalog.search%23%2Fmetadata%2F{{mdView.current.record.getUuid()}}"
-            title="{{'edit' | translate}}">
-            <i class="fa fa-fw fa-pencil"></i>
-            <span data-translate="" class="hidden-sm hidden-xs">edit</span>
-          </a>
+        <div class="col-lg-6 col-md-12" >
           <div class="gn-md-actions-btn pull-right" data-gn-md-actions-menu="mdView.current.record" />
+          <div class="btn-group pull-right" style="padding-right:5px" role="group">
+              <a class="btn btn-default"
+              data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
+              data-gn-click-and-spin="deleteRecord(mdView.current.record)"
+              data-gn-confirm-click="{{(mdView.current.record.draft != 'y') ? 'deleteRecordConfirm' : 'deleteWorkingCopyRecordConfirm' | translate:mdView.current.record}}"
+              title="{{(mdView.current.record.draft != 'y') ? 'delete' : 'cancelWorkingCopy' | translate}}">
+              <i class="fa fa-fw fa-times"></i>
+              <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft == 'y'">cancelWorkingCopy</span>
+              <span data-translate="" class="hidden-sm hidden-xs" data-ng-if="mdView.current.record.draft != 'y'">delete</span>
+            </a>
+          </div>
+          
+          <div class="btn-group pull-right" style="padding-right:5px" role="group">
+              <a class="btn btn-default gn-md-edit-btn"
+              data-ng-show="user.canEditRecord(mdView.current.record) && (user.isReviewerOrMore() || mdView.current.record.mdStatus != 4 || !isMdWorkflowEnable)"
+              data-ng-href="catalog.edit#/metadata/{{mdView.current.record.getId()}}?redirectUrl=catalog.search%23%2Fmetadata%2F{{mdView.current.record.getUuid()}}"
+              title="{{'edit' | translate}}">
+              <i class="fa fa-fw fa-pencil"></i>
+              <span data-translate="" class="hidden-sm hidden-xs">edit</span>
+            </a>
+          </div>
+          
       </div>
      
     </div>
@@ -202,7 +207,7 @@
           <tab class="tablink" heading="Citation">
             <div class="subheader">Publication details</div>
             <div style="display: inline-flex">
-              <p>This product was created on {{mdView.current.record.creationDate | date:'mediumDate'}} and published on {{mdView.current.record.publicationDate | date:'mediumDate'}} </p>
+              <p>This product was created on {{mdView.current.record.creationDate[0] | date:'mediumDate'}} and published on {{mdView.current.record.publicationDate[0] | date:'mediumDate'}} </p>
             </div>
 
             <div class="row tab-items" data-ng-if="mdView.current.record.DOI">
