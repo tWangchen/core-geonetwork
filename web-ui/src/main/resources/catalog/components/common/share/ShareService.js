@@ -169,11 +169,19 @@
           return defer.promise;
         },
 
-        publish: function(metadataId, bucket, publish, user) {
+        publish: function(metadataId, bucket, publish, user, internal) {
           var defer = $q.defer();
-          var url = '../api/records' + (
+          var url;
+          if(internal){
+            url = '../api/records' + (
+              angular.isDefined(metadataId) ? '/' + metadataId : '') +
+            '/intranetpublish';
+          }else{
+            url = '../api/records' + (
               angular.isDefined(metadataId) ? '/' + metadataId : '') +
             '/' + (publish?'publish':'unpublish');
+          }
+          
 
           if (angular.isDefined(bucket)) {
             url += '?bucket=' + bucket;
