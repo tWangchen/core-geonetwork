@@ -227,15 +227,7 @@
       					return this.indexOf(searchString, position) === position;
       				 };
       			  }
-				
-			  scope.display = function(r) {
-          var dis = (!r.url.startsWith('http://rmweb/HPEContentManager') 
-                          && !r.url.startsWith('file')) 
-                          || (r.url.startsWith('file') && gnGlobalSettings.isIntranet)
-                          || (r.url.startsWith('http://rmweb/HPEContentManager') && gnGlobalSettings.isIntranet);
-				  return dis;
-			  };
-			  
+			 
         			scope.getClass = function(title) {
         				 if(title.eng){
       					  if(title.eng.toLowerCase() === 'purchase this product'){

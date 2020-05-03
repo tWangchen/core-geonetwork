@@ -451,7 +451,7 @@
        */
       this.publish = function(md, bucket, flag, scope, internal) {
         if (md) {
-          flag = md.isPublished() ? 'off' : 'on';
+          flag = (md.isPublished() || md.isPublishedInternal()) ? 'off' : 'on';
         }
 
         scope.isMdWorkflowEnable = gnConfig['metadata.workflow.enable'];

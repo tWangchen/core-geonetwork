@@ -64,14 +64,6 @@
         <value>dynamic</value>
       </array>
     </entry>
-    <!-- INTRANET GROUP -->
-    <entry key="0">
-      <array>
-        <value>view</value>
-        <value>download</value>
-        <value>dynamic</value>
-      </array>
-    </entry>
   </util:map>
   
   <util:map id="internalPublicationConfig"
