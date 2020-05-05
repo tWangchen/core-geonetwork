@@ -55,7 +55,6 @@
                  data-ng-class="onlinesrcService.getIconByProtocol(resource)"></i>
             </div>
             <div class="col-md-10">
-              {{resource.protocol || ''}}<br/>
               <a data-ng-href="{{resource.lUrl}}"
                  title="{{resource.lUrl}}"
                  data-ng-if="resource.lUrl.match('^http|ftp') !== null"

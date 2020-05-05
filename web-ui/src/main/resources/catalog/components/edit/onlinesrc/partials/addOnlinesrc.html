@@ -51,8 +51,7 @@
             <!-- Function Combo -->
             <div id="gn-addonlinesrc-function-row"
                  class="form-group"
-                 data-ng-class="{ 'has-error' : !gnAddLink.function.$valid,
-                                  'gn-required': params.linkType.fields.function.required }"
+                 data-ng-class="{ 'gn-required': params.linkType.fields.function.required }"
                  data-ng-if="key === 'function' &&
                              !params.linkType.fields.function.hidden">
 
@@ -76,8 +75,7 @@
             <!-- Protocol Combo -->
             <div id="gn-addonlinesrc-protocol-row"
                  class="form-group"
-                 data-ng-class="{ 'has-error' : !gnAddLink.protocol.$valid,
-                                  'gn-required': params.linkType.fields.protocol.required }"
+                 data-ng-class="{ 'gn-required': params.linkType.fields.protocol.required }"
                  data-ng-if="key === 'protocol' &&
                              !params.linkType.fields.protocol.hidden">
               <label id="gn-addonlinesrc-protocol-label"
