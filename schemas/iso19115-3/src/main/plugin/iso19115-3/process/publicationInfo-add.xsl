@@ -10,7 +10,8 @@
   exclude-result-prefixes="#all">
   
   <xsl:param name="date" />
-
+  <xsl:param name="publish_keyword" />
+  
   <xsl:template match="/mdb:MD_Metadata|*[contains(@gco:isoType, 'mdb:MD_Metadata')]">
     <xsl:copy>
       <xsl:copy-of select="@*"/>
@@ -74,6 +75,13 @@
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:graphicOverview" />
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceFormat" />
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:descriptiveKeywords" />
+							<mri:descriptiveKeywords>
+					            <mri:MD_Keywords>
+					               <mri:keyword>
+					                  <gco:CharacterString><xsl:value-of select="$publish_keyword"/></gco:CharacterString>
+					               </mri:keyword>
+					            </mri:MD_Keywords>
+					         </mri:descriptiveKeywords>
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceSpecificUsage" />
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceConstraints" />
 							<xsl:apply-templates select="srv:SV_ServiceIdentification/mri:aggregationInfo" />
@@ -141,6 +149,13 @@
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceMaintenance" />
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceFormat" />
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:descriptiveKeywords" />
+						<mri:descriptiveKeywords>
+							<mri:MD_Keywords>
+								<mri:keyword>
+									<gco:CharacterString><xsl:value-of select="$publish_keyword"/></gco:CharacterString>
+								</mri:keyword>
+							</mri:MD_Keywords>
+						</mri:descriptiveKeywords>
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceConstraints" />
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:associatedResource" />
 						<xsl:apply-templates select="mri:MD_DataIdentification/mri:defaultLocale" />

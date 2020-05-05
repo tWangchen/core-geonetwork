@@ -1284,7 +1284,7 @@ public class MetadataSharingApi {
 		Map<String, Object> xslParameters = new HashMap<String, Object>();
 		xslParameters.put("date", publishDate);
 		xslParameters.put("publish_keyword", publishKeyword);
-		Path file = schemaMan.getSchemaDir(schema).resolve("process").resolve(Geonet.File.PUBLICATION_DATE);
+		Path file = schemaMan.getSchemaDir(schema).resolve("process").resolve(Geonet.File.PUBLICATION_INFO);
 		md = Xml.transform(md, file, xslParameters);
 		dm.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
 	}
