@@ -1,4 +1,4 @@
-<select class="form-control">
+<select class="form-control" data-ng-model="selectedInfo">
   <option data-ng-repeat="p in infos"
           data-ng-selected="p.value === selectedInfo || p.code === selectedInfo"
           data-ng-hide="p.hideInEditMode == 'true'"

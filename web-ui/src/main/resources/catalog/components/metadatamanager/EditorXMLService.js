@@ -32,38 +32,49 @@
   module.value('gnXmlTemplates', {
     CRS: {iso19139: '<gmd:referenceSystemInfo ' +
           "xmlns:gmd='http://www.isotc211.org/2005/gmd' " +
-          "xmlns:gmx='http://www.isotc211.org/2005/gmx' " +
-          "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+          "xmlns:gco='http://www.isotc211.org/2005/gco'>" +
           '<gmd:MD_ReferenceSystem>' +
           '<gmd:referenceSystemIdentifier>' +
           '<gmd:RS_Identifier>' +
           '<gmd:code>' +
-          '<gmx:Anchor xlink:title="{{description}}" xlink:href="http://www.opengis.net/def/crs/EPSG/0/{{code}}">' +
-          'EPSG:{{code}}' +
-          '</gmx:Anchor>' +
+          '<gco:CharacterString>{{description}}' +
+          '</gco:CharacterString>' +
           '</gmd:code>' +
+          '<gmd:codeSpace>' +
+          '<gco:CharacterString>{{codeSpace}}</gco:CharacterString>' +
+          '</gmd:codeSpace>' +
+          '<gmd:version>' +
+          '<gco:CharacterString>{{version}}</gco:CharacterString>' +
+          '</gmd:version>' +
           '</gmd:RS_Identifier>' +
           '</gmd:referenceSystemIdentifier>' +
           '</gmd:MD_ReferenceSystem>' +
           '</gmd:referenceSystemInfo>',
       'iso19115-3':
-          '  <mrs:referenceSystemIdentifier ' +
+          '  <mdb:referenceSystemInfo ' +
           "xmlns:mrs='http://standards.iso.org/iso/19115/-3/mrs/1.0' " +
           "xmlns:mcc='http://standards.iso.org/iso/19115/-3/mcc/1.0' " +
-          "xmlns:gcx='http://standards.iso.org/iso/19115/-3/gcx/1.0' " +
-          "xmlns:gco='http://standards.iso.org/iso/19115/-3/gco/1.0' " +
-          "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
-          '    <mcc:MD_Identifier>' +
-          '     <mcc:code>' +
-          '       <gcx:Anchor xlink:href="http://www.opengis.net/def/crs/EPSG/0/{{code}}">' +
-          'EPSG:{{code}}' +
-          '</gcx:Anchor>' +
-          '     </mcc:code>' +
-          '     <mcc:description>' +
-          '       <gco:CharacterString>{{description}}</gco:CharacterString>' +
-          '     </mcc:description>' +
-          '   </mcc:MD_Identifier>' +
-          ' </mrs:referenceSystemIdentifier>'
+          "xmlns:mdb='http://standards.iso.org/iso/19115/-3/mdb/1.0' " +
+          "xmlns:cit='http://standards.iso.org/iso/19115/-3/cit/1.0' " +
+          "xmlns:gco='http://standards.iso.org/iso/19115/-3/gco/1.0'>" +
+          '	 <mrs:MD_ReferenceSystem>' +
+          '	   <mrs:referenceSystemIdentifier>' +
+          '      <mcc:MD_Identifier>' +
+          '        <mcc:code>' +
+          '         <gco:CharacterString>' +
+          '				{{description}}' +
+          '         </gco:CharacterString>' +
+          '       </mcc:code>' +
+          '		  <mcc:codeSpace>'+
+          '			<gco:CharacterString>{{codeSpace}}</gco:CharacterString>'+
+          '		  </mcc:codeSpace>'+
+          '       <mcc:version>' +
+          '           <gco:CharacterString>{{version}}</gco:CharacterString>' +
+          '       </mcc:version>' +
+          '     </mcc:MD_Identifier>' +
+          '		</mrs:referenceSystemIdentifier>' + 
+          '		</mrs:MD_ReferenceSystem>' +
+          ' </mdb:referenceSystemInfo>'
     }});
 
   module.factory('gnEditorXMLService',

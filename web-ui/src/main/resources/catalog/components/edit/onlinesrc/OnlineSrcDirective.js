@@ -692,7 +692,7 @@
                     } else {
                       scope.editingKey = null;
                       scope.params.linkType = typeConfig;
-                      scope.params.protocol = null;
+                      scope.params.protocol = 'WWW:LINK-1.0-http--link';
                       scope.params.name= '';
                       scope.params.desc= '';
                       initMultilingualFields();
@@ -740,7 +740,7 @@
                 var resetForm = function() {
                   if (scope.params) {
                     scope.params.url = '';
-                    scope.params.protocol = '';
+                    scope.params.protocol = 'WWW:LINK-1.0-http--link';
                     scope.params.function = '';
                     scope.params.applicationProfile = '';
                     scope.params.formatname = '';
@@ -975,7 +975,7 @@
                  */
                 scope.$watch('params.protocol', function(n, o) {
                   if (!angular.isUndefined(scope.params.protocol) && o !== n) {
-                    resetProtocol();
+                    //resetProtocol();
                     scope.OGCProtocol = checkIsOgc(scope.params.protocol);
                     if (scope.OGCProtocol != null && !scope.isEditing) {
                       // Reset parameter in case of multilingual metadata
