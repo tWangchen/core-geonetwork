@@ -81,7 +81,6 @@
 
   <facets>
     <facet name="keyword" indexKey="keyword" label="keywords" localized="true"/>
-    <facet name="topicCat" indexKey="topicCat" label="topicCats" localized="true"/>
     <facet name="category" indexKey="_cat" label="categories" localized="true"/>
     <facet name="inspireTheme" indexKey="inspiretheme" label="inspireThemes"/>
     <facet name="inspireThemeWithAc" indexKey="inspirethemewithac" label="inspireThemesWithAc"/>
@@ -190,7 +189,6 @@
     See above. -->
     <summaryType name="hits">
       <item facet="type" translator="codelist:gmd:MD_ScopeCode"/>
-      <item facet="topicCat" translator="codelist:gmd:MD_TopicCategoryCode" max="20"/>
       <item facet="inspireTheme" sortBy="value" sortOrder="asc" max="35"/>
       <item facet="inspireThemeWithAc" sortBy="value" sortOrder="asc" max="35"/>
       <item facet="inspireThemeURI" sortBy="value" sortOrder="asc" max="35"
