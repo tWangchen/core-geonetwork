@@ -447,7 +447,8 @@ public class BaseMetadataManager implements IMetadataManager {
     @Override
     public String createMetadata(ServiceContext context, String templateId, String groupOwner, String source, int owner,
                                  String parentUuid, String isTemplate, boolean fullRightsForGroup, String uuid) throws Exception {
-        AbstractMetadata templateMetadata = metadataUtils.findOne(templateId);
+        
+    	AbstractMetadata templateMetadata = metadataUtils.findOne(templateId);
         if (templateMetadata == null) {
             throw new IllegalArgumentException("Template id not found : " + templateId);
         }
@@ -458,7 +459,7 @@ public class BaseMetadataManager implements IMetadataManager {
         boolean isMetadata = templateMetadata.getDataInfo().getType() == MetadataType.METADATA;
         setMetadataTitle(schema, xml, context.getLanguage(), !isMetadata);
         if (isMetadata) {
-            xml = updateFixedInfo(schema, Optional.<Integer>absent(), uuid, xml, parentUuid, UpdateDatestamp.NO,
+        	xml = updateFixedInfo(schema, Optional.<Integer>absent(), uuid, xml, parentUuid, UpdateDatestamp.NO,
                 context);
         }
         final Metadata newMetadata = new Metadata();
@@ -482,8 +483,9 @@ public class BaseMetadataManager implements IMetadataManager {
 
         newMetadata.getMetadataCategories().addAll(filteredCategories);
 
+        boolean generateGAID = true;
         int finalId = insertMetadata(context, newMetadata, xml, false, true, true, UpdateDatestamp.YES,
-            fullRightsForGroup, true).getId();
+            fullRightsForGroup, true, generateGAID).getId();
 
         return String.valueOf(finalId);
     }
@@ -580,7 +582,7 @@ public class BaseMetadataManager implements IMetadataManager {
         }
 
         boolean fullRightsForGroup = false;
-
+        
         int finalId = insertMetadata(context, newMetadata, metadataXml, notifyChange, index, ufo, UpdateDatestamp.NO,
             fullRightsForGroup, false).getId();
 
@@ -591,7 +593,15 @@ public class BaseMetadataManager implements IMetadataManager {
     public AbstractMetadata insertMetadata(ServiceContext context, AbstractMetadata newMetadata, Element metadataXml,
                                            boolean notifyChange, boolean index, boolean updateFixedInfo, UpdateDatestamp updateDatestamp,
                                            boolean fullRightsForGroup, boolean forceRefreshReaders) throws Exception {
-        final String schema = newMetadata.getDataInfo().getSchemaId();
+    	return insertMetadata(context, newMetadata, metadataXml, notifyChange, index, updateFixedInfo, updateDatestamp, fullRightsForGroup, forceRefreshReaders, false);
+    }
+    
+    @Override
+    public AbstractMetadata insertMetadata(ServiceContext context, AbstractMetadata newMetadata, Element metadataXml,
+                                           boolean notifyChange, boolean index, boolean updateFixedInfo, UpdateDatestamp updateDatestamp,
+                                           boolean fullRightsForGroup, boolean forceRefreshReaders, boolean generateGAID) throws Exception {
+
+    	final String schema = newMetadata.getDataInfo().getSchemaId();
 
         // Check if the schema is allowed by settings
         String mdImportSetting = settingManager.getValue(Settings.METADATA_IMPORT_RESTRICT);
@@ -607,11 +617,11 @@ public class BaseMetadataManager implements IMetadataManager {
 
         // --- force namespace prefix for iso19139 metadata
         setNamespacePrefixUsingSchemas(schema, metadataXml);
-
+        
         if (updateFixedInfo && newMetadata.getDataInfo().getType() == MetadataType.METADATA) {
             String parentUuid = null;
             metadataXml = updateFixedInfo(schema, Optional.<Integer>absent(), newMetadata.getUuid(), metadataXml,
-                parentUuid, updateDatestamp, context);
+                parentUuid, updateDatestamp, context, generateGAID);
         }
 
         // --- store metadata
@@ -933,6 +943,11 @@ public class BaseMetadataManager implements IMetadataManager {
         return info;
     }
 
+    @Override
+    public Element updateFixedInfo(String schema, Optional<Integer> metadataId, String uuid, Element md,
+                                   String parentUuid, UpdateDatestamp updateDatestamp, ServiceContext context) throws Exception {
+    	return updateFixedInfo(schema, metadataId, uuid, md, parentUuid, updateDatestamp, context, false);
+    }
     /**
      * Update metadata record (not template) using update-fixed-info.xsl
      *
@@ -942,7 +957,7 @@ public class BaseMetadataManager implements IMetadataManager {
      */
     @Override
     public Element updateFixedInfo(String schema, Optional<Integer> metadataId, String uuid, Element md,
-                                   String parentUuid, UpdateDatestamp updateDatestamp, ServiceContext context) throws Exception {
+                                   String parentUuid, UpdateDatestamp updateDatestamp, ServiceContext context, boolean generateGAID) throws Exception {
         boolean autoFixing = settingManager.getValueAsBool(Settings.SYSTEM_AUTOFIXING_ENABLE, true);
         if (autoFixing) {
             LOGGER_DATA_MANAGER.debug("Autofixing is enabled, trying update-fixed-info (updateDatestamp: {})",
@@ -995,8 +1010,7 @@ public class BaseMetadataManager implements IMetadataManager {
 			// so see generateGAID above
 			String gaid = metadataUtils.extractGAID(schema, md);
 
-			if (StringUtils.isEmpty(gaid)) {
-				Log.debug(Geonet.DATA_MANAGER, "empty gaid...");
+			if (StringUtils.isEmpty(gaid) || generateGAID) {
 				env.addContent(new Element("gaid").setText(metadataUtils.getGAID()));
 			}
 

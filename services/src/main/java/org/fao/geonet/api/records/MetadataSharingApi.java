@@ -1207,6 +1207,17 @@ public class MetadataSharingApi {
                         operationMap.put(o.getName(), o.getId());
                     }
 
+                    //Only Publish external will be done here (Publish internal need to do for individual record)
+                    String publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
+                    Element md = dataManager.getMetadata(String.valueOf(metadata.getId()));
+                    
+                    md = transManager.updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
+                    				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
+                  	
+                    if(md == null)
+                    	addMetadataWithPublishInfo(context, schemaManager, dataManager, String.valueOf(metadata.getId()), publishKeyword);
+                    
+                    
                     List<GroupOperations> privileges = sharing.getPrivileges();
                     setOperations(sharing, dataMan, context, appContext, metadata, operationMap, privileges,
                         ApiUtils.getUserSession(session).getUserIdAsInt(), report, request);

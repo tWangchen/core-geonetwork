@@ -205,7 +205,7 @@
             <div class="subheader">Publication details</div>
             <div style="display: inline-flex">
               <p>This product was created on {{mdView.current.record.creationDate[0] | date:'mediumDate'}} and published
-                on {{mdView.current.record.publicationDate[0] | date:'mediumDate'}} </p>
+                on {{getAsArray(mdView.current.record.publicationDate)[0] | date:'mediumDate'}} </p>
             </div>
 
             <div class="row tab-items" data-ng-if="mdView.current.record.DOI">

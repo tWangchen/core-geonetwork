@@ -77,12 +77,12 @@
           <i class="fa fa-unlock"></i>&nbsp;<span translate>publish</span>
         </a>
       </li>
-	  <li  data-ng-show="!excludePattern.test('publish')"
+	  <!-- <li  data-ng-show="!excludePattern.test('publish')"
            data-ng-if="user.isReviewerOrMore()">
         <a href="" data-ng-click="mdService.publish(undefined, searchResults.selectionBucket, 'on', getCatScope(), true)">
           <i class="fa fa-unlock"></i>&nbsp;<span translate>Internal Publish</span>
         </a>
-      </li>
+      </li> -->
       <li  data-ng-show="!excludePattern.test('unpublish')"
            data-ng-if="user.isReviewerOrMore()">
         <a href="" data-ng-click="mdService.publish(undefined, searchResults.selectionBucket, 'off', getCatScope())">
