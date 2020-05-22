@@ -135,12 +135,15 @@
                 </li>
               </ul>
             </div>
-            <div class="row pull-right" ng-if="searchResults.count !== 0">
-              <div class="col-md-12">
+            <div class="col-sm-12 col-md-12 col-lg-4 page-sh">
                 <div data-gn-pagination="paginationInfo" data-hits-values="searchObj.hitsperpageValues"
                   data-enable-hot-keys="" data-enable-events=""></div>
               </div>
             </div>
+
+            <div class="search-result-feedback text-center" ng-if="!searching && searchResults.count == 0">
+              <p>No search results found...</p>
+          </div>      
           </div>
         </div>
       </div>
