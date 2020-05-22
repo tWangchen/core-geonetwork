@@ -88,7 +88,7 @@
               myListener();
             });
       };
-
+      
       var callBatch = function(service) {
         return gnHttp.callService(service).then(function(data) {
           alertResult(data.data);
@@ -449,9 +449,9 @@
        * @param {string} flag
        * @return {*}
        */
-      this.publish = function(md, bucket, flag, scope) {
+      this.publish = function(md, bucket, flag, scope, internal) {
         if (md) {
-          flag = md.isPublished() ? 'off' : 'on';
+          flag = (md.isPublished() || md.isPublishedInternal()) ? 'off' : 'on';
         }
 
         scope.isMdWorkflowEnable = gnConfig['metadata.workflow.enable'];
@@ -470,7 +470,7 @@
         return gnShareService.publish(
             angular.isDefined(md) ? md.getId() : undefined,
             angular.isDefined(md) ? undefined : bucket,
-            onOrOff, $rootScope.user)
+            onOrOff, $rootScope.user, internal)
             .then(
             function(response) {
               if (response.data !== '') {

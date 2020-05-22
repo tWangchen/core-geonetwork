@@ -227,19 +227,15 @@
       					return this.indexOf(searchString, position) === position;
       				 };
       			  }
-				
-      			  scope.display = function(r) {
-      				  var dis = !r.url.startsWith('file') || (r.url.startsWith('file') && gnGlobalSettings.isIntranet);
-      				  return dis;
-      			  };
-			  
+			 
         			scope.getClass = function(title) {
         				 if(title.eng){
       					  if(title.eng.toLowerCase() === 'purchase this product'){
-      						  return 'btn btn-NETO btn-sm btn-block';
+      						  return 'btn-NETO';
       					  }
       				  }
-      				  return 'btn btn-openLink btn-sm btn-block';
+                return 'btn-openLink';
+                
 				
       			  };
       			  scope.isLink = function(title){

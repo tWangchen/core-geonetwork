@@ -80,7 +80,7 @@
     <xsl:namespace name="xlink" select="'http://www.w3.org/1999/xlink'"/>
   </xsl:template>
 
-  <xsl:template match="/">
+  <xsl:template match="/" name="toISO19139">
     <!--
     root element (MD_Metadata or MI_Metadata)
     -->
@@ -172,7 +172,7 @@
     <xsl:if test="name(preceding-sibling::node()[1]) != name()">
       <gmd:hierarchyLevel>
         <gmd:MD_ScopeCode
-            codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode"
+          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
             codeListValue="{if (mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode/@codeListValue != '')
                             then mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode/@codeListValue
                             else mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode}"/>
@@ -507,12 +507,40 @@
     </gmd:DQ_QuantitativeResult>
   </xsl:template>
 
-
+  <!-- maintenanceScope was updateScope -->
+  <xsl:template match="mmi:maintenanceScope">
+    <gmd:updateScope>
+      <!-- "//" is a temporaty fix for invalid 115-3 records -->
+      <xsl:apply-templates select="*/mcc:level//mcc:MD_ScopeCode"/>
+    </gmd:updateScope>
+  </xsl:template>
 
 
   <xsl:template match="cit:CI_Citation">
     <xsl:element name="gmd:CI_Citation">
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="cit:title|cit:alternateTitle"/>
+
+      <!-- Add a null date to keep XSD validation status green. -->
+      <xsl:choose>
+        <xsl:when test="count(cit:date) = 0">
+          <gmd:date gco:nilReason="missing"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="cit:date"/>
+        </xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:apply-templates select="cit:edition|
+                                    cit:editionDate|
+                                    cit:identifier|
+                                    cit:citedResponsibleParty|
+                                    cit:presentationForm|
+                                    cit:series|
+                                    cit:otherCitationDetails|
+                                    cit:ISBN|
+                                    cit:ISSN|
+                                    cit:onlineResource"/>
+      
       <!-- Special attention is required for CI_ResponsibleParties that are included in the CI_Citation only for a URL. These are currently identified as those
         with no name elements (individualName, organisationName, or positionName)
       -->
@@ -522,6 +550,8 @@
         count(cit:party/cit:CI_Organisation/cit:organisationName/gco2:CharacterString) = 0]">
         <xsl:call-template name="CI_ResponsiblePartyToOnlineResource"/>
       </xsl:for-each>
+      
+      <xsl:apply-templates select="cit:graphic"/>
     </xsl:element>
   </xsl:template>
   <xsl:template match="cit:CI_Citation/cit:date">
@@ -559,26 +589,34 @@
           CI_ResponsibleParties without name elements are assummed to be placeholders for CI_OnlineResources. They are transformed later in the process
           using the CI_ResponsiblePartyToOnlineReseource template
         -->
+
+        <!-- Create as many responsible parties as the number of individual + organisation (with no individual) + individuals in an organisation -->
+        <xsl:for-each select="cit:party/(cit:CI_Individual|cit:CI_Organisation[not(cit:individual)]|cit:CI_Organisation/*/cit:CI_Individual)">
         <xsl:element name="gmd:CI_ResponsibleParty">
           <xsl:apply-templates select="@*"/>
-          <xsl:if test="cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name|
-            cit:party/cit:CI_Individual/cit:name">
+          <xsl:if test="name() = 'cit:CI_Individual' and cit:name != ''">
             <xsl:call-template name="writeCharacterStringElement">
               <xsl:with-param name="elementName" select="'gmd:individualName'"/>
-              <xsl:with-param name="nodeWithStringToWrite" select="cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name|
-                cit:party/cit:CI_Individual/cit:name"/>
+                <xsl:with-param name="nodeWithStringToWrite" select="cit:name"/>
             </xsl:call-template>
           </xsl:if>
 
-          <xsl:if test="cit:party/cit:CI_Organisation/cit:name">
-            <xsl:call-template name="writeCharacterStringElement">
-              <xsl:with-param name="elementName" select="'gmd:organisationName'"/>
-              <xsl:with-param name="nodeWithStringToWrite" select="cit:party/cit:CI_Organisation/cit:name"/>
-            </xsl:call-template>
-          </xsl:if>
+          <xsl:choose>
+            <xsl:when test="name() = 'cit:CI_Organisation' and cit:name != ''">
+              <xsl:call-template name="writeCharacterStringElement">
+                <xsl:with-param name="elementName" select="'gmd:organisationName'"/>
+                    <xsl:with-param name="nodeWithStringToWrite" select="cit:name"/>
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="name() = 'cit:CI_Individual' and ../../cit:name != ''">
+              <xsl:call-template name="writeCharacterStringElement">
+                <xsl:with-param name="elementName" select="'gmd:organisationName'"/>
+                <xsl:with-param name="nodeWithStringToWrite" select="../../cit:name"/>
+              </xsl:call-template>
+            </xsl:when>
+          </xsl:choose>
 
-          <xsl:if test="cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:positionName|
-            cit:party/cit:CI_Individual/cit:positionName">
+          <xsl:if test="cit:positionName != ''">
             <xsl:call-template name="writeCharacterStringElement">
               <xsl:with-param name="elementName" select="'gmd:positionName'"/>
               <xsl:with-param name="nodeWithStringToWrite" select="cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:positionName|
@@ -586,66 +624,73 @@
             </xsl:call-template>
           </xsl:if>
 
-          <!-- contactInformation comes before indivudual/position -->
-          <xsl:call-template name="writeContactInformation"/>
+          <!-- contactInformation comes before individual/position -->
+          <xsl:choose>
+            <xsl:when test="name() = 'cit:CI_Individual' and cit:contactInfo[normalize-space(.) != '']">
+              <xsl:for-each select="cit:contactInfo[normalize-space(.) != '']">
+                <xsl:call-template name="writeContactInformation"/>
+              </xsl:for-each>
+            </xsl:when>
+            <!-- Individual gets contact info from the parent organisation -->
+            <xsl:when test="name() = 'cit:CI_Individual' and ../../cit:contactInfo[normalize-space(.) != '']">
+              <xsl:for-each select="../../cit:contactInfo[normalize-space(.) != '']">
+                <xsl:call-template name="writeContactInformation"/>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:for-each select="cit:contactInfo[normalize-space(.) != '']">
+                <xsl:call-template name="writeContactInformation"/>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
 
           <xsl:choose>
-            <xsl:when test="./cit:role/cit:CI_RoleCode">
+              <xsl:when test="ancestor::cit:CI_Responsibility/cit:role/cit:CI_RoleCode/@codeListValue != ''">
               <xsl:call-template name="writeCodelistElement">
                 <xsl:with-param name="elementName" select="'gmd:role'"/>
                 <xsl:with-param name="codeListName" select="'gmd:CI_RoleCode'"/>
-                <xsl:with-param name="codeListValue" select="cit:role/cit:CI_RoleCode/@codeListValue"/>
+                  <xsl:with-param name="codeListValue" select="ancestor::cit:CI_Responsibility/cit:role/cit:CI_RoleCode/@codeListValue"/>
               </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="./gmd:role/@*">
-              <gmd:role>
-                <xsl:apply-templates select="@*"/>
-              </gmd:role>
             </xsl:when>
             <xsl:otherwise>
               <gmd:role gco:nilReason="missing"/>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:element>
+        </xsl:for-each>
       </xsl:when>
     </xsl:choose>
   </xsl:template>
+
   <xsl:template name="writeContactInformation">
-    <xsl:for-each select="cit:party/*/cit:contactInfo">
-      <gmd:contactInfo>
-        <xsl:apply-templates/>
-      </gmd:contactInfo>
-    </xsl:for-each>
+    <gmd:contactInfo>
+      <xsl:apply-templates select="*"/>
+    </gmd:contactInfo>
   </xsl:template>
-  <xsl:template match="cit:party/*/cit:contactInfo/cit:CI_Contact/cit:phone">
-    <!-- Only one phone number is allowed in ISO19139 -->
-    <xsl:variable name="phoneType"
-                  select="if (cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue != '')
-                          then cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue
-                          else cit:numberType/cit:CI_TelephoneTypeCode"/>
-    <xsl:if test="count(preceding-sibling::node()[cit:numberType/cit:CI_TelephoneTypeCode = $phoneType]) = 0">
-      <xsl:for-each select="cit:CI_Telephone">
-        <gmd:phone>
-          <gmd:CI_Telephone>
-            <xsl:for-each select=".[cit:numberType/cit:CI_TelephoneTypeCode = 'voice' or
-              cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'voice']/cit:number">
-              <gmd:voice>
-                <xsl:apply-templates select="gco2:CharacterString"/>
-              </gmd:voice>
-            </xsl:for-each>
-            <xsl:for-each select=".[cit:numberType/cit:CI_TelephoneTypeCode = 'facsimile' or
-              cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'facsimile']/cit:number">
-              <gmd:facsimile>
-                <xsl:apply-templates select="gco2:CharacterString"/>
-              </gmd:facsimile>
-            </xsl:for-each>
-          </gmd:CI_Telephone>
-        </gmd:phone>
-      </xsl:for-each>
-    </xsl:if>
+  
+  <xsl:template match="cit:contactInfo/cit:CI_Contact/cit:phone[1]">
+    <!-- Only phone number and facsimile are allowed in ISO19139 -->
+    <gmd:phone>
+      <gmd:CI_Telephone>
+        <xsl:for-each select="../cit:phone/*[
+                cit:numberType/cit:CI_TelephoneTypeCode = 'voice' or
+                cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'voice']/cit:number">
+          <gmd:voice>
+            <xsl:apply-templates select="gco2:CharacterString"/>
+          </gmd:voice>
+        </xsl:for-each>
+        <xsl:for-each select="../cit:phone/*[
+                cit:numberType/cit:CI_TelephoneTypeCode = 'facsimile' or
+                cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'facsimile']/cit:number">
+          <gmd:facsimile>
+            <xsl:apply-templates select="gco2:CharacterString"/>
+          </gmd:facsimile>
+        </xsl:for-each>
+      </gmd:CI_Telephone>
+    </gmd:phone>
   </xsl:template>
 
-
+  <xsl:template match="cit:contactInfo/cit:CI_Contact/cit:phone[position() > 1]"/>
 
   <xsl:template name="CI_ResponsiblePartyToOnlineResource">
     <!--
@@ -664,6 +709,9 @@
         <xsl:apply-templates select="mrd:formatSpecificationCitation/cit:CI_Citation/cit:title/*"/>
       </gmd:name>
       <gmd:version>
+        <xsl:if test="normalize-space(mrd:formatSpecificationCitation/cit:CI_Citation/cit:edition/*) = ''">
+          <xsl:attribute name="gco:nilReason" select="'unknown'"/>
+        </xsl:if>
         <xsl:apply-templates select="mrd:formatSpecificationCitation/cit:CI_Citation/cit:edition/*"/>
       </gmd:version>
 
@@ -684,11 +732,28 @@
     </srv:DCP>
   </xsl:template>
 
-  <xsl:template match="mcc:MD_Identifier">
+  <xsl:template match="mrs:referenceSystemType"/>
+
+  <xsl:template match="mdb:referenceSystemInfo/*/mrs:referenceSystemIdentifier/mcc:MD_Identifier"
+                priority="2">
     <gmd:RS_Identifier>
       <xsl:apply-templates select="@*"/>
       <xsl:apply-templates/>
     </gmd:RS_Identifier>
+  </xsl:template>
+
+  <xsl:template match="mcc:MD_Identifier[mcc:codeSpace]">
+    <gmd:RS_Identifier>
+      <xsl:apply-templates select="@*"/>
+      <xsl:apply-templates/>
+    </gmd:RS_Identifier>
+  </xsl:template>
+
+  <xsl:template match="mcc:MD_Identifier[not(mcc:codeSpace)]">
+    <gmd:MD_Identifier>
+      <xsl:apply-templates select="@*"/>
+      <xsl:apply-templates/>
+    </gmd:MD_Identifier>
   </xsl:template>
 
   <xsl:template match="*">
@@ -852,6 +917,9 @@
         <xsl:when test="ancestor-or-self::cit:CI_Citation">
           <xsl:text>gmd</xsl:text>
         </xsl:when>
+        <xsl:when test="ancestor-or-self::mri:citation">
+          <xsl:text>gmd</xsl:text>
+        </xsl:when>
         <xsl:when test="ancestor-or-self::mpc:MD_PortrayalCatalogueReference">
           <xsl:text>gmd</xsl:text>
         </xsl:when>
@@ -917,6 +985,7 @@
                        cit:CI_Citation/cit:onlineResource|
                        srv2:parameter|
                        mri:keywordClass|
+                       mri:temporalResolution|
                        mrd:formatSpecificationCitation|
                        mdb:dateInfo|
                        mdb:metadataProfile|

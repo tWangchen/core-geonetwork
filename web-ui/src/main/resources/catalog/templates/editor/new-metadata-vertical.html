@@ -131,6 +131,35 @@
         </a>
       </div>
     </div>
+	<br >
+	  <div class="row" data-ng-show="user.isUserAdminOrMore()">
+		<div class="col-sm-5">
+		  <input type="number" max="100" class="form-control" data-ng-model="mdCount">
+		</div>
+		<div class="col-sm-4">
+		  <div class="btn-group">
+			<button type="button" class="btn btn-success btn-md"
+					data-gn-click-and-spin="createMultiMetadata()"
+					data-ng-class="{'disabled': (!activeType || !activeTpl || !ownerGroup || ((!generateUuid) && (!isMdIdentifierFilled())) )}">
+			  <i class="fa fa-plus"/>
+			  <span data-translate="">Create Metadatas</span>
+			</button>
+		  </div>
+		</div>
+	  </div>
+	  <br >
+	  <div class="row">
+		<div ng-hide="msg==''">
+			<label class="alert alert-info">{{msg}}</label>
+		  </div>
+		  <div ng-if="eCatIds.length">
+			<label style="text-decoration:underline; font-style:italic">eCatIds:</label>
+		  </div>
+		  <div data-ng-repeat="id in eCatIds">
+			<label>{{id}}</label>
+		  </div>
+	  </div>
+	 
   </div>
 
   <div data-gn-need-help="user-guide/describing-information/creating-metadata.html"></div>

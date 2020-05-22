@@ -49,8 +49,21 @@
       <!-- /.sidebar-col-sub -->
     </div>
     <!-- /.sidebar -->
-    <div class="main"">
-
+    <div class="main">
+      <div class="user-menu pull-right" style="margin-right:20px">
+        <div class="user-menu-item">
+          <a data-gn-active-tb-item="catalog.search#/search" title="{{'search' | translate}}">
+            <i class="fa fa-search"></i>&nbsp;SEARCH</a>
+        </div>
+        <div class="user-menu-item" data-ng-show="authenticated && user.isEditorOrMore()">
+          <a data-gn-active-tb-item="catalog.edit" title="Manage my records" href="">
+            <i class="fa fa-plus"></i>&nbsp;MANAGE</a>
+        </div>
+        <div class="user-menu-item" data-ng-show="user.isUserAdminOrMore()">
+          <a data-gn-active-tb-item="admin.console" title="{{'adminConsole' | translate}}" href="">
+            <i class="fa fa-th"></i>&nbsp;ADMIN CONSOLE</a>
+        </div>
+      </div>
       <div class="row gn-row-admin-buttons">
         <div class="col-md-12" data-ng-controller="GnAdminController">
           <div class="btn-group btn-group-justified">

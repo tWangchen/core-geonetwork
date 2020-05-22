@@ -175,7 +175,7 @@ public class BaseMetadataOperations implements IMetadataOperations, ApplicationE
 
             //If it is published/unpublished, throw event
             if (opId == ReservedOperation.view.getId()
-                && grpId == ReservedGroup.all.getId()) {
+                && (grpId == ReservedGroup.all.getId() || grpId == ReservedGroup.intranet.getId())) {
                 Log.trace(Geonet.DATA_MANAGER, "This is a publish event");
                 this.eventPublisher.publishEvent(new MetadataPublished(
                     metadataUtils.findOne(Integer.valueOf(mdId))));
@@ -311,7 +311,7 @@ public class BaseMetadataOperations implements IMetadataOperations, ApplicationE
 
             //If it is published/unpublished, throw event
             if (operId == ReservedOperation.view.getId()
-                && groupId == ReservedGroup.all.getId()) {
+                && (groupId == ReservedGroup.all.getId() || groupId == ReservedGroup.intranet.getId())) {
 
                 this.eventPublisher.publishEvent(new MetadataUnpublished(
                     metadataUtils.findOne(Integer.valueOf(mdId))));

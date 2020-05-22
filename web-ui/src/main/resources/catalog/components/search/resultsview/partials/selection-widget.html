@@ -49,7 +49,7 @@
         </a>
       </li>
       <li data-ng-show="!excludePattern.test('exportCSV')">
-        <a href="" data-ng-click="mdService.exportCSV(searchResults.selectionBucket)">
+        <a href="" data-ng-click="mdService.openExportColumns(getCatScope(), searchResults.selectionBucket)">
           <i class="fa fa-file-excel-o"></i>&nbsp;<span translate>exportCSV</span>
         </a>
       </li>
@@ -77,6 +77,12 @@
           <i class="fa fa-unlock"></i>&nbsp;<span translate>publish</span>
         </a>
       </li>
+	  <!-- <li  data-ng-show="!excludePattern.test('publish')"
+           data-ng-if="user.isReviewerOrMore()">
+        <a href="" data-ng-click="mdService.publish(undefined, searchResults.selectionBucket, 'on', getCatScope(), true)">
+          <i class="fa fa-unlock"></i>&nbsp;<span translate>Internal Publish</span>
+        </a>
+      </li> -->
       <li  data-ng-show="!excludePattern.test('unpublish')"
            data-ng-if="user.isReviewerOrMore()">
         <a href="" data-ng-click="mdService.publish(undefined, searchResults.selectionBucket, 'off', getCatScope())">

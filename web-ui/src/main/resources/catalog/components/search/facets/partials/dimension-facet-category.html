@@ -1,5 +1,7 @@
 <ul class="list-group list-group-flush">
-    <li class="list-group-item d-flex justify-content-between align-items-center" data-ng-if="$index < maxItems" data-ng-repeat="c in category | orderBy: 'label'" 
+    <li class="list-group-item d-flex justify-content-between align-items-center" 
+	data-ng-if="$index < maxItems" 
+	data-ng-repeat="c in category | orderBy: 'label'" 
     data-ng-init="path = buildPath(c); label = buildLabel(c); isSelected = isOnDrillDownPath(c)">
     <label ng-show="c['@value'].indexOf('Published') !== 0" title="{{c['@label'] || c['@value']}}" data-ng-class="{'gn-facet-active': isSelected}">
       <input type="checkbox" style="opacity:0;" 
@@ -11,8 +13,19 @@
     </label>
     </li>
     <li class="list-group-item" data-ng-if="category.length - initialMaxItems > 0">
-      <button data-ng-click="toggleAll()" class="btn btn-link">
-        ...{{(category.length >= maxItems) ? ('more' | translate) : ('less' | translate)}}
-      </button>
+      
+    <button data-ng-click="showAllItems()"
+            class="btn btn-link"
+            data-ng-if="maxItems < category.length"
+            translate translate-values="{count: category.length}">
+      allFacet
+    </button>
+
+    <button data-ng-click="showInitialItems()"
+            class="btn btn-link"
+            data-ng-if="maxItems > initialMaxItems"
+            translate translate-values="{count: initialMaxItems}">
+      initialFacet
+    </button>
     </li>
   </ul>

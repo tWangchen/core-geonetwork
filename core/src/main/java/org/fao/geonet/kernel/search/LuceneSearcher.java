@@ -433,6 +433,8 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
             sortType = SortField.Type.INT;
             sortBy = "_" + sortBy;
         } else if (sortBy.equals(Geonet.SearchResult.SortBy.SCALE_DENOMINATOR)) {
+            sortType = SortField.Type.INT;            
+        } else if (sortBy.equals(Geonet.SearchResult.SortBy.ECATID)) {
             sortType = SortField.Type.INT;
         } else if (sortBy.equals(Geonet.SearchResult.SortBy.DATE)
             || sortBy.equals(Geonet.SearchResult.SortBy.TITLE)) {
@@ -1382,6 +1384,11 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         	eCatId.setText(eCatId.getText().replace(",", " or "));
         }
         
+        Element keyword = request.getChild(Geonet.SearchResult.KEYWORD);
+        if (keyword != null) {
+        	keyword.setText(keyword.getText() + "*");
+        }
+        
         _summaryConfig = _luceneConfig.getSummaryTypes().get(resultType);
 
         final Element summaryItemsEl = request.getChild(Geonet.SearchResult.SUMMARY_ITEMS);
@@ -1611,6 +1618,10 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         }
         if(sortBy.startsWith(Geonet.SearchResult.SortBy.TITLE)){
         	sortBy = Geonet.SearchResult.SortBy.TITLE;
+        }
+        
+        if(sortBy.startsWith(Geonet.SearchResult.SortBy.PUBLICATION_DATE)){
+        	sortBy = Geonet.SearchResult.SortBy.PUBLICATION_DATE;
         }
         
         boolean sortOrder = (Util.getParam(request, Geonet.SearchResult.SORT_ORDER, "").equals(""));

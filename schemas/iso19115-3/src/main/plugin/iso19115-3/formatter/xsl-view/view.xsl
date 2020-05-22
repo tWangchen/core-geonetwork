@@ -18,6 +18,7 @@
                 xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/1.0"
                 xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0"
                 xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
+                xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0"
                 xmlns:gml="http://www.opengis.net/gml/3.2"
                 xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0"
                 xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
@@ -69,10 +70,148 @@
     <xsl:value-of select="$value/gco:CharacterString"/>
   </xsl:template>
 
+  <xsl:template mode="getMetadataAuthors" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Individual"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
   <xsl:template mode="getMetadataAbstract" match="mdb:MD_Metadata">
     <xsl:variable name="value"
                   select="mdb:identificationInfo/*/mri:abstract"/>
     <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataType" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:metadataScope/mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode"/>
+    <xsl:value-of select="$value/@codeListValue"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataeCatId" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+    <xsl:template mode="getMetadataPOC" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+   <xsl:template mode="getMetadataDOI" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString='Digital Object Identifier']/mcc:code"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+   <xsl:template mode="getMetadataPID" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString='Geoscience Australia Persistent Identifier']/mcc:code"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataPubDate" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue='publication']/cit:date/gco:DateTime"/>
+    <xsl:value-of select="$value"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataCreateDate" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue='creation']/cit:date/gco:DateTime"/>
+    <xsl:value-of select="$value"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataResConstraints" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataStatus" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:status/mcc:MD_ProgressCode"/>
+    <xsl:value-of select="$value/@codeListValue"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataPurpose" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:purpose"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataMaintenance" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceMaintenance/mmi:MD_MaintenanceInformation/mmi:maintenanceAndUpdateFrequency/mmi:MD_MaintenanceFrequencyCode"/>
+    <xsl:value-of select="$value/@codeListValue"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataTopic" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:topicCategory/mri:MD_TopicCategoryCode"/>
+    <xsl:value-of select="$value"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataSeries" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:series"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataLineage" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:resourceLineage/mrl:LI_Lineage/mrl:statement"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataParent" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:parentMetadata"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataExtent" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:extent"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataRefSys" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:referenceSystemInfo"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataSpatial" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:spatialResolution/mri:MD_Resolution/mri:levelOfDetail"/>
+    <xsl:value-of select="$value/gco:CharacterString"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataServiceInfo" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/srv:SV_ServiceIdentification"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataAssoc" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:associatedResource"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+  <xsl:template mode="getMetadataDistributions" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:distributionInfo"/>
+    <xsl:value-of select="$value/*"/>
+  </xsl:template>
+
+<xsl:template mode="getMetadataSourceInfo" match="mdb:MD_Metadata">
+    <xsl:variable name="value"
+                  select="mdb:resourceLineage/mrl:LI_Lineage/mrl:source"/>
+    <xsl:value-of select="$value/*"/>
   </xsl:template>
 
 

@@ -35,7 +35,6 @@
   <xsl:include href="common/index-utils.xsl"/>
   <xsl:include href="common/functions-core.xsl"/>
   <xsl:include href="../layout/utility-tpl-multilingual.xsl"/>
-  <xsl:include href="index-subtemplate-fields.xsl"/>
 
 
   <!-- Thesaurus folder -->
@@ -162,7 +161,7 @@
     <!--<xsl:message><xsl:value-of select="$fieldName"/>:<xsl:value-of select="normalize-space($value)"/> (<xsl:value-of select="$langId"/>) </xsl:message>-->
     <xsl:if test="normalize-space($value) != ''">
       <Field name="{$fieldName}"
-             string="{normalize-space($value)}"
+             string="{$value}"
              store="{$store}"
              index="{$index}"/>
     </xsl:if>
@@ -204,10 +203,13 @@
   the current date time.
   -->
   <xsl:function name="gn-fn-iso19115-3:formatDateTime" as="xs:string">
-    <xsl:param name="value" as="xs:string"/>
+    <xsl:param name="value" as="xs:string?"/>
 
     <xsl:choose>
-      <xsl:when test="$value='' or lower-case($value)='unknown' or lower-case($value)='current' or lower-case($value)='now'">
+      <xsl:when test="$value='' or lower-case($value)='unknown'">
+        <xsl:value-of select="''"/>
+      </xsl:when>
+      <xsl:when test="lower-case($value)='current' or lower-case($value)='now'">
         <xsl:value-of select="format-dateTime(current-dateTime(),$df)"/>
       </xsl:when>
       <xsl:otherwise>
@@ -246,7 +248,7 @@
 
 	<!-- author is saved if present into author field within lucene -->
 	<xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode[@codeListValue='author']]">		
-		<Field name="author" string="{string(cit:party/cit:CI_Individual/cit:name/gco:CharacterString)}" store="true" index="true"/>
+		<Field name="author" string="{string(.)}" store="true" index="true"/>
 	<!--	<Field name="author" string="{substring-before(string(cit:party/cit:CI_Individual/cit:name/gco:CharacterString), ',')}" store="true" index="true"/>		-->	
 	</xsl:for-each>
 
@@ -263,7 +265,27 @@
 		   <Field name="legalConstraints" string="{string(mco:otherConstraints/gco:CharacterString)}" store="true" index="true"/>
 	</xsl:for-each>
 
+	<!-- Metadata scope id -->
+	<xsl:for-each select="$metadata/mdb:metadataScope/mdb:MD_MetadataScope/@id">
+    	<Field name="mdScopeId" string="{string(.)}" store="true" index="true"/>
+  	</xsl:for-each>
+  
  	<!-- Martins additions start -->
+	
+	
+	
+	<xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date/cit:CI_Date/cit:dateType/cit:CI_DateTypeCode">
+       		<Field name="citationdateType" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date/cit:CI_Date/cit:date/gco:DateTime">
+       		<Field name="citationDate" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	 
+	 <xsl:for-each select="$metadata/mdb:metadataScope/mdb:MD_MetadataScope">
+      <Field name="scopeName" string="{string(mdb:name/gco:CharacterString)}" store="true" index="true"/>
+     </xsl:for-each>
+	
      <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:series/cit:CI_Series">
        		<Field name="issueIdentification" string="{string(cit:issueIdentification/gco:CharacterString)}" store="true" index="true"/>
        		<Field name="seriesName" string="{string(cit:name/gco:CharacterString)}" store="true" index="true"/>
@@ -273,6 +295,25 @@
        		<Field name="lineageStatement" string="{string(.)}" store="true" index="true"/>
      </xsl:for-each>
 	 
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:accessConstraints/mco:MD_RestrictionCode/@codeListValue">
+       		<Field name="accessCons" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	 
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:useConstraints/mco:MD_RestrictionCode/@codeListValue">
+       		<Field name="useCons" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	 
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:reference/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString">
+       		<Field name="licenceLink" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	 
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:useLimitation/gco:CharacterString">
+       		<Field name="MD_LegalConstraintsUseLimitation" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>
+	 
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:purpose/gco:CharacterString">
+       		<Field name="purpose" string="{string(.)}" store="true" index="true"/>
+     </xsl:for-each>	 
   
   	<xsl:for-each select="$metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributionOrderProcess/mrd:MD_StandardOrderProcess">
        <Field name="fees" string="{string(mrd:fees/gco:CharacterString)}" store="true" index="true"/>
@@ -407,8 +448,32 @@
 	</xsl:for-each>
     
   <xsl:for-each select="$metadata/mdb:identificationInfo/*/mri:associatedResource/mri:MD_AssociatedResource">
-       	<Field name="Associations" string="{string(mri:associationType/mri:DS_AssociationTypeCode/@codeListValue)}-{string(mri:metadataReference/cit:CI_Citation/cit:title/gco:CharacterString)}-{string(mri:metadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[mcc:description/gco:CharacterString='eCat Identifier']/mcc:code/gco:CharacterString)}-{string(mri:metadataReference/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString)}" store="true" index="true"/>
+       	<Field name="Associations" string="{string(mri:associationType/mri:DS_AssociationTypeCode/@codeListValue)}~{string(mri:metadataReference/cit:CI_Citation/cit:title/gco:CharacterString)}~{string(mri:metadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[mcc:description/gco:CharacterString='eCat Identifier']/mcc:code/gco:CharacterString)}~{string(mri:metadataReference/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString)}" store="true" index="true"/>
   </xsl:for-each>
+  
+  		<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:couplingType/srv:SV_CouplingType/@codeListValue">
+      <Field name="couplingType" string="{string(.)}" store="true" index="true"/>
+	</xsl:for-each>
+	
+	<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata/srv:distributedComputingPlatform/srv:DCPList/@codeListValue">
+      <Field name="dcp" string="{string(.)}" store="true" index="true"/>
+    </xsl:for-each>
+	
+	<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata">
+      <Field name="operationDesc" string="{string(srv:operationDescription/gco:CharacterString)}" store="true" index="true"/>
+    </xsl:for-each>
+	
+		<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata">
+	  <Field name="connectPoint" string="{string(srv:connectPoint/cit:CI_OnlineResource/cit:linkage/gco:CharacterString)}" store="true" index="true"/>
+    </xsl:for-each>
+	
+	<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata/srv:parameter/srv:SV_Parameter/srv:name/gco:MemberName/gco:aName/gco:CharacterString">
+      <Field name="parameterName" string="{string(.)}" store="true" index="true"/>
+    </xsl:for-each>
+	
+	<xsl:for-each select="$metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata/srv:parameter/srv:SV_Parameter/srv:description/gco:CharacterString">
+      <Field name="parameterDesc" string="{string(.)}" store="true" index="true"/>
+    </xsl:for-each>
 	  
 	  
 	  
@@ -482,10 +547,10 @@
           <Field name="revisionDate"
                  string="{string(gco:Date[.!='']|gco:DateTime[.!=''])}"
                  store="true" index="true"/>
-          <Field name="createDateMonth"
+          <Field name="revisionDateMonth"
                  string="{substring(gco:Date[.!='']|gco:DateTime[.!=''], 0, 8)}"
                  store="true" index="true"/>
-          <Field name="createDateYear"
+          <Field name="revisionDateYear"
                  string="{substring(gco:Date[.!='']|gco:DateTime[.!=''], 0, 5)}"
                  store="true" index="true"/>
           <xsl:if test="$useDateAsTemporalExtent">
@@ -518,6 +583,12 @@
           <Field name="publicationDate"
                  string="{string(gco:Date[.!='']|gco:DateTime[.!=''])}"
                  store="true" index="true"/>
+          <Field name="publicationDateMonth"
+                 string="{substring(gco:Date[.!='']|gco:DateTime[.!=''], 0, 8)}"
+                 store="true" index="true"/>
+          <Field name="publicationDateYear"
+                 string="{substring(gco:Date[.!='']|gco:DateTime[.!=''], 0, 5)}"
+                 store="true" index="true"/>
           <xsl:if test="$useDateAsTemporalExtent">
             <Field name="tempExtentBegin"
                    string="{string(gco:Date[.!='']|gco:DateTime[.!=''])}"
@@ -545,14 +616,17 @@
 
         <xsl:for-each select="mri:temporalElement/gex:EX_TemporalExtent/gex:extent">
           <xsl:for-each select="gml:TimePeriod">
-            <Field name="tempExtentBegin"
-                   string="{lower-case(gn-fn-iso19115-3:formatDateTime(gml:beginPosition|gml:begin/gml:TimeInstant/gml:timePosition))}"
-                   store="true" index="true"/>
-            <Field name="tempExtentEnd"
-                   string="{lower-case(gn-fn-iso19115-3:formatDateTime(gml:endPosition|gml:end/gml:TimeInstant/gml:timePosition))}"
-                   store="true" index="true"/>
+            <xsl:for-each select="gml:beginPosition[. != '']|gml:begin/gml:TimeInstant/gml:timePosition[. != '']">
+              <Field name="tempExtentBegin"
+                     string="{lower-case(gn-fn-iso19115-3:formatDateTime(.))}"
+                     store="true" index="true"/>
+            </xsl:for-each>
+            <xsl:for-each select="gml:endPosition[. != '']|gml:end/gml:TimeInstant/gml:timePosition[. != '']">
+              <Field name="tempExtentEnd"
+                     string="{lower-case(gn-fn-iso19115-3:formatDateTime(.))}"
+                     store="true" index="true"/>
+            </xsl:for-each>
           </xsl:for-each>
-
         </xsl:for-each>
       </xsl:for-each>
       <xsl:if test="*/gex:EX_Extent/*/gex:EX_BoundingPolygon">
@@ -690,6 +764,10 @@
         <xsl:for-each select="mri:distance/gco:Distance/@uom">
           <Field name="distanceUom" string="{string(.)}" store="true" index="true"/>
         </xsl:for-each>
+		
+		<xsl:for-each select="mri:levelOfDetail/gco:CharacterString">
+          <Field name="levelOfDetail" string="{string(.)}" store="true" index="true"/>
+        </xsl:for-each>
       </xsl:for-each>
 
       <!-- Add an extra value to the status codelist to indicate all
@@ -787,9 +865,9 @@
           <xsl:with-param name="langId" select="$langId"/>
         </xsl:call-template>
       </xsl:for-each>
-      <!-- FIXME: Additional constraints have been created in the mco schema -->
-      <xsl:for-each select="mri:resourceConstraints">
-      	<xsl:variable name="fieldPrefix" select="local-name()"/>
+
+      <xsl:for-each select="mri:resourceConstraints/*">
+        <xsl:variable name="fieldPrefix" select="local-name()"/>
 
         <xsl:for-each
           select="mco:accessConstraints/*/@codeListValue[string(.) != 'otherRestrictions']">
@@ -998,30 +1076,54 @@
 
     <!-- Index feature catalog as complex object in attributeTable field.
     TODO multilingual -->
-    <xsl:for-each select="$metadata/mdb:contentInfo/mrc:MD_FeatureCatalogue/mrc:featureCatalogue">
-      <xsl:variable name="attributes"
-                    select=".//gfc:carrierOfCharacteristics"/>
-      <xsl:if test="count($attributes) > 0">
-        <xsl:variable name="jsonAttributeTable">
-          [<xsl:for-each select="$attributes">
-          {"name": "<xsl:value-of select="*/gfc:code/*/text()"/>",
-          "definition": "<xsl:value-of select="*/gfc:definition/*/text()"/>",
-          "type": "<xsl:value-of select="*/gfc:valueType/gco:TypeName/gco:aName/*/text()"/>"
-          <xsl:if test="*/gfc:listedValue">
-            ,"values": [<xsl:for-each select="*/gfc:listedValue">{
-            "label": "<xsl:value-of select="*/gfc:label/*/text()"/>",
+    <xsl:variable name="jsonFeatureTypes">[
+
+      <xsl:for-each select="$metadata/mdb:contentInfo/mrc:MD_FeatureCatalogue//gfc:featureType">{
+
+        "typeName" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:typeName/text()"/>",
+        "definition" :"<xsl:value-of select="gn-fn-index:json-escape(gfc:FC_FeatureType/gfc:definition/*/text())"/>",
+        "code" :"<xsl:value-of select="gfc:FC_FeatureType/gfc:code/*/text()"/>",
+        "isAbstract" :"<xsl:value-of select="gfc:FC_FeatureType/gfc:isAbstract/*/text()"/>",
+        "aliases" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:aliases/*/text()"/>",
+        <!--"inheritsFrom" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:inheritsFrom/*/text()"/>",
+        "inheritsTo" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:inheritsTo/*/text()"/>",
+        "constrainedBy" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:constrainedBy/*/text()"/>",
+        "definitionReference" : "<xsl:value-of select="gfc:FC_FeatureType/gfc:definitionReference/*/text()"/>",-->
+        <!-- Index attribute table as JSON object -->
+        <xsl:variable name="attributes"
+                      select="*/gfc:carrierOfCharacteristics"/>
+        <xsl:if test="count($attributes) > 0">
+          "attributeTable" : [
+          <xsl:for-each select="$attributes">
+            {"name": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:memberName/text())"/>",
+            "definition": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:definition/*/text())"/>",
             "code": "<xsl:value-of select="*/gfc:code/*/text()"/>",
-            "definition": "<xsl:value-of select="*/gfc:definition/*/text()"/>"}
+            "link": "<xsl:value-of select="*/gfc:code/*/@xlink:href"/>",
+            "type": "<xsl:value-of select="*/gfc:valueType/gco:TypeName/gco:aName/*/text()"/>"
+            <xsl:if test="*/gfc:listedValue">
+              ,"values": [
+              <xsl:for-each select="*/gfc:listedValue">{
+                "label": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:label/*/text())"/>",
+                "code": "<xsl:value-of select="*/gfc:code/*/text()"/>",
+                "definition": "<xsl:value-of select="gn-fn-index:json-escape(*/gfc:definition/*/text())"/>"}
+                <xsl:if test="position() != last()">,</xsl:if>
+              </xsl:for-each>
+              ]
+            </xsl:if>
+            }
             <xsl:if test="position() != last()">,</xsl:if>
-          </xsl:for-each>]
-          </xsl:if>}
-          <xsl:if test="position() != last()">,</xsl:if>
-        </xsl:for-each>]
-        </xsl:variable>
-        <Field name="attributeTable" index="true" store="true"
-               string="{$jsonAttributeTable}"/>
-      </xsl:if>
-    </xsl:for-each>
+          </xsl:for-each>
+          ]
+        </xsl:if>
+        }
+        <xsl:if test="position() != last()">,</xsl:if>
+      </xsl:for-each>
+      ]
+
+    </xsl:variable>
+
+    <Field name="featureTypes" index="true" store="true"
+           string="{$jsonFeatureTypes}"/>
 
 
     <Field name="hasDqMeasures" index="true" store="true"
@@ -1065,10 +1167,11 @@
 
         <xsl:for-each select="mdq:result/mdq:DQ_QuantitativeResult">
           <xsl:variable name="qmDate" select="mdq:dateTime/gco:Date/text()"/>
+          <!-- TODO: We assume one value per measure which may not be the case. -->
           <xsl:variable name="qmValue" select="mdq:value/gco:Record/text()"/>
           <xsl:variable name="qmUnit" select="mdq:valueUnit/*/gml:identifier/text()"/>
           <Field name="dqValues" index="true" store="true"
-                 string="{concat($dqId, '|', $cptName, '|', $qmId, '|', $qmName, '|', $qmDate, '|', $qmValue, '|', $qmUnit)}"/>
+                 string="{concat($dqId, '|', $cptName, '|', $qmId, '|', $qmName, '|', $qmDate, '|', string-join($qmValue, ', '), '|', $qmUnit)}"/>
 
         </xsl:for-each>
       </xsl:for-each>

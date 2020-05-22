@@ -30,6 +30,48 @@
   <xsl:param name="id"/>
   <xsl:param name="uuid"/>
   <xsl:param name="title"/>
+
+
+  <xsl:variable name="isMultilingual" select="count(distinct-values(*//lan:LocalisedCharacterString/@locale)) > 0"/>
+
+  <!-- Subtemplate indexing -->
+  <xsl:template match="/">
+    <xsl:variable name="root" select="/"/>
+    <xsl:variable name="isoDocLangId" select="util:getLanguage()"></xsl:variable>
+
+    <Documents>
+
+      <xsl:choose>
+        <xsl:when test="$isMultilingual">
+          <xsl:for-each select="distinct-values(//lan:LocalisedCharacterString/@locale)">
+            <xsl:variable name="locale" select="string(.)"/>
+            <xsl:variable name="langId" select="substring($locale,2,2)"/>
+            <xsl:variable name="isoLangId" select="util:threeCharLangCode($langId)"/>
+
+            <Document locale="{$isoLangId}">
+              <Field name="_locale" string="{$isoLangId}" store="true" index="true"/>
+              <Field name="_docLocale" string="{$isoDocLangId}" store="true" index="true"/>
+              <xsl:apply-templates mode="index" select="$root">
+                <xsl:with-param name="locale" select="$locale"/>
+                <xsl:with-param name="isoLangId" select="$isoLangId"/>
+                <xsl:with-param name="langId" select="$langId"></xsl:with-param>
+              </xsl:apply-templates>
+            </Document>
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <Document locale="">
+            <xsl:apply-templates mode="index" select="$root"/>
+          </Document>
+        </xsl:otherwise>
+      </xsl:choose>
+    </Documents>
+  </xsl:template>
+
+
+
+
+
   <xsl:template mode="index"
                 match="cit:CI_Responsibility[count(ancestor::node()) =  1]">
 
@@ -43,7 +85,7 @@
 
     <Field name="_title"
            string="{if ($title != '') then $title
-                    else if ($name != '') then concat($org, ' (', $name, ')')
+                    else if ($name != '') then $name
                     else if ($mail != '') then concat($org, ' (', $mail, ')')
                     else $org}"
            store="true" index="true"/>
@@ -63,6 +105,15 @@
     <Field name="_title" string="{concat($name,' @ ',$org)}" store="true" index="true"/>
 
     <Field name="personOrganisation" string="{concat($name,' @ ',$org)}" store="true" index="true"/>
+    <xsl:call-template name="subtemplate-common-fields"/>
+  </xsl:template>
+  
+  <xsl:template mode="index" match="cit:CI_Individual">
+
+    <xsl:variable name="name" select="normalize-space(cit:name/gco:CharacterString)"/>
+    
+    <Field name="_title" string="{$name}" store="true" index="true"/>
+
     <xsl:call-template name="subtemplate-common-fields"/>
   </xsl:template>
 

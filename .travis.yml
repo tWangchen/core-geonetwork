@@ -6,9 +6,10 @@ jdk:
 branches:
   only:
     - 3.10.x
+    - /^ecat3.10-.*$/ # any dev branch
     
 script:
-  - export BRANCH=/ecat3/test
+  - if [[ $TRAVIS_BRANCH =~ ^ecat3.10-.*$ ]]; then export BRANCH=/ecat3/dev; else export BRANCH=/ecat3/prod; fi
   - mvn clean install -DskipTests -Penv-prod,es
 
 addons:

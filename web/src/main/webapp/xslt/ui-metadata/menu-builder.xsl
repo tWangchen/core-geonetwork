@@ -103,14 +103,14 @@
               </xsl:for-each>
 
               <li class="divider" role="menuitem"/>
-              <li role="menuitem">
+              <!-- <li role="menuitem">
                 <a data-ng-click="toggleAttributes(true)" href="">
                   <i class="fa"
                      data-ng-class="gnCurrentEdit.displayAttributes ? 'fa-check-square-o' : 'fa-square-o'"/>
                   &#160;
                   <span data-translate="">toggleAttributes</span>
                 </a>
-              </li>
+              </li> -->
               <li role="menuitem">
                 <a data-ng-click="toggleTooltips(true)" href="">
                   <i class="fa"

@@ -711,6 +711,9 @@
       isPublished: function() {
         return this['geonet:info'].isPublishedToAll === 'true';
       },
+      isPublishedInternal: function() {
+        return (this.mdStatus === '2' && this.draft !== 'y' && (this.publishedForGroup.indexOf('0') !== -1));
+      },
       isValid: function() {
         return this.valid === '1';
       },

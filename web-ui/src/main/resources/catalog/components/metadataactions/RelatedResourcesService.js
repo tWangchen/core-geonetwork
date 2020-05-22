@@ -55,9 +55,10 @@
         'gnAlertService',
         '$filter',
         'gnExternalViewer',
+        'gnGlobalSettings',
         function(gnMap, gnOwsCapabilities, gnSearchSettings, gnViewerSettings,
             olDecorateLayer, gnSearchLocation, gnOwsContextService,
-            gnWfsService, gnAlertService, $filter, gnExternalViewer) {
+            gnWfsService, gnAlertService, $filter, gnExternalViewer,gnGlobalSettings) {
 
           this.configure = function(options) {
             angular.extend(this.map, options);
@@ -340,6 +341,14 @@
             var f = this.getAction(type);
             f(parameters, md);
           };
+          this.display = function(resource) {
+            resource.locUrl = $filter('gnLocalized')(resource.url);
+            var dis = (!resource.locUrl.startsWith('http://rmweb/HPEContentManager') 
+                          && !resource.locUrl.startsWith('file')) 
+                          || (resource.locUrl.startsWith('file') && gnGlobalSettings.isIntranet)
+                          || (resource.locUrl.startsWith('http://rmweb/HPEContentManager') && gnGlobalSettings.isIntranet);
+				    return dis;
+          }
 
           this.getType = function(resource, type) {
             resource.locTitle = $filter('gnLocalized')(resource.title);

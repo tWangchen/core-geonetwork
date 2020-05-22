@@ -360,10 +360,10 @@
     <xsl:variable name="childTypeXpath"
                   select="normalize-space($configuration/editor/fields/for[@name = $childName and @xpath = $xpath]/@use)"/>
     <xsl:variable name="type"
-                  select="normalize-space($configuration/editor/fields/for[@name = $name]/@use)"/>
+                  select="normalize-space($configuration/editor/fields/for[@name = $name and not(@xpath)]/@use)"/>
     <xsl:variable name="typeXpath"
                   select="normalize-space($configuration/editor/fields/for[@name = $name and @xpath = $xpath]/@use)"/>
-                  
+
     <xsl:value-of
       select="if ($childTypeXpath != '')
       then $childTypeXpath
@@ -455,7 +455,7 @@
 
   <!-- Return if a flat mode exception has been defined in the current view for a field. -->
   <xsl:function name="gn-fn-metadata:isFieldFlatModeException" as="xs:boolean">
-    <xsl:param name="configuration" as="node()"/>
+    <xsl:param name="configuration" as="node()?"/>
     <xsl:param name="name" as="xs:string"/>
     <xsl:param name="parent" as="xs:string?" />
 

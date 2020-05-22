@@ -99,6 +99,7 @@ import org.fao.geonet.repository.UserRepository;
 import org.fao.geonet.repository.specification.MetadataValidationSpecs;
 import org.fao.geonet.repository.specification.OperationAllowedSpecs;
 import org.fao.geonet.repository.specification.UserGroupSpecs;
+import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
 import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,13 +198,17 @@ public class MetadataSharingApi {
 
     
     @Autowired
-    TransformManager transMan;
+    TransformManager transManager;
     /**
      * What does publish mean?
      */
     @Autowired
     @Qualifier("publicationConfig")
     private Map publicationConfig;
+    
+    @Autowired
+    @Qualifier("internalPublicationConfig")
+    private Map internalPublicationConfig;
 	
     @ApiOperation(
         value = "Set privileges for ALL group to publish the metadata for all users.",
@@ -230,8 +235,38 @@ public class MetadataSharingApi {
         HttpServletRequest request
     )
         throws Exception {
-        shareMetadataWithAllGroup(metadataUuid, true, session, request);
+        shareMetadataWithAllGroup(metadataUuid, true, true, session, request);
     }
+    
+    @ApiOperation(
+            value = "Set privileges for ALL group to publish the metadata for all users.",
+            nickname = "publish")
+        @RequestMapping(
+            value = "/{metadataUuid}/intranetpublish",
+            method = RequestMethod.PUT
+        )
+        @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Settings updated."),
+            @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_CAN_EDIT)
+        })
+        @PreAuthorize("hasRole('Reviewer')")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public void intranetPublish(
+            @ApiParam(
+                value = API_PARAM_RECORD_UUID,
+                required = true)
+            @PathVariable
+                String metadataUuid,
+            @ApiIgnore
+            @ApiParam(hidden = true)
+                HttpSession session,
+            HttpServletRequest request
+        )
+            throws Exception {
+            shareMetadataWithAllGroup(metadataUuid, true, false, session, request);
+        }
+    
+    
 
     @ApiOperation(
         value = "Unsets privileges for ALL group to publish the metadata for all users.",
@@ -258,7 +293,7 @@ public class MetadataSharingApi {
         HttpServletRequest request
     )
         throws Exception {
-        shareMetadataWithAllGroup(metadataUuid, false, session, request);
+        shareMetadataWithAllGroup(metadataUuid, false, true, session, request);
     }
 
 
@@ -366,6 +401,39 @@ public class MetadataSharingApi {
         SharingParameter sharing = buildSharingForPublicationConfig(true);
         return shareSelection(uuids, bucket, sharing, session, request);
     }
+    
+    @ApiOperation(
+            value = "Publish one or more records",
+            notes = "See record sharing for more details.",
+            nickname = "publishRecords")
+        @RequestMapping(value = "/intranetpublish",
+            method = RequestMethod.PUT
+        )
+        @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Report about updated privileges."),
+            @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_EDITOR)
+        })
+        @PreAuthorize("hasRole('Editor')")
+        @ResponseStatus(HttpStatus.CREATED)
+        public
+        @ResponseBody
+        MetadataProcessingReport intranetPublish(
+            @ApiParam(value = ApiParams.API_PARAM_RECORD_UUIDS_OR_SELECTION,
+                required = false)
+            @RequestParam(required = false) String[] uuids,
+            @ApiParam(value = ApiParams.API_PARAM_BUCKET_NAME,
+                required = false)
+            @RequestParam(required = false) String bucket,
+            @ApiIgnore
+            @ApiParam(hidden = true)
+                HttpSession session,
+            HttpServletRequest request
+        )
+            throws Exception {
+
+            SharingParameter sharing = buildSharingForInternalPublicationConfig(true);
+            return shareSelection(uuids, bucket, sharing, session, request);
+        }
 
 
     @ApiOperation(
@@ -471,7 +539,7 @@ public class MetadataSharingApi {
 
                     if (o.getValue()) {
                         // For privileges to ALL group, check if it's allowed or not to publish invalid metadata
-                        if ((p.getGroup() == ReservedGroup.all.getId())) {
+                        if ((p.getGroup() == ReservedGroup.all.getId() || p.getGroup() == ReservedGroup.intranet.getId())) {
                             try {
                                 checkCanPublishToAllGroup(context, dataMan, metadata,
                                     allowPublishInvalidMd, allowPublishNonApprovedMd);
@@ -504,56 +572,6 @@ public class MetadataSharingApi {
         }
     }
 
-	private void addMetadataWithPublishKeyword(ServiceContext context, String id, String publishKeyword) throws Exception {
-    	String schema = dataManager.getMetadataSchema(id);
-    	String publishDate = new ISODate().toString();
-		Element md = dataManager.getMetadata(id);
-		Map<String, Object> xslParameters = new HashMap<String, Object>();
-		xslParameters.put("publish_keyword", publishKeyword);
-		Path file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.SET_KEYWORD);
-		md = Xml.transform(md, file, xslParameters);
-		dataManager.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
-	}
-    private void updateMetadataWithModifiedDate(ServiceContext context, String id) throws Exception {
-    	String schema = dataManager.getMetadataSchema(id);
-		String publishDate = new ISODate().toString();
-		Element md = dataManager.getMetadata(id);
-		Map<String, Object> xslParameters = new HashMap<String, Object>();
-		xslParameters.put("date", publishDate);
-		Path file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.PUBLICATION_DATE);
-		md = Xml.transform(md, file, xslParameters);
-		dataManager.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
-	}
-    
-    private void updateStatus(ServiceContext context, Set<Integer> metadataIds, Integer status)
-			throws Exception {
-
-		// --- use StatusActionsFactory and StatusActions class to
-		// --- change status and carry out behaviours for status changes
-		
-		StatusActions sa = statusActionsFactory.createStatusActions(context);
-		
-        int author = context.getUserSession().getUserIdAsInt();
-        StatusValue statusValue = statusValueRepository.findOne(status);
-
-        for (Integer mdId : metadataIds) {
-            MetadataStatus metadataStatus = new MetadataStatus();
-
-            MetadataStatusId mdStatusId = new MetadataStatusId().setStatusId(status).setMetadataId(mdId)
-                .setChangeDate(new ISODate()).setUserId(author);
-
-            metadataStatus.setId(mdStatusId);
-            metadataStatus.setStatusValue(statusValue);
-            metadataStatus.setChangeMessage("Editing instance created");
-
-            List<MetadataStatus> listOfStatusChange = new ArrayList<>(1);
-            listOfStatusChange.add(metadataStatus);
-            sa.onStatusChange(listOfStatusChange);
-        }
-        
-        
-	}
-	
     @ApiOperation(
         value = "Get record sharing settings",
         notes = "Return current sharing options for a record.",
@@ -1082,12 +1100,12 @@ public class MetadataSharingApi {
      * @param session
      * @throws Exception
      */
-    private void shareMetadataWithAllGroup(String metadataUuid, boolean publish,
+    private void shareMetadataWithAllGroup(String metadataUuid, boolean publish, boolean isExternal, 
                                    HttpSession session, HttpServletRequest request) throws Exception {
+    	
         AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
         ApplicationContext appContext = ApplicationContextHolder.get();
         ServiceContext context = ApiUtils.createServiceContext(request);
-
 
         //--- in case of owner, privileges for groups 0,1 and GUEST are disabled
         //--- and are not sent to the server. So we cannot remove them
@@ -1097,7 +1115,6 @@ public class MetadataSharingApi {
             throw new Exception("User not allowed to publish the metadata " + metadataUuid);
 
         }
-
         DataManager dataManager = appContext.getBean(DataManager.class);
 
         OperationRepository operationRepository = appContext.getBean(OperationRepository.class);
@@ -1107,11 +1124,29 @@ public class MetadataSharingApi {
             operationMap.put(o.getName(), o.getId());
         }
 
-        SharingParameter sharing = buildSharingForPublicationConfig(publish);
-
+        SharingParameter sharing = null;
+        
+        Element md = dataManager.getMetadata(String.valueOf(metadata.getId()));
+        
+        String publishKeyword = "";
+        if(isExternal) {
+        	publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
+        	sharing = buildSharingForPublicationConfig(publish);
+        } else {
+        	publishKeyword = Geonet.Transform.PUBLISHED_INTERNAL;
+        	sharing = buildSharingForInternalPublicationConfig(publish);
+        }
+        
+        md = transManager.updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
+        				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
+      	
+        if(md == null)
+        	addMetadataWithPublishInfo(context, schemaManager, dataManager, String.valueOf(metadata.getId()), publishKeyword);
+        
         List<GroupOperations> privileges = sharing.getPrivileges();
         setOperations(sharing, dataManager, context, appContext, metadata, operationMap, privileges,
             ApiUtils.getUserSession(session).getUserIdAsInt(), null, request);
+        
         dataManager.indexMetadata(String.valueOf(metadata.getId()), true, null);
     }
 
@@ -1135,7 +1170,7 @@ public class MetadataSharingApi {
         try {
             Set<String> records = ApiUtils.getUuidsParameterOrSelection(uuids, bucket, ApiUtils.getUserSession(session));
             report.setTotalRecords(records.size());
-	    	Set<Integer> metadataIds = new HashSet<Integer>();
+
             final ApplicationContext appContext = ApplicationContextHolder.get();
             final DataManager dataMan = appContext.getBean(DataManager.class);
             final AccessManager accessMan = appContext.getBean(AccessManager.class);
@@ -1143,7 +1178,6 @@ public class MetadataSharingApi {
 
             UserSession us = ApiUtils.getUserSession(session);
             boolean isAdmin = Profile.Administrator == us.getProfile();
-            boolean isReviewer = Profile.Reviewer == us.getProfile();
 
             ServiceContext context = ApiUtils.createServiceContext(request);
 
@@ -1161,40 +1195,10 @@ public class MetadataSharingApi {
                         skip = true;
                     }
 
-		    		dataMan.deleteMetadataOper(context, String.valueOf(metadata.getId()), skip);
-                    int groupId = 0;
-                    Group g = groupRepository.findByName("editors_all");
-                    
-                    //Sharing clear - false (publish) and true (unpublish)
-                    if (sharing.isClear()){
-                    	groupId = g.getId();//Unpublished records defaulted to editors_all group  
-                    } else {//Add publication date and update category
-                    	updateMetadataWithModifiedDate(context, String.valueOf(metadata.getId()));
-                    	groupId = sharing.getPrivileges().get(0).getGroup();
+                    if (sharing.isClear()) {
+                        dataMan.deleteMetadataOper(context,
+                            String.valueOf(metadata.getId()), skip);
                     }
-                    
-                    String publishKeyword = "";
-                    
-                    //Joseph added - To update Keyword with Publish Internal or External - Start
-                    if(groupId == 0){//group 0 - Publish Internally
-                    	publishKeyword = Geonet.Transform.PUBLISHED_INTERNAL; 
-                    }else if(groupId == 1)
-                    	publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
-                    
-                    Element md = dataMan.getMetadata(String.valueOf(metadata.getId()));
-                    md = transMan.
-                    		updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
-                    				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
-                    if(md != null){
-                    	dataMan.updateMetadata(context, String.valueOf(metadata.getId()), md, false, false, false, context.getLanguage(), new ISODate().toString(), false);
-                    }else{
-                    	addMetadataWithPublishKeyword(context, String.valueOf(metadata.getId()), publishKeyword);
-                    }
-                    //Joseph added - To update Keyword with Publish Internal or External - End
-                    
-                    //Update the owner as admin
-                    dataMan.updateMetadataOwner(metadata.getId(), us.getUserId(), String.valueOf(groupId));
-
 
                     OperationRepository operationRepository = appContext.getBean(OperationRepository.class);
                     List<Operation> operationList = operationRepository.findAll();
@@ -1203,21 +1207,25 @@ public class MetadataSharingApi {
                         operationMap.put(o.getName(), o.getId());
                     }
 
+                    //Only Publish external will be done here (Publish internal need to do for individual record)
+                    String publishKeyword = Geonet.Transform.PUBLISHED_EXTERNAL;
+                    Element md = dataManager.getMetadata(String.valueOf(metadata.getId()));
+                    
+                    md = transManager.updatePublishKeyWord(md, "//mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[gco:CharacterString = '{}']", 
+                    				Geonet.Transform.PUBLISH_KEYWORDS, "{}", publishKeyword, sharing.isClear());
+                  	
+                    if(md == null)
+                    	addMetadataWithPublishInfo(context, schemaManager, dataManager, String.valueOf(metadata.getId()), publishKeyword);
+                    
+                    
                     List<GroupOperations> privileges = sharing.getPrivileges();
                     setOperations(sharing, dataMan, context, appContext, metadata, operationMap, privileges,
                         ApiUtils.getUserSession(session).getUserIdAsInt(), report, request);
                     report.incrementProcessedRecords();
                     listOfUpdatedRecords.add(String.valueOf(metadata.getId()));
-		    		metadataIds.add(metadata.getId());
                 }
             }
-	
-		    if (sharing.isClear())
-                updateStatus(context, metadataIds, Geonet.WorkflowStatus.DRAFT);
-            else
-            	updateStatus(context, metadataIds, Geonet.WorkflowStatus.APPROVED);
-            
-			dataMan.flush();
+            dataMan.flush();
             dataMan.indexMetadata(listOfUpdatedRecords);
 
         } catch (Exception exception) {
@@ -1238,12 +1246,29 @@ public class MetadataSharingApi {
      * @return
      */
     private SharingParameter buildSharingForPublicationConfig(boolean publish) {
-        SharingParameter sharing = new SharingParameter();
+        
+        return buildSharing(publicationConfig.entrySet().iterator(), publish);
+    }
+    
+    /**
+     * Creates a ref {@link SharingParameter} object with privileges to publih/un-publish
+     * metadata in {@link ReservedGroup#all} group.
+     *
+     * @param publish   Flag to add/remove sharing privileges.
+     * @return
+     */
+    private SharingParameter buildSharingForInternalPublicationConfig(boolean publish) {
+        
+    	return buildSharing(internalPublicationConfig.entrySet().iterator(), publish);
+        
+    }
+    
+    private SharingParameter buildSharing(final Iterator iterator, boolean publish) {
+    	SharingParameter sharing = new SharingParameter();
         sharing.setClear(false);
-
+        
         List<GroupOperations> privilegesList = new ArrayList<>();
-
-        final Iterator iterator = publicationConfig.entrySet().iterator();
+        
         while(iterator.hasNext()) {
             Map.Entry<String, Object[]> e = (Map.Entry<String, Object[]>) iterator.next();
             GroupOperations privAllGroup = new GroupOperations();
@@ -1261,6 +1286,19 @@ public class MetadataSharingApi {
         sharing.setPrivileges(privilegesList);
         return sharing;
     }
+    
+    private void addMetadataWithPublishInfo(ServiceContext context, SchemaManager schemaMan,
+			DataManager dm, String id, String publishKeyword) throws Exception {
+    	String schema = dm.getMetadataSchema(id);
+    	String publishDate = new ISODate().toString();
+		Element md = dm.getMetadata(id);
+		Map<String, Object> xslParameters = new HashMap<String, Object>();
+		xslParameters.put("date", publishDate);
+		xslParameters.put("publish_keyword", publishKeyword);
+		Path file = schemaMan.getSchemaDir(schema).resolve("process").resolve(Geonet.File.PUBLICATION_INFO);
+		md = Xml.transform(md, file, xslParameters);
+		dm.updateMetadata(context, id, md, false, false, false, context.getLanguage(), publishDate, false);
+	}
 
     public void setPublicationConfig(Map publicationConfig) {
         this.publicationConfig = publicationConfig;
@@ -1269,4 +1307,14 @@ public class MetadataSharingApi {
     public Map getPublicationConfig() {
         return publicationConfig;
     }
+
+	public Map getInternalPublicationConfig() {
+		return internalPublicationConfig;
+	}
+
+	public void setInternalPublicationConfig(Map internalPublicationConfig) {
+		this.internalPublicationConfig = internalPublicationConfig;
+	}
+    
+    
 }

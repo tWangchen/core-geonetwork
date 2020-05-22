@@ -39,7 +39,7 @@
   <mdb:metadataScope>
     <mdb:MD_MetadataScope id="source">
       <mdb:resourceScope>
-        <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="SourceDataset">SourceDataset</mcc:MD_ScopeCode>
+        <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="dataset">dataset</mcc:MD_ScopeCode>
       </mdb:resourceScope>
       <mdb:name>
         <gco:CharacterString></gco:CharacterString>
@@ -128,22 +128,6 @@
       </mri:topicCategory>
       <mri:extent>
         <gex:EX_Extent>
-          <gex:temporalElement>
-            <gex:EX_TemporalExtent>
-              <gex:extent>
-                <gml:TimePeriod gml:id="A1234">
-                  <gml:beginPosition>
-                  </gml:beginPosition>
-                  <gml:endPosition>
-                  </gml:endPosition>
-                </gml:TimePeriod>
-              </gex:extent>
-            </gex:EX_TemporalExtent>
-          </gex:temporalElement>
-        </gex:EX_Extent>
-      </mri:extent>
-      <mri:extent>
-        <gex:EX_Extent>
           <gex:geographicElement>
             <gex:EX_GeographicBoundingBox>
               <gex:westBoundLongitude>
@@ -160,6 +144,18 @@
               </gex:northBoundLatitude>
             </gex:EX_GeographicBoundingBox>
           </gex:geographicElement>
+	  <gex:temporalElement>
+            <gex:EX_TemporalExtent>
+              <gex:extent>
+                <gml:TimePeriod gml:id="A1234">
+                  <gml:beginPosition>
+                  </gml:beginPosition>
+                  <gml:endPosition>
+                  </gml:endPosition>
+                </gml:TimePeriod>
+              </gex:extent>
+            </gex:EX_TemporalExtent>
+          </gex:temporalElement>
         </gex:EX_Extent>
       </mri:extent>
       <mri:resourceMaintenance>
@@ -170,6 +166,17 @@
           </mmi:maintenanceAndUpdateFrequency>
         </mmi:MD_MaintenanceInformation>
       </mri:resourceMaintenance>
+        <mri:resourceFormat>
+            <mrd:MD_Format>
+               <mrd:formatSpecificationCitation>
+                  <cit:CI_Citation>
+                     <cit:title>
+                        <gco:CharacterString></gco:CharacterString>
+                     </cit:title>
+                  </cit:CI_Citation>
+               </mrd:formatSpecificationCitation>
+            </mrd:MD_Format>
+         </mri:resourceFormat>
 	  <mri:descriptiveKeywords>
 		<mri:MD_Keywords>
 			<mri:keyword>

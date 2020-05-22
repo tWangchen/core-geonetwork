@@ -378,7 +378,7 @@
                        contains(lower-case(
                        mri:thesaurusName[1]/*/cit:title[1]/*/text()
                        ), 'inspire')]
-                  /mri:keyword"/>
+                  /mri:keyword/gco:CharacterString[. != '']"/>
         <xsl:for-each
           select="$inspireKeywords">
           <xsl:variable name="position" select="position()"/>

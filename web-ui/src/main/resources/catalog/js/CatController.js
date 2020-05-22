@@ -98,6 +98,11 @@ goog.require('gn_alert');
           'fluidHeaderLayout': true,
           'showGNName': true
         },
+        'cookieWarning': {
+          'enabled': true,
+          'cookieWarningMoreInfoLink': '',
+          'cookieWarningRejectLink': ''
+        },
         'home': {
           'enabled': true,
           'appUrl': '../../{{node}}/{{lang}}/catalog.search#/home',
@@ -124,37 +129,32 @@ goog.require('gn_alert');
           'filters': {},
           'sortbyValues': [{
             'sortBy': 'relevance',
-            'sortOrder': ''
-          }, {
-            'sortBy': 'changeDate',
-            'sortOrder': ''
-          }, {
-            'sortBy': 'title',
-            'sortOrder': 'reverse'
-          }, {
-            'sortBy': 'rating',
-            'sortOrder': ''
-          }, {
-            'sortBy': 'popularity',
-            'sortOrder': ''
-          }, {
-            'sortBy': 'denominatorDesc',
-            'sortOrder': ''
-          }, {
-            'sortBy': 'denominatorAsc',
-            'sortOrder': 'reverse'
-          }],
+              'sortOrder': ''
+            },{
+  	        'sortBy': 'publicationDateDesc',
+  	        'sortOrder': ''
+            },{
+              'sortBy': 'changeDate',
+              'sortOrder': ''
+            }, {
+  	        'sortBy': 'eCatId',
+  	        'sortOrder': ''
+            }, {
+  	        'sortBy': 'titleAZ',
+  	        'sortOrder': 'reverse'
+            }],
           'sortBy': 'relevance',
           'resultViewTpls': [{
-            'tplUrl': '../../catalog/components/' +
-                'search/resultsview/partials/viewtemplates/grid.html',
-            'tooltip': 'Grid',
-            'icon': 'fa-th'
-          },{
-            'tplUrl': '../../catalog/components/' +
-              'search/resultsview/partials/viewtemplates/list.html',
+            'tplUrl': '../../catalog/components/search/resultsview/' +
+            'partials/viewtemplates/list.html',
             'tooltip': 'List',
-            'icon': 'fa-bars'
+            'icon': 'fa-th-list'
+          },
+          {
+            'tplUrl': '../../catalog/components/search/resultsview/' +
+            'partials/viewtemplates/titlewithselection.html',
+            'tooltip': 'Title',
+            'icon': 'fa-list'
           }],
           'resultTemplate': '../../catalog/components/' +
               'search/resultsview/partials/viewtemplates/grid.html',
@@ -205,6 +205,7 @@ goog.require('gn_alert');
           'appUrl': '../../{{node}}/{{lang}}/catalog.search#/map',
           'externalViewer': {
             'enabled': false,
+            'enabledViewAction': false,
             'baseUrl': 'http://www.example.com/viewer',
             'urlTemplate': 'http://www.example.com/viewer?url=${service.url}&type=${service.type}&layer=${service.name}',
             'openNewWindow': false,

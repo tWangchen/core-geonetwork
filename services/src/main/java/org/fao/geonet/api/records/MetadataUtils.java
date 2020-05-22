@@ -66,6 +66,7 @@ import org.fao.geonet.services.relations.Get;
 import org.fao.geonet.utils.BinaryFile;
 import org.fao.geonet.utils.IO;
 import org.fao.geonet.utils.Log;
+import org.fao.geonet.utils.Xml;
 import org.jdom.Content;
 import org.jdom.Element;
 import org.slf4j.Logger;
@@ -136,8 +137,11 @@ public class MetadataUtils {
                 relatedRecords.addContent(parent);
             }*/
        
-        	//Joseph added - Parent element is added as snippet into xml, not referenced using uuidref
-	    }		
+        	  //Joseph added - Parent element is added as snippet into xml, not referenced using uuidref
+	    	    String parentUuid = schemaPlugin.getAssociatedParentUuid(md);
+            if(StringUtils.isNotEmpty(parentUuid))
+            	relatedRecords.addContent(search(parentUuid, "parent", context, from, to, fast, null));
+         }		
 			// Brothers and sisters are not returned by default
             // It is only on demand and output as siblings.
         if (schemaPlugin != null && listOfTypes.contains(RelatedItemType.brothersAndSisters)) {
