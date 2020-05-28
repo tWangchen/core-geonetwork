@@ -222,7 +222,7 @@
             'WCS' : {
               iconClass: 'fa-globe',
               label: 'fileLink',
-              action: null
+              action: openLink
             },
             'SOS' : {
               iconClass: 'fa-globe',

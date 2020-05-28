@@ -7,10 +7,9 @@
        data-ng-if="type && type !== 'thumbnails'">
     <div class="row list-group-item gn-related-item gn-related-{{type}}"
          data-ng-repeat="r in items track by $index"
-         data-ng-init="mainType = config.getType(r, type);">
-      <div class="col-xs-1 col-sm-1"  data-ng-if="(mainType === 'WMS') || (mainType === 'WMSSERVICE') || (mainType === 'WMTS') ||
+         data-ng-init="mainType = config.getType(r, type);" data-ng-if="display(r)">
+      <!--<div class="col-xs-1 col-sm-1"  data-ng-if="(mainType === 'WMS') || (mainType === 'WMSSERVICE') || (mainType === 'WMTS') ||
       (mainType === 'WMTSSERVICE') || (mainType === 'WFS') || (mainType === 'WCS')">
-        <!-- OWS have their name overlaid over the globe icon -->
         <strong>
           <span class="fa-stack fa-1x">
             <i class="fa fa-globe fa-stack-2x" style="opacity: 0.55;"></i>
@@ -19,7 +18,7 @@
             </span>
           </span>
         </strong>
-      </div>
+      </div>-->
       <div data-ng-class="mainType === 'MDFCATS' ? 'col-xs-11' : 'col-xs-8 col-sm-8'">
         <!-- Always display title if available -->
         <!--<h3 data-ng-if="::(r.title | gnLocalized: lang).length">{{::(r.title | gnLocalized: lang)}}</h3>-->
@@ -34,7 +33,7 @@
           {{::r.locDescription | striptags | characters:150}}
         </p>
         <div data-ng-switch on="mainType">
-          <div data-ng-switch-when="WMS">
+          <!--<div data-ng-switch-when="WMS">
             <p class="text-muted">
               <span data-translate=""
                     data-translate-values="{url:'{{r.url | gnLocalized: lang}}', layer:'{{r.title | gnLocalized: lang}}'}">
@@ -133,7 +132,7 @@
                   data-translate-values="{url:'{{r.url | gnLocalized: lang}}', layer:'{{r.title | gnLocalized: lang}}'}">
           databaseLayerDetails</span>
             </p>
-          </div>
+          </div>-->
 
           <div data-ng-switch-when="FILE">
             <p class="text-muted">
