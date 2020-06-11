@@ -228,6 +228,14 @@
       				 };
       			  }
 			 
+    			  scope.display = function(r) {
+                    var url = r.url['eng'];
+                    var dis = (!url.startsWith('http://rmweb/HPEContentManager') && !url.startsWith('file'))
+                      || (url.startsWith('file') && gnGlobalSettings.isIntranet)
+                      || (url.startsWith('http://rmweb/HPEContentManager') && gnGlobalSettings.isIntranet);
+                              return dis;
+                      };
+
         			scope.getClass = function(title) {
         				 if(title.eng){
       					  if(title.eng.toLowerCase() === 'purchase this product'){
