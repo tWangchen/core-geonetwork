@@ -141,6 +141,15 @@
             </div>
           </div>
         </div>
+      <div data-ng-if="user.isEditorOrMore()">
+		<div data-ng-if="mdView.current.record.indName">
+                <div style="padding-bottom:10px"><b>Individual Contact</b></div>
+                <div><div style="padding-left:10px;display:inline-flex"  data-ng-repeat="c in getAsArray(mdView.current.record.indName) track by $index">
+                  <i data-ng-if="$index > 0">|</i>&nbsp;&nbsp;{{c}}
+				  </div>
+                </div>
+              </div>
+	</div>
       </div>
 
       <div class="col-lg-5 col-md-12">
