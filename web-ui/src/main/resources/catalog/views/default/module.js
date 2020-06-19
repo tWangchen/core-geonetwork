@@ -240,6 +240,9 @@
         }
         return true;
       }
+      $scope.getThumbnail = function(image){
+    	  return image.toString().split('|')[1];
+	  }
       $scope.getKeywordTitle = function(title){
         if(title.toLowerCase().indexOf('theme.anzrc') >= 0){
           title = 'ANZRC Fields Of Research';

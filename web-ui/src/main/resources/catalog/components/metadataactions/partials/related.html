@@ -28,7 +28,7 @@
                        mainType === 'WCS' ||
                        mainType.indexOf('LINK') === 0 ||
                        mainType.indexOf('DEFAULT') === 0 ||
-                       r.protocol === 'OGC:WFS') &&
+                       r.protocol === 'OGC:WFS') ||
                        r.locDescription.length > 0">
           {{::r.locDescription | striptags | characters:150}}
         </p>

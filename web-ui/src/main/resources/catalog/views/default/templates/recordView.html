@@ -88,7 +88,8 @@
           </li>
         </ul>
         <div class="subheader">Abstract</div>
-        <div class="abstract-view" data-ng-bind-html="mdView.current.record.abstract | newlines" />
+        <div class="abstract-view" data-ng-bind-html="mdView.current.record.abstract | newlines" ></div>
+        <div data-ng-if="mdView.current.record.image"><img src="{{ getThumbnail(mdView.current.record.image) }}" height="350px" width="550px"/></div>
 
         <hr>
         <div class="subheader">Related Keywords</div>
@@ -140,6 +141,15 @@
             </div>
           </div>
         </div>
+      <div data-ng-if="user.isEditorOrMore()">
+		<div data-ng-if="mdView.current.record.indName">
+                <div style="padding-bottom:10px"><b>Individual Contact</b></div>
+                <div><div style="padding-left:10px;display:inline-flex"  data-ng-repeat="c in getAsArray(mdView.current.record.indName) track by $index">
+                  <i data-ng-if="$index > 0">|</i>&nbsp;&nbsp;{{c}}
+				  </div>
+                </div>
+              </div>
+	</div>
       </div>
 
       <div class="col-lg-5 col-md-12">
@@ -537,13 +547,13 @@
                 </div>
               </div>
             </div>
-            <!----<div class="row tab-items" data-ng-if="mdView.current.record.source">
+            <div class="row tab-items" data-ng-if="mdView.current.record.source">
               <div class="col-md-3"><b>Source Datasets</b></div>
               <div class="col-md-9">
                 <a href="catalog.search#/metadata/{{mdView.current.record.source}}">
                     <p>{{mdView.current.record.source}}</p></a>
               </div>
-            </div>-->
+            </div>
           </tab>
         </tabset>
       </div>
