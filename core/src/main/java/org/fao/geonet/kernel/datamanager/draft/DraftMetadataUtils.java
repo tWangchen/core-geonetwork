@@ -469,9 +469,16 @@ public class DraftMetadataUtils extends BaseMetadataUtils {
             if (md.getSourceInfo().getSourceId() != null) {
                 source = md.getSourceInfo().getSourceId().toString();
             }
-            if (md.getSourceInfo().getGroupOwner() != null) {
+          
+            //GA - Added for admin editing issue. Draft record must be created in editors_all group
+            Group group = groupRepository.findByName("editors_all");
+            
+            if(group != null)
+            	groupOwner = String.valueOf(group.getId());
+            else if (md.getSourceInfo().getGroupOwner() != null) {
                 groupOwner = md.getSourceInfo().getGroupOwner().toString();
             }
+            
             owner = md.getSourceInfo().getOwner();
         }
 
