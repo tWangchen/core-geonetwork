@@ -26,9 +26,6 @@
 			<xsl:variable name="langId"
 				select="gn-fn-iso19115-3:getLangId(., $lang)" />
 			<xsl:variable name="seperator" select="'~'" />
-			<uuid>
-        		<xsl:value-of select="mdb:metadataIdentifier/*/mcc:code"/>
-      		</uuid>
 			<eCatId>
 				<xsl:value-of
 					select="mdb:alternativeMetadataReference/*/cit:identifier/*/mcc:code" />
@@ -137,9 +134,17 @@
 			<xsl:if test="xs:boolean($MaintenanceFrequency)">
 				<MaintenanceFrequency>
 					<xsl:value-of
-						select="mdb:identificationInfo/*/mri:resourceMaintenance/mmi:MD_MaintenanceInformation/mmi:maintenanceAndUpdateFrequency/mmi:MD_MaintenanceFrequencyCode/@codeListValue"/>
+						select="mdb:identificationInfo/*/mri:resourceMaintenance/*/mmi:MD_MaintenanceFrequencyCode/@codeListValue" />
 				</MaintenanceFrequency>
 			</xsl:if>
+
+			<!-- <xsl:if test="xs:boolean($ServiceMaintenanceFrequency)">
+				<ServiceMaintenanceFrequency>
+					<xsl:value-of
+						select="mdb:identificationInfo/srv:SV_ServiceIdentification/mri:resourceMaintenance/mmi:MD_MaintenanceInformation/mmi:maintenanceAndUpdateFrequency/mmi:MD_MaintenanceFrequencyCode/@codeListValue" />
+				</ServiceMaintenanceFrequency>
+			</xsl:if> -->
+
 			<xsl:if test="xs:boolean($ResponsibleParty)">
 				<xsl:for-each
 					select="mdb:identificationInfo/*/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility">
@@ -254,12 +259,11 @@
 				</xsl:for-each>
 			</xsl:if>
 
-
-			<xsl:if test="xs:boolean($ResourceSecurityConstraint)">
+			<xsl:if test="xs:boolean($SecurityConstraint)">
 				<xsl:for-each
-					select="mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_SecurityConstraints">
+					select="mdb:identificationInfo/*/*/mco:MD_SecurityConstraints">
 					<SecurityConstraints>
-						<xsl:value-of select="mco:classification/mco:MD_ClassificationCode/@codeListValue" />
+						<xsl:value-of select="*/mco:classification/*/@codeListValue" />
 					</SecurityConstraints>
 				</xsl:for-each>
 			</xsl:if>
@@ -294,34 +298,43 @@
 				</xsl:for-each>
 			</xsl:if>
 
-	<!--		<xsl:if test="xs:boolean($DistributionFormat)">
-			   <DistributionFormat>
-				<xsl:value-of select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:distributionFormat/mrd:MD_Format/mrd:formatSpecificationCitation/cit:CI_Citation/cit:title/gco:CharacterString"/>
-				</DistributionFormat>
+			<xsl:if test="xs:boolean($DistributionFormat)">
+				<xsl:for-each select="mdb:distributionInfo/*/mrd:distributionFormat">
+					<DistributionFormat>
+						<xsl:value-of
+							select="*/mrd:formatSpecificationCitation/*/cit:title/*/text()" />
+						<xsl:value-of select="$seperator" />
+						<xsl:value-of
+							select="*/mrd:formatSpecificationCitation/*/cit:edition/*/text()" />
+					</DistributionFormat>
+				</xsl:for-each>
 			</xsl:if>
 
 			<xsl:if test="xs:boolean($DataStorageLink)">
 				<xsl:for-each
-					select="mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceFormat/mrd:MD_Format/mrd:formatSpecificationCitation/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString">
-					<DataStorageLink> -->
+					select="mdb:identificationInfo/*/mri:resourceFormat/mrd:MD_Format/mrd:formatSpecificationCitation/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource">
+					<DataStorageLink>
 						<!-- <xsl:value-of select="cit:name/*/text()" />
 						<xsl:value-of select="$seperator" />
 						<xsl:value-of select="cit:description/*/text()" />
-						<xsl:value-of select="$seperator" />
-						<xsl:value-of select="cit:linkage/*/text()" /> --> <!--
-						<xsl:value-of select="." />
+						<xsl:value-of select="$seperator" /> -->
+						<xsl:value-of select="cit:linkage/*/text()" />
 					</DataStorageLink>
 				</xsl:for-each>
 			</xsl:if>
 
 			<xsl:if test="xs:boolean($DataStorageFormat)">
+				<xsl:for-each select="mdb:identificationInfo/*/mri:resourceFormat">
 					<DataStorageFormat>
 						<xsl:value-of
 							select="*/mrd:formatSpecificationCitation/*/cit:title/*/text()" />
+						<xsl:value-of select="$seperator" />
+						<xsl:value-of
+							select="*/mrd:formatSpecificationCitation/*/cit:edition/*/text()" />
 					</DataStorageFormat>
+				</xsl:for-each>
 			</xsl:if>
 
--->
 			<xsl:if test="xs:boolean($Lineage)">
 				<Lineage>
 					<xsl:value-of
