@@ -553,36 +553,6 @@
         return defer.promise;
       };
 
-      
-      this.getCitation = function(md){
-        var citationUrl = '';
-        if(angular.isArray(md.author) && md.author.length > 0){
-          citationUrl = md.author.join(', ') + ' ';
-        }else{
-          if(md.author){
-            citationUrl = md.author + ' ';
-          }
-        }
-
-        if(md.publicationDate){
-          var date = new Date(md.publicationDate);
-          citationUrl += date.getFullYear() + '. ';
-        }
-        
-        citationUrl += md.title + '. ';
-
-        if(md.issueIdentification){
-          citationUrl = citationUrl + 'Record ' + md.issueIdentification + '. ';
-        }
-
-        citationUrl += 'Geoscience Australia, Canberra. ';
-        
-        if(md.DOI){
-          citationUrl += md.DOI;
-        }
-
-        gnUtilityService.getPermalink(md.title || md.defaultTitle, citationUrl);
-      };
       /**
        * Get html formatter link for the given md
        * @param {Object} md
@@ -590,12 +560,13 @@
       this.getPermalink = function(md) {
         //var url = $location.absUrl().split('#')[0] + '#/metadata/' + md.getUuid();
     	  
-    	var url;
-  		if(md.getType() == 'service'){
-  			url = "http://pid.geoscience.gov.au/service/ga/"+ md.geteCatId();
-  		}else{
-  			url = "http://pid.geoscience.gov.au/dataset/ga/"+ md.geteCatId();
-  		}
+        var url;
+        
+        if(md.getType() == 'service'){
+          url = "http://pid.geoscience.gov.au/service/ga/"+ md.geteCatId();
+        }else{
+          url = "http://pid.geoscience.gov.au/dataset/ga/"+ md.geteCatId();
+        }
         gnUtilityService.getPermalink(md.title || md.defaultTitle, url);
       };
 

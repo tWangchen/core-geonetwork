@@ -59,7 +59,28 @@
             $temp_input.val(attrs.copyToClipboard).select();
             document.execCommand("copy");
             $temp_input.remove();
+            setTooltip('Copied!');
+            hideTooltip();
           }
+        });
+
+        function setTooltip(message) {
+          elem.attr('data-original-title', message)
+            .tooltip('show');
+        }
+
+        function hideTooltip() {
+          setTimeout(function() {
+            elem.tooltip('hide')
+            .attr('data-original-title', '');
+          }, 1000);
+        }
+
+        elem.bind( 'mouseenter', function() {
+          elem.attr('data-original-title', 'Copy to Clipboard').tooltip('show');
+        });
+        elem.bind( 'mouseleave', function() {
+          elem.attr('data-original-title', '').tooltip('hide');
         });
       }
     };
