@@ -259,7 +259,6 @@
 				</xsl:for-each>
 			</xsl:if>
 
-
 			<xsl:if test="xs:boolean($SecurityConstraint)">
 				<xsl:for-each
 					select="mdb:identificationInfo/*/*/mco:MD_SecurityConstraints">
@@ -335,7 +334,6 @@
 					</DataStorageFormat>
 				</xsl:for-each>
 			</xsl:if>
-
 
 			<xsl:if test="xs:boolean($Lineage)">
 				<Lineage>
