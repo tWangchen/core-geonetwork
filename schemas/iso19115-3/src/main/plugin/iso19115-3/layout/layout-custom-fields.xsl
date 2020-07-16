@@ -48,7 +48,7 @@
     </xsl:call-template>
 
   </xsl:template>
-  
+
   <xsl:template mode="mode-iso19115-3"
                 match="mdb:alternativeMetadataReference[cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:codeSpace/gco:CharacterString='eCatId']"
                 priority="2000">
@@ -363,7 +363,7 @@
     <xsl:apply-templates mode="mode-iso19115-3" select="*"/>
   </xsl:template>
 
-  
+
   <!--
     Display contact as table when mode is flat (eg. simple view) or if using xsl mode
     Match first node (or added one)
