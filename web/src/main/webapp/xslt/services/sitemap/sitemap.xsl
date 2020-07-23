@@ -32,6 +32,7 @@
   <xsl:variable name="format" select="/root/request/format"/>
   <xsl:variable name="indexDocs" select="/root/response/indexDocs"/>
   <xsl:variable name="changeDate" select="/root/response/changeDate"/>
+  <xsl:variable name="siteUrl" select="util:getSiteUrl()"/>
 
   <xsl:template match="/root">
     <xsl:choose>
@@ -80,12 +81,12 @@
               </xsl:if>
             </xsl:variable>
             <loc>
-              <xsl:value-of select="util:getSiteUrl()"/><xsl:value-of select="/root/gui/url"/>/sitemap/<xsl:value-of
+              <xsl:value-of select="$siteUrl"/>/sitemap/<xsl:value-of
                 select="$formatParam"/><xsl:value-of select="$pStart"/>/<xsl:value-of
                 select="/root/gui/language"/>
             </loc>
             <lastmod>
-              <xsl:value-of select="$changeDate"/>
+              <xsl:value-of select="format-date(current-date(), '[Y0001]-[M01]-[D01]')"/>
             </lastmod>
           </sitemap>
         </xsl:when>
@@ -121,22 +122,22 @@
           <loc>
             <xsl:choose>
               <xsl:when test="$format='xml'">               	
-                <xsl:value-of select="concat($nodeUrl, 'api/records/', $uuid, '/formatters/xml')"/>
+                <xsl:value-of select="concat($siteUrl, '/srv/api/records/', $uuid, '/formatters/xml')"/>
               </xsl:when>
 
               <xsl:otherwise>
-                <xsl:value-of select="concat($nodeUrl, 'api/records/', $uuid)"/>
+                <xsl:value-of select="concat($siteUrl, '/srv/api/records/', $uuid)"/>
               </xsl:otherwise>
             </xsl:choose>
           </loc>
           <lastmod>
-            <xsl:value-of select="$changedate"/>
+            <xsl:value-of select="substring-before($changedate, 'T')"/>
           </lastmod>
-          <geo:geo>
+          <!--<geo:geo>
             <geo:format>
               <xsl:value-of select="$schemaid"/>
             </geo:format>
-          </geo:geo>
+          </geo:geo>-->
         </url>
       </xsl:for-each>
     </urlset>
@@ -151,7 +152,7 @@
           (RDF)
         </sc:datasetLabel>
         <xsl:for-each select="metadata/record">
-          <sc:dataDumpLocation><xsl:value-of select="concat($nodeUrl, 'eng/rdf.metadata.get?uuid=', uuid)"/>
+          <sc:dataDumpLocation><xsl:value-of select="concat($siteUrl, '/srv/eng/rdf.metadata.get?uuid=', uuid)"/>
           </sc:dataDumpLocation>
         </xsl:for-each>
         <!--For 5 latests update:
