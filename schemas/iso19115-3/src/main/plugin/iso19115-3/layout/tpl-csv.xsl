@@ -26,6 +26,9 @@
 			<xsl:variable name="langId"
 				select="gn-fn-iso19115-3:getLangId(., $lang)" />
 			<xsl:variable name="seperator" select="'~'" />
+			<uuid>   
+               <xsl:value-of select="mdb:metadataIdentifier/*/mcc:code"/>       
+			</uuid>
 			<eCatId>
 				<xsl:value-of
 					select="mdb:alternativeMetadataReference/*/cit:identifier/*/mcc:code" />

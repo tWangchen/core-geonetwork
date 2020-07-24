@@ -350,6 +350,13 @@
 				    return dis;
           }
 
+          this.isService = function(type){
+            services = ['WMS', 'WMSSERVICE','WMTS','WMTSSERVICE','WFS','WCS','TMS', 'ESRI:REST', 'KML', 'GEOJSON'];
+            if(services.indexOf(type) !== -1){
+              return true;
+            }
+            return false;
+          }
           this.getType = function(resource, type) {
             resource.locTitle = $filter('gnLocalized')(resource.title);
             resource.locDescription = $filter('gnLocalized')(resource.description);

@@ -382,7 +382,7 @@
     "transfertPrivilegesFinished": "{{metadata}} record(s) transferred.",
     "valueName": "Name",
     "xmlView": "XML view",
-    "downloadRecord": "Download record",
+    "downloadRecord": "Export Metadata in various format",
     "manageRecord": "Manage record",
     "valueDefinition": "Definition",
     "toggleNavigation": "Toggle navigation",

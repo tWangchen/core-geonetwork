@@ -169,7 +169,7 @@
         </div>
       </div>
 
-      <div class="col-xs-12 col-sm-3">
+      <div class="col-xs-12 col-sm-3" data-ng-if="!config.isService(mainType)">
         <button type="button"
                 class="btn btn-sm btn-block text-wrap"
                 data-ng-class="getClass(r.title)"
@@ -187,6 +187,15 @@
 
         </button>
       </div>
+
+      <div class="col-12" data-ng-if="config.isService(mainType)">
+          <br/>
+          <p style="float: left; padding-left:15px;color: gray">
+            {{::r.url | gnLocalized: lang | striptags | characters:55}}
+            &nbsp; <a href=""
+                    copy-to-clipboard="{{r.url | gnLocalized: lang}}"><i class="fa fa-files-o fa-5"></i></a>
+          </p>
+        </div>
 
     </div>
   </div>
