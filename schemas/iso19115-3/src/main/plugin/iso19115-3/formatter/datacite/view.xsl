@@ -69,7 +69,6 @@
 -->
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                
                 xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0"
                 xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0"
                 xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
@@ -139,28 +138,20 @@
     </datacite:resource>
   </xsl:template>
 
-
-
   <!--
-  The Identifier is a unique
-  string that identifies a
-  resource. For software,
-  determine whether the
-  identifier is for a specific
-  version of a piece of software,
-  (per the Force11 Software
-  Citation Principles13), or for all
-  versions.
+  The Identifier is a unique string that identifies a resource. For software, determine whether the
+  identifier is for a specific version of a piece of software, (per the Force11 Software
+  Citation Principles13), or for all versions.
   -->
   <xsl:template mode="toDatacite"
-                match="mdb:MD_Metadata/mdb:metadataIdentifier/*/mcc:code/*/text()">
+                match="mdb:MD_Metadata/mdb:alternativeMetadataReference/*/cit:identifier/*/mcc:code/*/text()">
     <datacite:identifier identifierType="DOI">
       <!-- Return existing one -->
       <xsl:choose>
         <xsl:when test="$doiPrefix = ''">
           <xsl:variable name="doiFromMetadataLinkage"
-                        select="normalize-space(ancestor::mdb:MD_Metadata/mdb:metadataLinkage/*/cit:linkage/gco:CharacterString[starts-with(., $defaultDoiPrefix) or ../../cit:function/*/@codeListValue = 'doi'])"/>
-          <xsl:value-of select="$doiFromMetadataLinkage"/>
+                        select="normalize-space(ancestor::mdb:MD_Metadata/mdb:alternativeMetadataReference/*/cit:identifier/*/mcc:code/gco:CharacterString[starts-with(., $defaultDoiPrefix) or ../../cit:function/*/@codeListValue = 'doi'])"/>
+          <xsl:value-of select="$doiFromMetadataLinkage"/>          
         </xsl:when>
         <xsl:otherwise>
           <!-- Build a new one -->
@@ -176,21 +167,12 @@
   -->
   <xsl:template mode="toDatacite"
                 match="mdb:MD_Metadata/mdb:identificationInfo/*/mri:defaultLocale[1]/*/lan:language/*/@codeListValue">
-    <!-- TODO: Allowed values are taken
-    from IETF BCP 47, ISO 639-1
-    language codes.
-    Examples: en, de, fr
-    -->
+    <!-- TODO: Allowed values are taken from IETF BCP 47, ISO 639-1 language codes. Examples: en, de, fr -->
     <datacite:language><xsl:value-of select="."/></datacite:language>
   </xsl:template>
 
 
-  <!--
-  A name or title by which a
-  resource is known. May be
-  the title of a dataset or the
-  name of a piece of software.
-  -->
+  <!-- A name or title by which a resource is known. May be the title of a dataset or the name of a piece of software. -->
   <xsl:template mode="toDatacite"
                 match="mdb:MD_Metadata/mdb:identificationInfo/*/mri:citation/*/cit:title">
     <datacite:titles>
@@ -325,6 +307,7 @@
     <entry key="service">Service</entry>
     <entry key="software">Software</entry>
   </xsl:variable>
+
   <xsl:template mode="toDatacite"
                 match="mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue">
     <xsl:variable name="key"
@@ -338,12 +321,8 @@
 
 
   <!--
-   The main researchers involved
-    in producing the data, or the
-    authors of the publication, in
-    priority order. To supply
-    multiple creators, repeat this
-    property.
+   The main researchers involved in producing the data, or the authors of the publication, in 
+   priority order. To supply multiple creators, repeat this property.
    -->
   <xsl:variable name="creatorRoles"
                 select="'pointOfContact', 'custodian'"/>
@@ -377,22 +356,10 @@
   </xsl:template>
 
 
-  <!-- TODO: contributors
-  The institution or person
-  responsible for collecting,
-  managing, distributing, or
-  otherwise contributing to the
-  development of the resource.
-  To supply multiple contributors,
-  repeat this property.
-  For software, if there is an
-  alternate entity that "holds,
-  archives, publishes, prints,
-  distributes, releases, issues, or
-  produces" the code, use the
-  contributorType
-  "hostingInstitution" for the code
-  repository.
+  <!-- TODO: contributors The institution or person responsible for collecting, managing, distributing, or
+  otherwise contributing to the development of the resource. To supply multiple contributors, repeat this property.
+  For software, if there is an alternate entity that "holds, archives, publishes, prints, distributes, releases, 
+  issues, or produces" the code, use the contributorType "hostingInstitution" for the code repository.
 
 eg.
       <datacite:contributors>
@@ -433,24 +400,11 @@ eg.
 
 
   <!--
-  The name of the entity that
-  holds, archives, publishes
-  prints, distributes, releases,
-  issues, or produces the
-  resource. This property will be
-  used to formulate the citation,
-  so consider the prominence of
-  the role. For software, use
-  Publisher for the code
-  repository. If there is an entity
-  other than a code repository,
-  that "holds, archives,
-  publishes, prints, distributes,
-  releases, issues, or produces"
-  the code, use the property
-  Contributor/contributorType/
-  hostingInstitution for the code
-  repository.
+  The name of the entity that holds, archives, publishes prints, distributes, releases, issues, or produces the
+  resource. This property will be used to formulate the citation, so consider the prominence of
+  the role. For software, use Publisher for the code repository. If there is an entity other than a code repository,
+  that "holds, archives, publishes, prints, distributes, releases, issues, or produces" the code, use the property
+  Contributor/contributorType/hostingInstitution for the code repository.
   eg.
       <datacite:publisher>DataCite</datacite:publisher>
       <datacite:publicationYear>2014</datacite:publicationYear>
@@ -515,11 +469,8 @@ eg.
 
 
   <!--
-  Any rights information for this
-  resource.
-  The property may be repeated to
-  record complex rights
-  characteristics.
+  Any rights information for this resource.
+  The property may be repeated to record complex rights characteristics.
 
       <datacite:rightsList>
         <datacite:rights xml:lang="en-US" rightsURI="http://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0 Universal</datacite:rights>

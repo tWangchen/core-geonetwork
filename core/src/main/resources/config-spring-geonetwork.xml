@@ -44,7 +44,7 @@
         lazy-init="true"/>
   <bean id="ServiceInfo" class="jeeves.server.dispatchers.ServiceInfo" scope="prototype"/>
 
-
+  <bean id="opManager" class="org.fao.geonet.kernel.ECatOperationManager" lazy-init="true"/>
   <bean id="AccessManager" class="org.fao.geonet.kernel.AccessManager" lazy-init="true"/>
   <bean id="TransformManager" class="org.fao.geonet.kernel.TransformManager" lazy-init="true"/>
   <bean id="CSVBatchEdit" class="org.fao.geonet.kernel.batchedit.CSVBatchEdit" lazy-init="true"/>

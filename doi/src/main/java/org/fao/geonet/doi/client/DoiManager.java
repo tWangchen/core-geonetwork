@@ -39,6 +39,8 @@ import org.fao.geonet.utils.Xml;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 
+import static org.fao.geonet.doi.client.DoiSettings.LOGGER_NAME;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -133,31 +135,37 @@ public class DoiManager {
     }
 
 
-    public Map<String, Boolean> check(ServiceContext serviceContext, AbstractMetadata metadata, Element dataciteMetadata) throws Exception {
-        Map<String, Boolean> conditions = new HashMap<>();
+    public Map<String, Boolean> check(ServiceContext serviceContext, AbstractMetadata metadata, Element dataciteMetadata, String eCatId) throws Exception {
+        
+    	Log.debug(LOGGER_NAME, "   -- DoiManager >> check method");
+    	Map<String, Boolean> conditions = new HashMap<>();
         checkInitialised();
         conditions.put(DoiConditions.API_CONFIGURED, true);
 
-        String doi =  DoiBuilder.create(this.doiPrefix, metadata.getUuid());
+        String doi =  DoiBuilder.create(this.doiPrefix, eCatId);
         checkPreConditions(metadata, doi);
+        Log.debug(LOGGER_NAME, "   -- DoiManager >> checking pre conditions...");
         conditions.put(DoiConditions.RECORD_IS_PUBLIC, true);
         conditions.put(DoiConditions.STANDARD_SUPPORT, true);
-
+        
 
         // ** Convert to DataCite format
         Element dataciteFormatMetadata =
             dataciteMetadata == null ?
             convertXmlToDataCiteFormat(metadata.getDataInfo().getSchemaId(),
                 metadata.getXmlData(false)) : dataciteMetadata;
+        
+            Log.debug(LOGGER_NAME, "   -- DoiManager >> dataciteFormatMetadata : \n " + Xml.getString(dataciteFormatMetadata));
+            Log.debug(LOGGER_NAME, "****************************************************************************************");
         checkPreConditionsOnDataCite(metadata, doi, dataciteFormatMetadata);
         conditions.put(DoiConditions.DATACITE_FORMAT_IS_VALID, true);
         return conditions;
     }
 
-    public Map<String, String> register(ServiceContext context, AbstractMetadata metadata) throws Exception {
+    public Map<String, String> register(ServiceContext context, AbstractMetadata metadata, String eCatId) throws Exception {
         Map<String, String> doiInfo = new HashMap<>(3);
         // The new DOI for this record
-        String doi =  DoiBuilder.create(this.doiPrefix, metadata.getUuid());
+        String doi =  DoiBuilder.create(this.doiPrefix, eCatId);
         doiInfo.put("doi", doi);
 
         // The record in datacite format
@@ -166,8 +174,8 @@ public class DoiManager {
                     metadata.getXmlData(false));
 
 
-        check(context, metadata, dataciteFormatMetadata);
-        createDoi(context, metadata, doiInfo, dataciteFormatMetadata);
+        check(context, metadata, dataciteFormatMetadata, eCatId);
+        createDoi(context, metadata, doiInfo, dataciteFormatMetadata, eCatId);
         checkDoiCreation(metadata, doiInfo);
 
         return doiInfo;
@@ -184,7 +192,7 @@ public class DoiManager {
      */
     private void checkPreConditions(AbstractMetadata metadata, String doi) throws DoiClientException, IOException, JDOMException {
         // Record MUST be public
-        AccessManager am = ApplicationContextHolder.get().getBean(AccessManager.class);
+    	/*AccessManager am = ApplicationContextHolder.get().getBean(AccessManager.class);
         boolean visibleToAll = false;
         try {
             visibleToAll = am.isVisibleToAll(metadata.getId() + "");
@@ -199,7 +207,7 @@ public class DoiManager {
             throw new DoiClientException(String.format(
                 "Record '%s' is not public and we cannot request a DOI for such a record. Publish this record first.",
                 metadata.getUuid()));
-        }
+        }*/
 
 
         // Record MUST not contains a DOI
@@ -287,7 +295,7 @@ public class DoiManager {
      * @param context
      * @param metadata
      */
-    private void createDoi(ServiceContext context, AbstractMetadata metadata, Map<String, String> doiInfo, Element dataciteMetadata) throws Exception {
+    private void createDoi(ServiceContext context, AbstractMetadata metadata, Map<String, String> doiInfo, Element dataciteMetadata, String eCatId) throws Exception {
         // * Now, let's create the DOI
         // picking a DOI name,
 
@@ -302,8 +310,7 @@ public class DoiManager {
 
         // Register the URL
         // 201 Created: operation successful;
-        String landingPage = landingPageTemplate.replace(
-                        "{{uuid}}", metadata.getUuid());
+        String landingPage = landingPageTemplate.replace("{{eCatId}}", eCatId);
         doiInfo.put("doiLandingPage", landingPage);
         client.createDoi(doiInfo.get("doi"), landingPage);
 

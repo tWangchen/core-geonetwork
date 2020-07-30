@@ -22,21 +22,22 @@
  */
 package org.fao.geonet.api.records;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import jeeves.server.context.ServiceContext;
-import jeeves.services.ReadWriteController;
-import org.fao.geonet.ApplicationContextHolder;
+import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
+import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_ECATID;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.fao.geonet.api.API;
 import org.fao.geonet.api.ApiParams;
 import org.fao.geonet.api.ApiUtils;
 import org.fao.geonet.doi.client.DoiManager;
 import org.fao.geonet.domain.AbstractMetadata;
+import org.fao.geonet.domain.Metadata;
+import org.fao.geonet.kernel.ECatOperationManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,15 +47,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import jeeves.server.context.ServiceContext;
+import jeeves.services.ReadWriteController;
 import springfox.documentation.annotations.ApiIgnore;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import java.util.Map;
-
-import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
-import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUID;
 
 /**
  * Handle DOI creation.
@@ -73,12 +74,15 @@ public class DoiApi {
 
     @Autowired
     private DoiManager doiManager;
+    
+    @Autowired
+    ECatOperationManager opManager;
 
     @ApiOperation(
         value = "Check that a record can be submitted to DataCite for DOI creation. " +
             "DataCite requires some fields to be populated.",
         nickname = "checkDoiStatus")
-    @RequestMapping(value = "/{metadataUuid}/doi/checkPreConditions",
+    @RequestMapping(value = "/{eCatId}/doi/checkPreConditions",
         method = RequestMethod.GET,
         produces = {
             MediaType.APPLICATION_JSON_VALUE
@@ -96,18 +100,22 @@ public class DoiApi {
     @ResponseBody
     ResponseEntity<Map<String, Boolean>> checkDoiStatus(
         @ApiParam(
-            value = API_PARAM_RECORD_UUID,
+            value = API_PARAM_RECORD_ECATID,
             required = true)
         @PathVariable
-            String metadataUuid,
+            String eCatId,
         @ApiParam(hidden = true)
         @ApiIgnore
             HttpServletRequest request
     ) throws Exception {
-        AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
-        ServiceContext serviceContext = ApiUtils.createServiceContext(request);
+    	
+    	ServiceContext serviceContext = ApiUtils.createServiceContext(request);
+    	Metadata md = getMetadata(serviceContext, eCatId);
+    	
+        AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
+        
 
-        final Map<String, Boolean> reportStatus = doiManager.check(serviceContext, metadata, null);
+        final Map<String, Boolean> reportStatus = doiManager.check(serviceContext, metadata, null, eCatId);
         return new ResponseEntity<>(reportStatus, HttpStatus.OK);
     }
 
@@ -115,7 +123,7 @@ public class DoiApi {
     @ApiOperation(
         value = "Submit a record to the Datacite metadata store in order to create a DOI.",
         nickname = "createDoi")
-    @RequestMapping(value = "/{metadataUuid}/doi",
+    @RequestMapping(value = "/{eCatId}/doi",
         method = RequestMethod.PUT,
         produces = {
             MediaType.APPLICATION_JSON_VALUE
@@ -132,10 +140,10 @@ public class DoiApi {
     @ResponseBody
     ResponseEntity<Map<String, String>> createDoi(
         @ApiParam(
-            value = API_PARAM_RECORD_UUID,
+            value = API_PARAM_RECORD_ECATID,
             required = true)
         @PathVariable
-            String metadataUuid,
+            String eCatId,
         @ApiParam(hidden = true)
         @ApiIgnore
             HttpServletRequest request,
@@ -143,10 +151,12 @@ public class DoiApi {
         @ApiIgnore
             HttpSession session
     ) throws Exception {
-        AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
+    	
         ServiceContext serviceContext = ApiUtils.createServiceContext(request);
-
-        Map<String, String> doiInfo = doiManager.register(serviceContext, metadata);
+        Metadata md = getMetadata(serviceContext, eCatId);
+        AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
+        
+        Map<String, String> doiInfo = doiManager.register(serviceContext, metadata, eCatId);
         return new ResponseEntity<>(doiInfo, HttpStatus.CREATED);
     }
 
@@ -170,7 +180,7 @@ public class DoiApi {
     public
     ResponseEntity deleteDoi(
         @ApiParam(
-            value = API_PARAM_RECORD_UUID,
+            value = API_PARAM_RECORD_ECATID,
             required = true)
         @PathVariable
             String metadataUuid,
@@ -188,6 +198,11 @@ public class DoiApi {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    private Metadata getMetadata(ServiceContext serviceContext, String eCatId) throws Exception {
+    	
+    	Metadata record = opManager.getMetadataFromECatId(serviceContext.getApplicationContext(), eCatId);
+    	return record;
+    }
 
 //    TODO: At some point we may add support for DOI States management
 //    https://support.datacite.org/docs/mds-api-guide#section-doi-states
