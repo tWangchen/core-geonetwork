@@ -156,17 +156,7 @@
                    <gco:CharacterString>Geoscience Australia Persistent Identifier</gco:CharacterString>
 				</mcc:codeSpace>
 			</mcc:MD_Identifier>
-			</cit:identifier>
-			<cit:identifier>
-             <mcc:MD_Identifier>
-                <mcc:code>
-                   <gco:CharacterString></gco:CharacterString>
-                </mcc:code>
-                <mcc:codeSpace>
-                   <gco:CharacterString>Digital Object Identifier</gco:CharacterString>
-				</mcc:codeSpace>
-			</mcc:MD_Identifier>
-			</cit:identifier>
+			</cit:identifier>			
 		<cit:series>
 			<cit:CI_Series>
         		<cit:name>

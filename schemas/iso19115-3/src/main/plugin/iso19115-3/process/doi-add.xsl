@@ -21,9 +21,9 @@
     <xsl:variable name="doiName"
         select="'Digital Object Identifier'"/>
     
-       
+    
     <xsl:template match="/mdb:MD_Metadata|*[contains(@gco:isoType, 'mdb:MD_Metadata')]">
-          
+        
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates select="mdb:metadataIdentifier"/>
@@ -41,130 +41,60 @@
             <xsl:apply-templates select="mdb:referenceSystemInfo"/>
             <xsl:apply-templates select="mdb:metadataExtensionInfo"/>
             
-            <xsl:choose>	
-                <xsl:when test="mdb:identificationInfo/srv:SV_ServiceIdentification">
-                    <xsl:for-each select="mdb:identificationInfo">
-                        <xsl:copy>
-                            <xsl:copy-of select="@*" />
-                            <srv:SV_ServiceIdentification>
-                                <xsl:choose>
-                                    <xsl:when test="position() = 1">
-                                        <mri:citation>
-                                            <cit:CI_Citation>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:title"/>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:date"/>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:edition"/>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:editionDate"/>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:identifier[*/mcc:codeSpace/gco:CharacterString = 'Geoscience Australia Persistent Identifier']"/>
-                                                <cit:identifier>
-                                                    <mcc:MD_Identifier>
-                                                        <mcc:code>
-                                                            <gco:CharacterString><xsl:value-of select="$doi"/></gco:CharacterString>
-                                                        </mcc:code>
-                                                        <mcc:codeSpace>
-                                                            <gco:CharacterString><xsl:value-of select="$doiName"/></gco:CharacterString>
-                                                        </mcc:codeSpace>
-                                                    </mcc:MD_Identifier>
-                                                </cit:identifier>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty"/>
-                                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:series"/>
-                                            </cit:CI_Citation>
-                                        </mri:citation>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:apply-templates select="mri:citation"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:abstract" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:purpose" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:credit" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:status" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:pointOfContact" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:topicCategory" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:extent" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceMaintenance" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:graphicOverview" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceFormat" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:descriptiveKeywords" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceSpecificUsage" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:resourceConstraints" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:aggregationInfo" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/mri:associatedResource" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:serviceType" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:serviceTypeVersion" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:accessProperties" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:restrictions" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:extent" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:couplingType" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:coupledResource" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:operatedDataset" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:profile" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:serviceStandard" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:containsOperations" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:operatesOn" />
-                                <xsl:apply-templates select="srv:SV_ServiceIdentification/srv:containsChain" />
-                                
-                            </srv:SV_ServiceIdentification>
-                        </xsl:copy>
-                    </xsl:for-each>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:for-each select="mdb:identificationInfo">
-                        <xsl:copy>
-                            <xsl:copy-of select="@*" />
-                            <mri:MD_DataIdentification>
-                                <xsl:choose>
-                                    <xsl:when test="position() = 1">
-                                        <mri:citation>
-                                            <cit:CI_Citation>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:title"/>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date"/>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:edition"/>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:editionDate"/>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier[*/mcc:codeSpace/gco:CharacterString = 'Geoscience Australia Persistent Identifier']"/>
-                                                <cit:identifier>
-                                                    <mcc:MD_Identifier>
-                                                        <mcc:code>
-                                                            <gco:CharacterString><xsl:value-of select="$doi"/></gco:CharacterString>
-                                                        </mcc:code>
-                                                        <mcc:codeSpace>
-                                                            <gco:CharacterString><xsl:value-of select="$doiName"/></gco:CharacterString>
-                                                        </mcc:codeSpace>
-                                                    </mcc:MD_Identifier>
-                                                </cit:identifier>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty"/>
-                                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:series"/>
-                                            </cit:CI_Citation>
-                                        </mri:citation>
-                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation[position() > 1]"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:apply-templates select="mri:citation"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                                
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:abstract" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:purpose" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:status" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:pointOfContact" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:spatialRepresentationType" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:spatialResolution" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:topicCategory" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:extent" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceMaintenance" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceFormat" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:descriptiveKeywords" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceConstraints" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:associatedResource" />
-                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:defaultLocale" />
-                            </mri:MD_DataIdentification>
-                        </xsl:copy>
-                    </xsl:for-each>
-                </xsl:otherwise>
+            <xsl:for-each select="mdb:identificationInfo">
+                <xsl:copy>
+                    <xsl:copy-of select="@*" />
+                    <mri:MD_DataIdentification>
+                        <xsl:choose>
+                            <xsl:when test="position() = 1">
+                                <mri:citation>
+                                    <cit:CI_Citation>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:title"/>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:date"/>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:edition"/>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:editionDate"/>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier[*/mcc:codeSpace/gco:CharacterString = 'Geoscience Australia Persistent Identifier']"/>
+                                        <cit:identifier>
+                                            <mcc:MD_Identifier>
+                                                <mcc:code>
+                                                    <gco:CharacterString><xsl:value-of select="$doi"/></gco:CharacterString>
+                                                </mcc:code>
+                                                <mcc:codeSpace>
+                                                    <gco:CharacterString><xsl:value-of select="$doiName"/></gco:CharacterString>
+                                                </mcc:codeSpace>
+                                            </mcc:MD_Identifier>
+                                        </cit:identifier>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty"/>
+                                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:series"/>
+                                    </cit:CI_Citation>
+                                </mri:citation>
+                                <xsl:apply-templates select="mri:MD_DataIdentification/mri:citation[position() > 1]"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:apply-templates select="mri:citation"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:abstract" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:purpose" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:status" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:pointOfContact" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:spatialRepresentationType" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:spatialResolution" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:topicCategory" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:extent" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceMaintenance" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceFormat" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:descriptiveKeywords" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:resourceConstraints" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:associatedResource" />
+                        <xsl:apply-templates select="mri:MD_DataIdentification/mri:defaultLocale" />
+                    </mri:MD_DataIdentification>
+                </xsl:copy>
+            </xsl:for-each>
                 
-            </xsl:choose>
+                
+            
             
             <xsl:apply-templates select="mdb:contentInfo"/>
             <xsl:apply-templates select="mdb:distributionInfo"/>
@@ -183,6 +113,6 @@
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>
     </xsl:template>
-   
+    
 </xsl:stylesheet>
 

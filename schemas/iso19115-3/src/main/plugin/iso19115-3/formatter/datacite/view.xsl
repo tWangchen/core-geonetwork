@@ -100,7 +100,7 @@
   If the DOI already exist in the record, this parameter is not set and the DOI
   is returned as datacite:identifier -->
   <xsl:param name="doiPrefix" select="''"/>
-  <xsl:param name="defaultDoiPrefix" select="'https://doi.org/'"/>
+  <xsl:param name="defaultDoiPrefix" select="'http://dx.doi.org/'"/>
   <xsl:param name="doiProtocolRegex" select="'(DOI|WWW:LINK-1.0-http--metadata-URL)'"/>
 
   <xsl:variable name="metadata" select="//mdb:MD_Metadata"/>

@@ -142,6 +142,8 @@ public class DoiManager {
         checkInitialised();
         conditions.put(DoiConditions.API_CONFIGURED, true);
 
+        Log.debug(LOGGER_NAME, "   -- DoiManager >> doiPrefix: " + this.doiPrefix);
+        
         String doi =  DoiBuilder.create(this.doiPrefix, eCatId);
         checkPreConditions(metadata, doi);
         Log.debug(LOGGER_NAME, "   -- DoiManager >> checking pre conditions...");
@@ -265,12 +267,19 @@ public class DoiManager {
         try {
             Xml.validate(dataciteMetadata);
         } catch (Exception e) {
-            throw new DoiClientException(String.format(
+            /*throw new DoiClientException(String.format(
                 "Record '%s' converted to DataCite format is invalid. Error is: %s. " +
                     "Required fields in DataCite are: identifier, creators, titles, publisher, publicationYear, resourceType. Check the DataCite format output at " +
                     "%sapi/records/%s/formatters/datacite?output=xml and " +
                     "adpat the record content to add missing information.",
-                metadata.getUuid(), e.getMessage(), sm.getNodeURL(), metadata.getUuid()));
+                metadata.getUuid(), e.getMessage(), sm.getNodeURL(), metadata.getUuid()));*/
+            		
+        	throw new DoiClientException(String.format(
+                    "Record '%s' converted to DataCite format is invalid." +
+                        "Required fields in DataCite are: identifier, creators, titles, publisher, publicationYear, resourceType. Check the DataCite format output at " +
+                        "%sapi/records/%s/formatters/datacite?output=xml and " +
+                        "adpat the record content to add missing information.",
+                    metadata.getUuid(), sm.getNodeURL(), metadata.getUuid())); 		
         }
 
         // * MDS / DOI does not exist already

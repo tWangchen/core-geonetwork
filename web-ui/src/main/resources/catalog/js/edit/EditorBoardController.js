@@ -112,6 +112,37 @@
         return $scope;
       };
 
+      $scope.createDOI = function(md){
+        var defer = $q.defer();
+        $http.get('../api/records/' + md.eCatId + '/doi/checkPreConditions').then(function(data) {
+          $http.put('../api/records/' + md.eCatId + '/doi').then(function(data) {
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+              timeout: 2
+            });
+            defer.resolve(data);
+          }, function(error){
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+              description: error.data.description,
+              timeout: 0,
+              type: 'danger'
+            });
+            defer.reject(error);
+          });
+        }, function(error){
+          $rootScope.$broadcast('StatusUpdated', {
+            title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+            description: error.data.description,
+            timeout: 0,
+            type: 'danger'
+          });
+          defer.reject(error);
+        });
+        return defer.promise;        
+      };
+
+
       $scope.deleteRecord = function(md) {
         var deferred = $q.defer();
 
