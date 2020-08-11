@@ -25,19 +25,40 @@ package org.fao.geonet.api.records;
 import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
 import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_ECATID;
 
+import java.io.FileNotFoundException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.xml.transform.stream.StreamResult;
 
 import org.fao.geonet.api.API;
 import org.fao.geonet.api.ApiParams;
 import org.fao.geonet.api.ApiUtils;
+import org.fao.geonet.api.exception.ResourceNotFoundException;
+import org.fao.geonet.constants.Edit;
+import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.doi.client.DoiManager;
 import org.fao.geonet.domain.AbstractMetadata;
+import org.fao.geonet.domain.Constants;
 import org.fao.geonet.domain.Metadata;
+import org.fao.geonet.domain.MetadataDataInfo;
 import org.fao.geonet.kernel.ECatOperationManager;
+import org.fao.geonet.kernel.SelectionManager;
+import org.fao.geonet.kernel.datamanager.base.BaseMetadataStatus;
+import org.fao.geonet.utils.Log;
+import org.fao.geonet.utils.Xml;
+import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +67,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import io.swagger.annotations.Api;
@@ -53,6 +75,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import jeeves.server.UserSession;
 import jeeves.server.context.ServiceContext;
 import jeeves.services.ReadWriteController;
 import springfox.documentation.annotations.ApiIgnore;
@@ -77,7 +100,17 @@ public class DoiApi {
     
     @Autowired
     ECatOperationManager opManager;
-
+    
+    @Autowired
+	ApplicationContext context;
+    
+    @Autowired
+    BaseMetadataStatus metadataStatus;
+    
+    private Map<String, String> report;
+    static final String DOI_REPORT = "doi_report";
+    static final String DOI_CREATE_STATUS = "doi_create_status";
+    
     @ApiOperation(
         value = "Check that a record can be submitted to DataCite for DOI creation. " +
             "DataCite requires some fields to be populated.",
@@ -164,7 +197,7 @@ public class DoiApi {
     @ApiOperation(
         value = "Remove a DOI (this is not recommended, DOI are supposed to be persistent once created. This is mainly here for testing).",
         nickname = "deleteDoi")
-    @RequestMapping(value = "/{metadataUuid}/doi",
+    @RequestMapping(value = "/{eCatId}/doi",
         method = RequestMethod.DELETE,
         produces = {
             MediaType.APPLICATION_JSON_VALUE
@@ -177,27 +210,106 @@ public class DoiApi {
         @ApiResponse(code = 500, message = "Service unavailable."),
         @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_ADMIN)
     })
-    public
-    ResponseEntity deleteDoi(
-        @ApiParam(
-            value = API_PARAM_RECORD_ECATID,
-            required = true)
-        @PathVariable
-            String metadataUuid,
-        @ApiParam(hidden = true)
-        @ApiIgnore
-            HttpServletRequest request,
-        @ApiParam(hidden = true)
-        @ApiIgnore
-            HttpSession session
+    public ResponseEntity deleteDoi(@ApiParam(value = API_PARAM_RECORD_ECATID, required = true) @PathVariable String eCatId, 
+        @ApiParam(hidden = true) @ApiIgnore HttpServletRequest request, 
+        @ApiParam(hidden = true) @ApiIgnore HttpSession session
     ) throws Exception {
-        AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
-        ServiceContext serviceContext = ApiUtils.createServiceContext(request);
-
-        doiManager.unregisterDoi(metadata, serviceContext);
+    	ServiceContext serviceContext = ApiUtils.createServiceContext(request);
+    	Metadata md = getMetadata(serviceContext, eCatId);
+        AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
+       
+        doiManager.unregisterDoi(metadata, serviceContext, eCatId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @ApiOperation(value = "Create DOI in bulk.", nickname = "createBulkDoi")
+    @RequestMapping(value = "/doi/bulk", method = RequestMethod.PUT)
+    @PreAuthorize("hasRole('Administrator')")
+    @ApiResponses(value = {
+        @ApiResponse(code = 204, message = "DOI created."),
+        @ApiResponse(code = 404, message = "Metadata or DOI not found."),
+        @ApiResponse(code = 500, message = "Service unavailable."),
+        @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_ADMIN)
+    })
+    public ResponseEntity createDOI(@RequestParam(required = false) String bucket, HttpServletRequest request) {
+    	
+    	request.getSession().setAttribute(DOI_CREATE_STATUS, false);
+    	ServiceContext context = ApiUtils.createServiceContext(request);
+    	Runnable task = () -> {
+    		startDOICreation(context, bucket, request.getSession());
+		};
+
+		// start the thread
+		new Thread(task).start();
+		
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    
+    private void startDOICreation(ServiceContext serviceContext, String bucket, HttpSession session) {
+
+		report = new HashMap<>();
+		
+		try {
+			
+			UserSession userSession = serviceContext.getUserSession();
+			SelectionManager sm = SelectionManager.getManager(userSession);
+
+			Set<String> uuids = new HashSet<>();
+			if (sm != null) {
+
+				synchronized (sm.getSelection(bucket)) {
+					for (Iterator<String> iter = sm.getSelection(bucket).iterator(); iter.hasNext();) {
+						String uuid = (String) iter.next();
+						uuids.add(uuid);
+					}
+				}
+
+			}
+			
+			uuids.stream().forEach(uuid -> {
+				String eCatId = "";
+				try {
+					
+					AbstractMetadata metadata = ApiUtils.getRecord(uuid);
+					if(metadata.getDataInfo().getType().codeString.equals(String.valueOf(Constants.YN_FALSE))) {
+						eCatId = opManager.getECatIdFromUUID(context, uuid);
+						Log.debug(Geonet.SEARCH_ENGINE, "DoiApi >>  --> CurrentStatus: " + metadataStatus.getCurrentStatus(metadata.getId()));
+						
+						if(Integer.parseInt(metadataStatus.getCurrentStatus(metadata.getId())) == Geonet.WorkflowStatus.APPROVED) {
+					        Map<String, String> doiInfo = doiManager.register(serviceContext, metadata, eCatId);
+					        report.put(eCatId, "Successfully created DOI for the eCatId: " + eCatId);
+						}else {
+							report.put(eCatId, "This record is not approved. Required to publish or must be in approved state in order to create DOI.");
+						}
+					}else {
+						report.put(eCatId, "Not a metadata record. Selected record seems to be Template/Sub directory.");
+					}					
+				}catch(Exception rnfe) {
+					report.put(eCatId, rnfe.getMessage());
+				}
+			});
+			
+		} catch (Exception e) {
+			Log.error(Geonet.SCHEMA_MANAGER, " Bulk DOI creation failed, Error is " + e.getMessage());
+		} finally {
+			session.setAttribute(DOI_REPORT, report);
+			session.setAttribute(DOI_CREATE_STATUS, true);
+		}
+		
+	}
+
+	@RequestMapping(value = "/doi/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public Boolean doiCreateStatus(HttpServletRequest request) throws Exception {
+		return (Boolean) request.getSession().getAttribute(DOI_CREATE_STATUS);
+	}
+	
+	@RequestMapping(value = "/doi/report", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public Map<String, String> doiCreateReport(HttpServletRequest request) throws Exception {
+		return (Map<String, String>) request.getSession().getAttribute(DOI_REPORT);
+	}
+    
     private Metadata getMetadata(ServiceContext serviceContext, String eCatId) throws Exception {
     	
     	Metadata record = opManager.getMetadataFromECatId(serviceContext.getApplicationContext(), eCatId);

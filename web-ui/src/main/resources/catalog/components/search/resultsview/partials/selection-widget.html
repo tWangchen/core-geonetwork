@@ -60,7 +60,7 @@
       </li>
       <li class="divider" data-ng-if="user.isConnected()"></li>
       <li  data-ng-show="!excludePattern.test('updatePrivileges')"
-           data-ng-if="user.isEditorOrMore()">
+           data-ng-if="user.isUserAdminOrMore()">
         <a href="" data-ng-click="mdService.openPrivilegesBatchPanel(getCatScope(), searchResults.selectionBucket)">
           <i class="fa fa-key"></i>&nbsp;<span translate>updatePrivileges</span>
         </a>
@@ -124,13 +124,19 @@
         </a>
       </li>
       <li  data-ng-show="!excludePattern.test('delete')"
-           data-ng-if="user.isEditorOrMore()">
+           data-ng-if="user.isUserAdminOrMore()">
         <a href="" data-ng-click="mdService.deleteMd(undefined, searchResults.selectionBucket)"
            data-gn-confirm-click="{{'deleteSelectedRecordConfirm' | translate:searchResults}}">
           <i class="fa fa-times"></i>&nbsp;<span translate>delete</span>
         </a>
       </li>
-
+      <li  data-ng-if="user.isUserAdminOrMore()">
+        <a href="" data-ng-click="mdService.bulkDOICreate(searchResults.selectionBucket)"
+           data-gn-confirm-click="{{'createDoiForRecord' | translate:searchResults}}">
+          <i class="fa fa-external-link"></i>&nbsp;<span translate>doiCreationTaskCreateAction</span>
+        </a>
+      </li>
+      
       <!--Custom actions-->
       <li data-ng-repeat="a in customActions">
         <a href="" data-ng-click="a.fn()">

@@ -350,15 +350,15 @@ public class DoiManager {
     }
 
 
-    public void unregisterDoi(AbstractMetadata metadata, ServiceContext context) throws DoiClientException, ResourceNotFoundException {
+    public void unregisterDoi(AbstractMetadata metadata, ServiceContext context, String eCatId) throws DoiClientException, ResourceNotFoundException {
         checkInitialised();
 
-        final String doi = DoiBuilder.create(this.doiPrefix, metadata.getUuid());
+        final String doi = DoiBuilder.create(this.doiPrefix, eCatId);
         final String doiResponse = client.retrieveDoi(doi);
         if (doiResponse == null) {
             throw new ResourceNotFoundException(String.format(
                 "Record '%s' is not available on DataCite. DOI '%s' does not exist.",
-                metadata.getUuid(), doi));
+                eCatId, doi));
         }
 
 

@@ -614,6 +614,54 @@
       };
 
       /**
+       * Bulk DOI creation
+       */
+      this.bulkDOICreate = function(bucket){
+        
+        $http.put('../api/records/doi/bulk?bucket=' + bucket).then(function() {
+            console.log('bulk DOI Create....');
+            checkDOICreateCompleted();            
+        });
+        
+      }
+
+      function checkDOICreateCompleted(){
+        
+        // Check if completed
+        return $http.get('../api/records/doi/status').
+          then(function(res) {
+           
+            isCompleted = res.data;
+            if (!isCompleted) {
+              $timeout(checkDOICreateCompleted, 1000);
+            } else {
+              return $http.get('../api/records/doi/report')
+                .then(function(report) {
+                  var holder = document.createElement('div');
+
+                  angular.forEach(report.data, function(value, key){
+                    var str = document.createElement('strong');
+                    str.innerText = "eCatId: " + key; + ", ";
+                    var p = document.createElement('p');
+                    p.innerText = value;
+                    holder.appendChild(str);
+                    holder.appendChild(p);
+                  });
+                  
+                  $rootScope.$broadcast('StatusUpdated', {
+                    title: "Bulk DOI creation report",
+                    message: holder.innerHTML,
+                    timeout: 500
+                  });
+
+                });
+            }
+            
+          });
+          
+        };
+
+      /**
        * Format a CRS description object for rendering
        * @param {Object} crsDetails expected keys: code, codeSpace, name
        */
