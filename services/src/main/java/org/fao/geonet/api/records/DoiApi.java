@@ -40,6 +40,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
+import org.fao.geonet.ApplicationContextHolder;
 import org.fao.geonet.api.API;
 import org.fao.geonet.api.ApiParams;
 import org.fao.geonet.api.ApiUtils;
@@ -47,6 +49,8 @@ import org.fao.geonet.api.exception.ResourceNotFoundException;
 import org.fao.geonet.constants.Edit;
 import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.doi.client.DoiManager;
+import org.fao.geonet.doi.client.DoiRestManager;
+import org.fao.geonet.doi.client.DoiSettings;
 import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.Constants;
 import org.fao.geonet.domain.Metadata;
@@ -54,6 +58,7 @@ import org.fao.geonet.domain.MetadataDataInfo;
 import org.fao.geonet.kernel.ECatOperationManager;
 import org.fao.geonet.kernel.SelectionManager;
 import org.fao.geonet.kernel.datamanager.base.BaseMetadataStatus;
+import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
 import org.jdom.Element;
@@ -95,9 +100,12 @@ import springfox.documentation.annotations.ApiIgnore;
 @ReadWriteController
 public class DoiApi {
 
-    @Autowired
-    private DoiManager doiManager;
+//    @Autowired
+//    private DoiManager doiManager;
     
+	@Autowired
+	private DoiRestManager doiRestManager;
+	
     @Autowired
     ECatOperationManager opManager;
     
@@ -121,7 +129,7 @@ public class DoiApi {
             MediaType.APPLICATION_JSON_VALUE
         }
     )
-    @PreAuthorize("hasRole('Editor')")
+    @PreAuthorize("hasRole('Administrator')")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Record can be proposed to DataCite."),
         @ApiResponse(code = 404, message = "Metadata not found."),
@@ -139,7 +147,10 @@ public class DoiApi {
             String eCatId,
         @ApiParam(hidden = true)
         @ApiIgnore
-            HttpServletRequest request
+            HttpServletRequest request,
+        @ApiParam(hidden = true)
+        @ApiIgnore
+            HttpSession session
     ) throws Exception {
     	
     	ServiceContext serviceContext = ApiUtils.createServiceContext(request);
@@ -147,8 +158,8 @@ public class DoiApi {
     	
         AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
         
-
-        final Map<String, Boolean> reportStatus = doiManager.check(serviceContext, metadata, null, eCatId);
+        //DoiManager doiManager = getDoiManager(session);
+        final Map<String, Boolean> reportStatus = doiRestManager.check(serviceContext, metadata, null, eCatId);
         return new ResponseEntity<>(reportStatus, HttpStatus.OK);
     }
 
@@ -157,12 +168,12 @@ public class DoiApi {
         value = "Submit a record to the Datacite metadata store in order to create a DOI.",
         nickname = "createDoi")
     @RequestMapping(value = "/{eCatId}/doi",
-        method = RequestMethod.PUT,
+        method = RequestMethod.POST,
         produces = {
             MediaType.APPLICATION_JSON_VALUE
         }
     )
-    @PreAuthorize("hasRole('Editor')")
+    @PreAuthorize("hasRole('Administrator')")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Check status of the report."),
         @ApiResponse(code = 404, message = "Metadata not found."),
@@ -185,13 +196,48 @@ public class DoiApi {
             HttpSession session
     ) throws Exception {
     	
+    	//DoiManager doiManager = getDoiManager(session);
+    
         ServiceContext serviceContext = ApiUtils.createServiceContext(request);
         Metadata md = getMetadata(serviceContext, eCatId);
         AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
-        
-        Map<String, String> doiInfo = doiManager.register(serviceContext, metadata, eCatId);
+        Map<String, String> doiInfo = doiRestManager.register(serviceContext, metadata, eCatId);
         return new ResponseEntity<>(doiInfo, HttpStatus.CREATED);
     }
+    
+    @ApiOperation(
+            value = "Submit a record to the Datacite metadata store in order to create a DOI.",
+            nickname = "updateDoi")
+        @RequestMapping(value = "/{eCatId}/doi/{doi}",
+            method = RequestMethod.PUT,
+            produces = {
+                MediaType.APPLICATION_JSON_VALUE
+            }
+        )
+        @PreAuthorize("hasRole('Administrator')")
+        @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Check status of the report."),
+            @ApiResponse(code = 404, message = "Metadata not found."),
+            @ApiResponse(code = 500, message = "Service unavailable."),
+            @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_CAN_EDIT)
+        })
+        public
+        @ResponseBody
+        ResponseEntity<Map<String, String>> updateDoi(
+        		@ApiParam(value = API_PARAM_RECORD_ECATID,required = true) @PathVariable String eCatId,
+        		@ApiParam(value = "doi",required = true) @PathVariable String doi,
+        		@ApiParam(hidden = true) @ApiIgnore HttpServletRequest request,
+        		@ApiParam(hidden = true) @ApiIgnore HttpSession session
+        ) throws Exception {
+        	
+        	//DoiManager doiManager = getDoiManager(session);
+        
+            ServiceContext serviceContext = ApiUtils.createServiceContext(request);
+            Metadata md = getMetadata(serviceContext, eCatId);
+            AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
+            Map<String, String> doiInfo = doiRestManager.update(serviceContext, metadata, eCatId, doi);
+            return new ResponseEntity<>(doiInfo, HttpStatus.NO_CONTENT);
+        }
 
 //    Do not provide support for DOI removal ?
     @ApiOperation(
@@ -217,7 +263,7 @@ public class DoiApi {
     	ServiceContext serviceContext = ApiUtils.createServiceContext(request);
     	Metadata md = getMetadata(serviceContext, eCatId);
         AbstractMetadata metadata = ApiUtils.canEditRecord(md.getUuid(), request);
-       
+        DoiManager doiManager = context.getBean(DoiManager.class);
         doiManager.unregisterDoi(metadata, serviceContext, eCatId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -231,12 +277,12 @@ public class DoiApi {
         @ApiResponse(code = 500, message = "Service unavailable."),
         @ApiResponse(code = 403, message = ApiParams.API_RESPONSE_NOT_ALLOWED_ONLY_ADMIN)
     })
-    public ResponseEntity createDOI(@RequestParam(required = false) String bucket, HttpServletRequest request) {
+    public ResponseEntity createDOI(@RequestParam(required = false) String bucket, HttpServletRequest request, @ApiParam(hidden = true) @ApiIgnore HttpSession session) {
     	
     	request.getSession().setAttribute(DOI_CREATE_STATUS, false);
     	ServiceContext context = ApiUtils.createServiceContext(request);
     	Runnable task = () -> {
-    		startDOICreation(context, bucket, request.getSession());
+    		startDOICreation(context, bucket, session);
 		};
 
 		// start the thread
@@ -247,7 +293,7 @@ public class DoiApi {
     
     private void startDOICreation(ServiceContext serviceContext, String bucket, HttpSession session) {
 
-		report = new HashMap<>();
+    	//final DoiManager doiManager = getDoiManager(session);
 		
 		try {
 			
@@ -260,6 +306,7 @@ public class DoiApi {
 				synchronized (sm.getSelection(bucket)) {
 					for (Iterator<String> iter = sm.getSelection(bucket).iterator(); iter.hasNext();) {
 						String uuid = (String) iter.next();
+						Log.debug("DOI", "DoiApi, SelectionBucket >>  --> UUID: " + uuid);
 						uuids.add(uuid);
 					}
 				}
@@ -267,16 +314,17 @@ public class DoiApi {
 			}
 			
 			uuids.stream().forEach(uuid -> {
+				Log.debug("DOI", "DoiApi >>  --> UUID: " + uuid);
 				String eCatId = "";
 				try {
 					
 					AbstractMetadata metadata = ApiUtils.getRecord(uuid);
 					if(metadata.getDataInfo().getType().codeString.equals(String.valueOf(Constants.YN_FALSE))) {
 						eCatId = opManager.getECatIdFromUUID(context, uuid);
-						Log.debug(Geonet.SEARCH_ENGINE, "DoiApi >>  --> CurrentStatus: " + metadataStatus.getCurrentStatus(metadata.getId()));
+						Log.debug("DOI", "DoiApi >>  --> CurrentStatus: " + metadataStatus.getCurrentStatus(metadata.getId()));
 						
 						if(Integer.parseInt(metadataStatus.getCurrentStatus(metadata.getId())) == Geonet.WorkflowStatus.APPROVED) {
-					        Map<String, String> doiInfo = doiManager.register(serviceContext, metadata, eCatId);
+					        Map<String, String> doiInfo = doiRestManager.register(serviceContext, metadata, eCatId);
 					        report.put(eCatId, "Successfully created DOI for the eCatId: " + eCatId);
 						}else {
 							report.put(eCatId, "This record is not approved. Required to publish or must be in approved state in order to create DOI.");
@@ -285,6 +333,7 @@ public class DoiApi {
 						report.put(eCatId, "Not a metadata record. Selected record seems to be Template/Sub directory.");
 					}					
 				}catch(Exception rnfe) {
+					Log.debug("DOI", "DoiApi >>  --> rnfe.getMessage(): " + rnfe.getMessage());
 					report.put(eCatId, rnfe.getMessage());
 				}
 			});
@@ -315,6 +364,21 @@ public class DoiApi {
     	Metadata record = opManager.getMetadataFromECatId(serviceContext.getApplicationContext(), eCatId);
     	return record;
     }
+    
+	/*
+	 * private DoiManager getDoiManager(HttpSession session) {
+	 * 
+	 * DoiManager doiManager; SettingManager setmanager =
+	 * ApplicationContextHolder.get().getBean(SettingManager.class); String
+	 * serverUrl = setmanager.getValue(DoiSettings.SETTING_PUBLICATION_DOI_DOIURL);
+	 * 
+	 * Log.debug("DOI", "   -- DoiApi >> serverUrl: " + serverUrl);
+	 * if(serverUrl.startsWith("https://api")) { doiManager =
+	 * context.getBean("doiRestManager", DoiRestManager.class); }else { doiManager =
+	 * context.getBean("doiManager", DoiManager.class); }
+	 * 
+	 * return doiManager; }
+	 */
 
 //    TODO: At some point we may add support for DOI States management
 //    https://support.datacite.org/docs/mds-api-guide#section-doi-states

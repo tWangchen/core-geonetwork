@@ -88,11 +88,11 @@
                title="{{'doiCreationTaskCreateAction' | translate}}">
               <i  class="fa fa-external-link"></i>
             </a>
-            <a class="btn btn-default" style="color: red"
+            <a class="btn btn-success" 
                data-ng-show="user.isAdmin() && md.isPublished() && md.DOI"
-               data-gn-click-and-spin="deleteDOI(md)"
-               data-gn-confirm-click="{{'doiDeleteAction' | translate:md}}"
-               title="{{'doiDeleteAction' | translate}}">
+               data-gn-click-and-spin="updateDOI(md)"
+               data-gn-confirm-click="{{'doiUpdateAction' | translate:md}}"
+               title="{{'doiUpdateAction' | translate}}">
               <i  class="fa fa-external-link"></i>
             </a>
           </div>

@@ -112,17 +112,18 @@
         return $scope;
       };
 
-      $scope.deleteDOI = function(md){
+      $scope.updateDOI = function(md){
+        
         var defer = $q.defer();
-        $http.put('../api/records/' + md.eCatId + '/doi').then(function(data) {
+        $http.put('../api/records/' + md.eCatId + '/doi/' + md.DOI).then(function(data) {
           $rootScope.$broadcast('StatusUpdated', {
-            title: $translate.instant('doiDeleteAction', {title: md.title || md.defaultTitle}),
-            timeout: 2
+            title: $translate.instant('doiUpdateAction', {title: md.title || md.defaultTitle}),
+            timeout: 10
           });
           defer.resolve(data);
         }, function(error){
           $rootScope.$broadcast('StatusUpdated', {
-            title: $translate.instant('doiDeleteAction', {title: md.title || md.defaultTitle}),
+            title: $translate.instant('doiUpdateAction', {title: md.title || md.defaultTitle}),
             description: error.data.description,
             timeout: 0,
             type: 'danger'
@@ -134,10 +135,10 @@
       $scope.createDOI = function(md){
         var defer = $q.defer();
         $http.get('../api/records/' + md.eCatId + '/doi/checkPreConditions').then(function(data) {
-          $http.put('../api/records/' + md.eCatId + '/doi').then(function(data) {
+          $http.post('../api/records/' + md.eCatId + '/doi').then(function(data) {
             $rootScope.$broadcast('StatusUpdated', {
               title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
-              timeout: 2
+              timeout: 10
             });
             defer.resolve(data);
           }, function(error){
