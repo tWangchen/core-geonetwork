@@ -23,6 +23,8 @@ import org.fao.geonet.api.exception.ResourceNotFoundException;
 import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.kernel.DataManager;
+import org.fao.geonet.kernel.datamanager.IMetadataManager;
+import org.fao.geonet.kernel.datamanager.IMetadataSchemaUtils;
 import org.fao.geonet.kernel.datamanager.base.BaseMetadataSchemaUtils;
 import org.fao.geonet.kernel.schema.MetadataSchema;
 import org.fao.geonet.kernel.setting.SettingManager;
@@ -32,6 +34,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jeeves.server.context.ServiceContext;
 
@@ -54,14 +57,19 @@ public class DoiRestManager {
     public static final String HTTPS_DOI_ORG = "https://dx.doi.org/";
     public static final String HTTPS_DOI_URL = "url";
 
+    @Autowired
+    IMetadataManager metadataManager;
+    
+    @Autowired
+    IMetadataSchemaUtils schemaUtils;
+    
     private DoiRestClient client;
     protected String doiPrefix;
     protected String landingPageTemplate;
     protected boolean initialised = false;
 
-    DataManager dm;
+    //DataManager dm;
     SettingManager sm;
-    BaseMetadataSchemaUtils schemaUtils;
 
     public static final String DOI_GET_SAVED_QUERY = "doi-get";
 	
@@ -69,8 +77,6 @@ public class DoiRestManager {
 	
 	public DoiRestManager() {
         sm = ApplicationContextHolder.get().getBean(SettingManager.class);
-        dm = ApplicationContextHolder.get().getBean(DataManager.class);
-        schemaUtils = ApplicationContextHolder.get().getBean(BaseMetadataSchemaUtils.class);
 
         loadConfig();
     }
@@ -130,7 +136,7 @@ public class DoiRestManager {
 
 		check(context, metadata, dataciteJson, eCatId);
 		createDoi(context, metadata, doiInfo, dataciteJson, eCatId);
-
+		Log.debug(LOGGER_NAME, ">>>>>> DOIRestManager --> after register <-- " );
 		return doiInfo;
 	}
 
@@ -169,7 +175,7 @@ public class DoiRestManager {
 		// --- needed to detach md from the document
 //        md.detach();
 
-		dm.updateMetadata(context, metadata.getId() + "", recordWithDoi, false, true, true, context.getLanguage(),
+		metadataManager.updateMetadata(context, metadata.getId() + "", recordWithDoi, false, false, true, context.getLanguage(),
 				new ISODate().toString(), true);
 
 		doiInfo.put("doiUrl", HTTPS_DOI_ORG + doiInfo.get("doi"));
@@ -193,7 +199,7 @@ public class DoiRestManager {
      *
      */
     public Element setDOIValue(String doi, String schema, Element md) throws Exception {
-        Path styleSheet = dm.getSchemaDir(schema).resolve(DOI_ADD_XSL_PROCESS);
+        Path styleSheet = schemaUtils.getSchemaDir(schema).resolve(DOI_ADD_XSL_PROCESS);
         boolean exists = Files.exists(styleSheet);
         if (!exists) {
             throw new DoiClientException(String.format("To create a DOI, the schema has to defined how to insert a DOI in the record. The schema_plugins/%s/process/%s was not found. Create the XSL transformation.",
@@ -300,7 +306,7 @@ public class DoiRestManager {
 		
 		try {
 			if(jsonSchema == null) {
-				Path jsonSchemaPath = dm.getSchemaDir(metadata.getDataInfo().getSchemaId())
+				Path jsonSchemaPath = schemaUtils.getSchemaDir(metadata.getDataInfo().getSchemaId())
 						.resolve(DATACITE_JSON_SCHEMA_FILE);
 				Log.debug(LOGGER_NAME, "   -- DOIRestManager >> validateAgainstJSONSchema, jsonSchemaPath: "+jsonSchemaPath.toString());
 				jsonSchema = new JSONObject(new JSONTokener(new FileReader(jsonSchemaPath.toFile())));
@@ -327,7 +333,7 @@ public class DoiRestManager {
 	}
 
 	private String convertXmlToDataCiteFormat(String schema, Element md) throws Exception {
-		final Path styleSheet = dm.getSchemaDir(schema).resolve(DATACITE_XSL_CONVERSION_FILE);
+		final Path styleSheet = schemaUtils.getSchemaDir(schema).resolve(DATACITE_XSL_CONVERSION_FILE);
 		final boolean exists = Files.exists(styleSheet);
 		if (!exists) {
 			throw new DoiClientException(String.format(

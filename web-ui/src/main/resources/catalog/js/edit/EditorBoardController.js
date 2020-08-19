@@ -138,7 +138,7 @@
           $http.post('../api/records/' + md.eCatId + '/doi').then(function(data) {
             $rootScope.$broadcast('StatusUpdated', {
               title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
-              timeout: 10
+              timeout: 500
             });
             defer.resolve(data);
           }, function(error){

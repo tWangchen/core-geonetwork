@@ -115,7 +115,8 @@ public class DoiApi {
     @Autowired
     BaseMetadataStatus metadataStatus;
     
-    private Map<String, String> report;
+    private Map<String, String> report = new HashMap<>();
+    
     static final String DOI_REPORT = "doi_report";
     static final String DOI_CREATE_STATUS = "doi_create_status";
     
@@ -279,6 +280,9 @@ public class DoiApi {
     })
     public ResponseEntity createDOI(@RequestParam(required = false) String bucket, HttpServletRequest request, @ApiParam(hidden = true) @ApiIgnore HttpSession session) {
     	
+    	if(report != null && !report.isEmpty())
+    		report.clear();
+    	
     	request.getSession().setAttribute(DOI_CREATE_STATUS, false);
     	ServiceContext context = ApiUtils.createServiceContext(request);
     	Runnable task = () -> {
@@ -334,6 +338,10 @@ public class DoiApi {
 					}					
 				}catch(Exception rnfe) {
 					Log.debug("DOI", "DoiApi >>  --> rnfe.getMessage(): " + rnfe.getMessage());
+					StackTraceElement[] eles = rnfe.getStackTrace();
+					for (StackTraceElement ste : eles) {
+						Log.debug("DOI", "DoiApi >>  --> Error at " + ste.getClassName() + ", " + ste.getMethodName() + " - " + ste.getLineNumber());
+					}
 					report.put(eCatId, rnfe.getMessage());
 				}
 			});

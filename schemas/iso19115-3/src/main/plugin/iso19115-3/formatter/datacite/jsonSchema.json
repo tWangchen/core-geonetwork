@@ -30,7 +30,7 @@
                 "attributes": {
                     "$id": "#/properties/data/properties/attributes",
                     "type": "object",
-                    "title": "The attributes schema",
+                    "title": "Attributes with minimum fields required (identifier, creators, titles, publisher, publicationYear, resourceType).",
                     "description": "Attributes with minimum fields required (identifier, creators, titles, publisher, publicationYear, resourceType).",
                     "default": {},
                     "required": [
@@ -54,19 +54,19 @@
                             "$id": "#/properties/data/properties/attributes/properties/doi",
                             "type": "string",
                             "title": "The doi schema",
-                            "description": "An explanation about the purpose of this instance."                            
+                            "description": "The doi schema"                            
                         },
                         "url": {
                             "$id": "#/properties/data/properties/attributes/properties/url",
                             "type": "string",
                             "title": "Url",
-                            "description": "An explanation about the purpose of this instance."
+                            "description": "Url, landing page of the record"
                         },
                         "types": {
                             "$id": "#/properties/data/properties/attributes/properties/types",
                             "type": "object",
                             "title": "Resource Types",
-                            "description": "An explanation about the purpose of this instance.",
+                            "description": "Resource Types of the record",
                             "required": [
                                 "resourceType"
                             ],
@@ -75,14 +75,14 @@
                                     "$id": "#/properties/data/properties/attributes/properties/types/properties/resourceType",
                                     "type": "string",
                                     "title": "The resourceType schema",
-                                    "description": "An explanation about the purpose of this instance."
+                                    "description": "Resource Type of the record"
                                 }
                             },
                             "additionalProperties": true
                         },
                         "creators": {
                             "default": [],
-                            "description": "An explanation about the purpose of this instance.",
+                            "description": "Creators of the record",
                             "title": "Creators",
                             "minItems": 1,
                             "additionalItems": true,
@@ -92,8 +92,8 @@
                                     {
                                         "$id": "#/properties/data/properties/attributes/properties/creators/items/anyOf/0",
                                         "type": "object",
-                                        "title": "The first anyOf schema",
-                                        "description": "An explanation about the purpose of this instance.",
+                                        "title": "Creator",
+                                        "description": "One of the creator of the record.",
                                         "required": [
                                             "name",
                                             "nameType"
@@ -102,8 +102,8 @@
                                             "name": {
                                                 "$id": "#/properties/data/properties/attributes/properties/creators/items/anyOf/0/properties/name",
                                                 "type": "string",
-                                                "title": "The name schema",
-                                                "description": "An explanation about the purpose of this instance."
+                                                "title": "Creator Name",
+                                                "description": "Name of the Creator."
                                             }                                            
                                         },
                                         "additionalProperties": true
@@ -115,7 +115,7 @@
                             "$id": "#/properties/data/properties/attributes/properties/titles",
                             "type": "array",
                             "title": "Titles",
-                            "description": "An explanation about the purpose of this instance.",
+                            "description": "Given titles of the record.",
                             "additionalItems": true,
                             "items": {
                                 "$id": "#/properties/data/properties/attributes/properties/titles/items",
@@ -123,8 +123,8 @@
                                     {
                                         "$id": "#/properties/data/properties/attributes/properties/titles/items/anyOf/0",
                                         "type": "object",
-                                        "title": "The first anyOf schema",
-                                        "description": "An explanation about the purpose of this instance.",
+                                        "title": "Title",
+                                        "description": "Minimum one title required for the record.",
                                         "default": {},
                                         "required": [
                                             "title"
@@ -134,7 +134,7 @@
                                                 "$id": "#/properties/data/properties/attributes/properties/titles/items/anyOf/0/properties/title",
                                                 "type": "string",
                                                 "title": "Title",
-                                                "description": "An explanation about the purpose of this instance."
+                                                "description": "Title of the record."
                                             }
                                         },
                                         "additionalProperties": true
@@ -146,13 +146,13 @@
                             "$id": "#/properties/data/properties/attributes/properties/publisher",
                             "type": "string",
                             "title": "Publisher",
-                            "description": "An explanation about the purpose of this instance."
+                            "description": "Publisher of the record."
                         },
                         "publicationYear": {
                             "$id": "#/properties/data/properties/attributes/properties/publicationYear",
                             "type": "string",
                             "title": "Publication Year",
-                            "description": "An explanation about the purpose of this instance."
+                            "description": "Published year of the record."
                         }
                     },
                     "additionalProperties": true

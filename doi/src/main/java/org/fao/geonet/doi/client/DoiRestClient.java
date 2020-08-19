@@ -4,6 +4,7 @@ import static org.fao.geonet.doi.client.DoiSettings.LOGGER_NAME;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.StringJoiner;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -19,9 +20,12 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.fao.geonet.ApplicationContextHolder;
 import org.fao.geonet.utils.GeonetHttpRequestFactory;
 import org.fao.geonet.utils.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.common.io.CharStreams;
 
@@ -90,8 +94,6 @@ public class DoiRestClient {
 
             ((HttpUriRequest) getMethod).addHeader( new BasicHeader("Content-Type",  "application/vnd.api+json;charset=UTF-8") );
             
-            Log.debug(LOGGER_NAME, "DoiClient >> retrieve, username: " + username + ", password: " + password);
-            
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
             
             getMethod.addHeader(new BasicScheme().authenticate(creds, getMethod, null));
@@ -154,7 +156,6 @@ public class DoiRestClient {
 
             postMethod.setEntity(requestEntity);
             
-            Log.debug(LOGGER_NAME, "DoiClient >> create, username: " + username + ", password: " + password);
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
             
             postMethod.addHeader(new BasicScheme().authenticate(creds, postMethod, null));
@@ -169,10 +170,10 @@ public class DoiRestClient {
             Log.debug(LOGGER_NAME, " status: " + status);
            
             if (status != HttpStatus.SC_CREATED) {
+            	
                 String message = String.format(
                     "Failed to create '%s'. Status is %d. Error is %s.",
-                    url, status,
-                    response.getStatusLine().getReasonPhrase());
+                    url, status, getMessage(EntityUtils.toString(response.getEntity())));
                 
                 Log.info(LOGGER_NAME, message);
 
@@ -223,7 +224,6 @@ public class DoiRestClient {
 
             putMethod.setEntity(requestEntity);
             
-            Log.debug(LOGGER_NAME, "DoiClient >> create, username: " + username + ", password: " + password);
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
             
             putMethod.addHeader(new BasicScheme().authenticate(creds, putMethod, null));
@@ -237,11 +237,11 @@ public class DoiRestClient {
 
             Log.debug(LOGGER_NAME, " status: " + status);
            
-            if (status != HttpStatus.SC_CREATED) {
+            if (status != HttpStatus.SC_OK ) {
+            	
                 String message = String.format(
                     "Failed to create '%s'. Status is %d. Error is %s.",
-                    url, status,
-                    response.getStatusLine().getStatusCode());
+                    url, status, getMessage(EntityUtils.toString(response.getEntity())));
                 
                 Log.info(LOGGER_NAME, message);
 
@@ -264,5 +264,17 @@ public class DoiRestClient {
             IOUtils.closeQuietly(response);
         }
         
+    }
+    
+    private String getMessage(String jsonStr) {
+    	StringJoiner joiner = new StringJoiner(",");
+    	JSONArray arr = new JSONObject(jsonStr).getJSONArray("errors");
+		for (int i = 0; i < arr.length(); ++i) {
+			JSONObject title = arr.getJSONObject(i);
+			
+			joiner.add(title.getString("title"));
+		}
+		
+		return joiner.toString();
     }
 }
