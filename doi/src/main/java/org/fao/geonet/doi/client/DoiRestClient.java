@@ -88,21 +88,17 @@ public class DoiRestClient {
         HttpGet getMethod = null;
 
         try {
-            Log.debug(LOGGER_NAME, "   -- URL: " + url);
+            Log.debug(LOGGER_NAME, " retrieve  -- URL: " + url);
 
             getMethod = new HttpGet(url);
 
             ((HttpUriRequest) getMethod).addHeader( new BasicHeader("Content-Type",  "application/vnd.api+json;charset=UTF-8") );
-            
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
             
             getMethod.addHeader(new BasicScheme().authenticate(creds, getMethod, null));
-            
             response = client.execute(getMethod);
-            
-            int status = response.getStatusLine().getStatusCode();
 
-            Log.debug(LOGGER_NAME, "   -- Request status code: " + status);
+            int status = response.getStatusLine().getStatusCode();
 
             if (status == HttpStatus.SC_OK) {
                 return "Success";
@@ -111,8 +107,6 @@ public class DoiRestClient {
             } else if (status == HttpStatus.SC_NOT_FOUND) {
                 return null; // Not found
             } else {
-                Log.info(LOGGER_NAME, "Retrieve DOI metadata end -- Error: " + response.getStatusLine().getReasonPhrase());
-
                 try(InputStreamReader reader = new InputStreamReader(response.getEntity().getContent())){
                 	throw new DoiClientException( response.getStatusLine().getReasonPhrase() +
                             CharStreams.toString(reader));	
@@ -145,26 +139,20 @@ public class DoiRestClient {
         CloseableHttpResponse response = null;
         
         try {
-        	Log.debug(LOGGER_NAME, "   -- URL: " + url);
+        	Log.debug(LOGGER_NAME, " create  -- URL: " + url);
 
             postMethod = new HttpPost(url);
 
             ((HttpUriRequest) postMethod).addHeader( new BasicHeader("Content-Type",  "application/vnd.api+json;charset=UTF-8") );
 
-            Log.debug(LOGGER_NAME, "  ----- 1 -----");
             StringEntity requestEntity = new StringEntity(body, ContentType.APPLICATION_JSON);
 
             postMethod.setEntity(requestEntity);
             
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-            
             postMethod.addHeader(new BasicScheme().authenticate(creds, postMethod, null));
-          
-            Log.debug(LOGGER_NAME, "  ----- 3 -----");
             response = client.execute(postMethod);
             
-            Log.debug(LOGGER_NAME, " --- response " + response.getStatusLine().getReasonPhrase());
-
             int status = response.getStatusLine().getStatusCode();
 
             Log.debug(LOGGER_NAME, " status: " + status);
@@ -175,8 +163,6 @@ public class DoiRestClient {
                     "Failed to create '%s'. Status is %d. Error is %s.",
                     url, status, getMessage(EntityUtils.toString(response.getEntity())));
                 
-                Log.info(LOGGER_NAME, message);
-
                 throw new DoiClientException(message);
             } else {
             	Log.debug(LOGGER_NAME, String.format(
@@ -213,38 +199,27 @@ public class DoiRestClient {
         
         try {
         	Log.debug(LOGGER_NAME, " DoiRestClient, update  -- URL: " + url);
-        	Log.debug(LOGGER_NAME, " DoiRestClient, update  -- Body: " + body);
 
         	putMethod = new HttpPut(url);
 
             ((HttpUriRequest) putMethod).addHeader( new BasicHeader("Content-Type",  "application/vnd.api+json;charset=UTF-8") );
 
-            Log.debug(LOGGER_NAME, "  ----- 1 -----");
             StringEntity requestEntity = new StringEntity(body, ContentType.APPLICATION_JSON);
-
             putMethod.setEntity(requestEntity);
             
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-            
             putMethod.addHeader(new BasicScheme().authenticate(creds, putMethod, null));
           
-            Log.debug(LOGGER_NAME, "  ----- 3 -----");
             response = client.execute(putMethod);
             
-            Log.debug(LOGGER_NAME, " --- response " + response.getStatusLine().getReasonPhrase());
-
             int status = response.getStatusLine().getStatusCode();
 
-            Log.debug(LOGGER_NAME, " status: " + status);
-           
             if (status != HttpStatus.SC_OK ) {
             	
                 String message = String.format(
                     "Failed to create '%s'. Status is %d. Error is %s.",
                     url, status, getMessage(EntityUtils.toString(response.getEntity())));
                 
-                Log.info(LOGGER_NAME, message);
-
                 throw new DoiClientException(message);
             } else {
             	Log.debug(LOGGER_NAME, String.format(

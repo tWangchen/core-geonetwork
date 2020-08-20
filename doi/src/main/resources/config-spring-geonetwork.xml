@@ -30,9 +30,13 @@
 	">
   <bean id="doiManager"
         class="org.fao.geonet.doi.client.DoiManager"
-        lazy-init="true"/>
+        lazy-init="true">
+        <qualifier value="doiManager" type="org.springframework.beans.factory.annotation.Qualifier"></qualifier>
+  </bean>
         
   <bean id="doiRestManager" 
         class="org.fao.geonet.doi.client.DoiRestManager"
-        lazy-init="true" />
+        lazy-init="true">
+        	<qualifier value="doiManager" type="org.springframework.beans.factory.annotation.Qualifier"></qualifier>
+  </bean>
 </beans>

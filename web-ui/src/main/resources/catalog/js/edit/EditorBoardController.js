@@ -113,9 +113,11 @@
       };
 
       $scope.updateDOI = function(md){
-        
+        var vals = md.DOI.split('/');
+        var doi = vals[vals.length - 2] + '/' + vals[vals.length - 1];
+        console.log(doi);
         var defer = $q.defer();
-        $http.put('../api/records/' + md.eCatId + '/doi/' + md.DOI).then(function(data) {
+        $http.put('../api/records/doi/' + md.eCatId + "?doi=" + doi).then(function(data) {
           $rootScope.$broadcast('StatusUpdated', {
             title: $translate.instant('doiUpdateAction', {title: md.title || md.defaultTitle}),
             timeout: 10
@@ -140,6 +142,7 @@
               title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
               timeout: 500
             });
+            $rootScope.$broadcast('resetSearch');
             defer.resolve(data);
           }, function(error){
             $rootScope.$broadcast('StatusUpdated', {

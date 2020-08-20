@@ -617,7 +617,7 @@
        * Bulk DOI creation
        */
       this.bulkDOICreate = function(bucket){
-        
+        $rootScope.$broadcast('operationOnSelectionStart');
         $http.put('../api/records/doi/bulk?bucket=' + bucket).then(function() {
             console.log('bulk DOI Create....');
             checkDOICreateCompleted();            
@@ -635,6 +635,8 @@
             if (!isCompleted) {
               $timeout(checkDOICreateCompleted, 1000);
             } else {
+              $rootScope.$broadcast('operationOnSelectionStop');
+              $rootScope.$broadcast('resetSearch');
               return $http.get('../api/records/doi/report')
                 .then(function(report) {
                   var holder = document.createElement('div');

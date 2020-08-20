@@ -46,7 +46,7 @@
     
     <xsl:param name="doiPrefix" select="''" />
     <xsl:param name="defaultDoiPrefix" select="'https://dx.doi.org'" />
-    <xsl:param name="url" select="'http://test.pid.geoscience.gov.au/dataset/ga/'" />
+    <xsl:param name="url" select="''" />
     <xsl:param name="doiProtocolRegex" select="'(DOI|WWW:LINK-1.0-http--metadata-URL)'" />
     
     <xsl:variable name="metadata" select="//mdb:MD_Metadata" />
@@ -72,7 +72,7 @@
         "attributes": {
         "id": "<xsl:value-of select="concat($defaultDoiPrefix, '/', $doi)" />",
         "doi": "<xsl:value-of select="$doi" />",
-        "url": "<xsl:value-of select="concat($url, $eCatId)" />",
+        "url": "<xsl:value-of select="$url" />",
         "types": {
         "resourceType": "<xsl:value-of select="concat(upper-case(substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 1, 1)), substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 2))" />"
         },
