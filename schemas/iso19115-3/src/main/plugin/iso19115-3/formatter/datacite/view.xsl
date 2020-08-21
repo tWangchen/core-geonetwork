@@ -321,14 +321,14 @@
       TODO: Define who is the publisher ? Only one allowed.
     -->
 
-    <datacite:publisher>
-      <xsl:for-each select="//cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']">
+	<datacite:publisher>
+      <xsl:for-each select="//cit:CI_Organisation[../parent::cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']]">
         <xsl:if test="position() = 1">
-          <xsl:value-of select="cit:party/cit:CI_Organisation/cit:name/gco:CharacterString"/>
+          <xsl:value-of select="cit:name/gco:CharacterString"/>
         </xsl:if>
       </xsl:for-each>
     </datacite:publisher>
-
+    
     <!--
     The year when the data was or will be made publicly available. In the case of resources such as software or
     dynamic data where there may be multiple releases in one year, include the Date/dateType/ dateInformation property 
