@@ -301,6 +301,11 @@ public abstract class AbstractCoreIntegrationTest extends AbstractSpringDataTest
         final URL resource = AbstractCoreIntegrationTest.class.getResource("kernel/valid-metadata.iso19139.xml");
         return Xml.loadStream(resource.openStream());
     }
+    
+    public Element getSampleMetadata19115Xml() throws IOException, JDOMException {
+        final URL resource = AbstractCoreIntegrationTest.class.getResource("kernel/doi/valid-metadata-iso19115-3.xml");
+        return Xml.loadStream(resource.openStream());
+    }
 
     /**
      * @param uuidAction Either: Params.GENERATE_UUID, Params.NOTHING, or Params.OVERWRITE

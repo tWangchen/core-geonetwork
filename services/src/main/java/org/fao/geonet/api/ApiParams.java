@@ -36,6 +36,7 @@ public class ApiParams {
 
 
     public static final String API_PARAM_RECORD_UUID = "Record UUID.";
+    public static final String API_PARAM_RECORD_ECATID = "Record eCatId.";
     public static final String API_PARAM_RECORD_UUIDS = "One or more record UUIDs";
     public static final String API_PARAM_RECORD_UUIDS_OR_SELECTION = "Record UUIDs. If null current selection is used.";
     public static final String API_PARAM_CLEAR_ALL_BEFORE_INSERT = "Clear all before adding new ones";

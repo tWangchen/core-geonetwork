@@ -731,6 +731,7 @@ public final class Geonet {
         public static final String SOURCE = "_source";
         public static final String IS_TEMPLATE = "_isTemplate";
         public static final String UUID = "_uuid";
+        public static final String ECAT_ID = "eCatId";
         public static final String TITLE = "_title";
         public static final String IS_HARVESTED = "_isHarvested";
         public static final String OWNER = "_owner";

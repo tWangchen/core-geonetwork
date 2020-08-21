@@ -1,0 +1,165 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "DOI JSON Schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "required": [
+        "data"
+    ],
+    "properties": {
+        "data": {
+            "$id": "#/properties/data",
+            "type": "object",
+            "title": "The data schema",
+            "description": "Required Data.",
+            "default": {},
+            "required": [
+                "type",
+                "attributes"
+            ],
+            "properties": {
+                "type": {
+                    "$id": "#/properties/data/properties/type",
+                    "type": "string",
+                    "title": "The type schema",
+                    "description": "Type of the property.",
+                    "default": "dois"
+                },
+                "attributes": {
+                    "$id": "#/properties/data/properties/attributes",
+                    "type": "object",
+                    "title": "Attributes with minimum fields required (identifier, creators, titles, publisher, publicationYear, resourceType).",
+                    "description": "Attributes with minimum fields required (identifier, creators, titles, publisher, publicationYear, resourceType).",
+                    "default": {},
+                    "required": [
+                        "id",
+                        "doi",
+                        "url",
+                        "types",
+                        "creators",
+                        "titles",
+                        "publisher",
+                        "publicationYear"
+                    ],
+                    "properties": {
+                        "id": {
+                            "$id": "#/properties/data/properties/attributes/properties/id",
+                            "type": "string",
+                            "title": "The id schema",
+                            "description": "id of the record, for ex: https://dx.doi.org/10.80386/{eCatId}."
+                        },
+                        "doi": {
+                            "$id": "#/properties/data/properties/attributes/properties/doi",
+                            "type": "string",
+                            "title": "The doi schema",
+                            "description": "The doi schema"                            
+                        },
+                        "url": {
+                            "$id": "#/properties/data/properties/attributes/properties/url",
+                            "type": "string",
+                            "title": "Url",
+                            "description": "Url, landing page of the record"
+                        },
+                        "types": {
+                            "$id": "#/properties/data/properties/attributes/properties/types",
+                            "type": "object",
+                            "title": "Resource Types",
+                            "description": "Resource Types of the record",
+                            "required": [
+                                "resourceType"
+                            ],
+                            "properties": {
+                                "resourceType": {
+                                    "$id": "#/properties/data/properties/attributes/properties/types/properties/resourceType",
+                                    "type": "string",
+                                    "title": "The resourceType schema",
+                                    "description": "Resource Type of the record"
+                                }
+                            },
+                            "additionalProperties": true
+                        },
+                        "creators": {
+                            "default": [],
+                            "description": "Creators of the record",
+                            "title": "Creators",
+                            "minItems": 1,
+                            "additionalItems": true,
+                            "items": {
+                                "$id": "#/properties/data/properties/attributes/properties/creators/items",
+                                "anyOf": [
+                                    {
+                                        "$id": "#/properties/data/properties/attributes/properties/creators/items/anyOf/0",
+                                        "type": "object",
+                                        "title": "Creator",
+                                        "description": "One of the creator of the record.",
+                                        "required": [
+                                            "name",
+                                            "nameType"
+                                         ],
+                                        "properties": {
+                                            "name": {
+                                                "$id": "#/properties/data/properties/attributes/properties/creators/items/anyOf/0/properties/name",
+                                                "type": "string",
+                                                "title": "Creator Name",
+                                                "description": "Name of the Creator."
+                                            }                                            
+                                        },
+                                        "additionalProperties": true
+                                    }
+                                ]
+                            }
+                        },
+                        "titles": {
+                            "$id": "#/properties/data/properties/attributes/properties/titles",
+                            "type": "array",
+                            "title": "Titles",
+                            "description": "Given titles of the record.",
+                            "additionalItems": true,
+                            "items": {
+                                "$id": "#/properties/data/properties/attributes/properties/titles/items",
+                                "anyOf": [
+                                    {
+                                        "$id": "#/properties/data/properties/attributes/properties/titles/items/anyOf/0",
+                                        "type": "object",
+                                        "title": "Title",
+                                        "description": "Minimum one title required for the record.",
+                                        "default": {},
+                                        "required": [
+                                            "title"
+                                        ],
+                                        "properties": {
+                                            "title": {
+                                                "$id": "#/properties/data/properties/attributes/properties/titles/items/anyOf/0/properties/title",
+                                                "type": "string",
+                                                "title": "Title",
+                                                "description": "Title of the record."
+                                            }
+                                        },
+                                        "additionalProperties": true
+                                    }
+                                ]
+                            }
+                        },
+                        "publisher": {
+                            "$id": "#/properties/data/properties/attributes/properties/publisher",
+                            "type": "string",
+                            "title": "Publisher",
+                            "description": "Publisher of the record."
+                        },
+                        "publicationYear": {
+                            "$id": "#/properties/data/properties/attributes/properties/publicationYear",
+                            "type": "string",
+                            "title": "Publication Year",
+                            "description": "Published year of the record."
+                        }
+                    },
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}

@@ -407,6 +407,12 @@ public final class Xml {
         transform(xml, styleSheetPath, resStream, map);
         out.flush();
     }
+    
+    public static void transformXml(Element xml, Path styleSheetPath, OutputStream out, Map<String, Object> params) throws Exception {
+        StreamResult resStream = new StreamResult(out);
+        transform(xml, styleSheetPath, resStream, params);
+        out.flush();
+    }
 
     //--------------------------------------------------------------------------
 

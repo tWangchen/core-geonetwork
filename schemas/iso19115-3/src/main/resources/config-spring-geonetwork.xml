@@ -18,6 +18,12 @@
                       cit:linkage/gco:CharacterString = '{{url}}']
                     /cit:applicationProfile/gco:CharacterString/text()"/>
         </bean>
+        <bean class="org.fao.geonet.kernel.schema.SavedQuery">
+          <property name="id" value="doi-get"/>
+          <property name="xpath"
+                    value="//mdb:identificationInfo/*/mri:citation/*/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString ='Digital Object Identifier']/mcc:code/gco:CharacterString"/>
+                    
+        </bean>
       </list>
     </property>
   </bean>
