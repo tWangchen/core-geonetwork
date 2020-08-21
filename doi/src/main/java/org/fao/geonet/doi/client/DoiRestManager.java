@@ -142,6 +142,7 @@ public class DoiRestManager extends DoiManager{
 		conditions.put(DoiConditions.RECORD_IS_PUBLIC, true);
 		conditions.put(DoiConditions.STANDARD_SUPPORT, true);
 
+		checkPreConditionsOnDataCite(metadata, doiInfo.get(DOI));
 		// ** Convert to DataCite format
 		String dataciteFormatMetadata = dataciteJSON == null
 				? convertXmlToDataCiteFormat(metadata.getDataInfo().getSchemaId(), metadata.getXmlData(false), doiInfo)
@@ -152,7 +153,16 @@ public class DoiRestManager extends DoiManager{
 		return conditions;
 	}
 
-    
+	private void checkPreConditionsOnDataCite(AbstractMetadata metadata, String doi) throws DoiClientException {
+		final String doiResponse = client.retrieveDoi(doi);
+        if (doiResponse != null) {
+            throw new DoiClientException(String.format(
+                "Record '%s' looks to be already published on DataCite on DOI '%s'." +
+                    "If the DOI is not correct, remove it from the record and ask for a new one.",
+                metadata.getUuid(), doi));
+        }
+        
+	}
 	/**
 	 * Check conditions on DataCite side.
 	 * 
@@ -188,17 +198,6 @@ public class DoiRestManager extends DoiManager{
 					+ "Attributes with minimum fields required (identifier, creators, titles, publisher, publicationYear, resourceType).", metadata.getUuid()));
 		}
 		
-		// * MDS / DOI does not exist already
-        // curl -i --user username:password https://api.test.datacite.org/doi/10.5072/GN
-        // Return 404
-        final String doiResponse = client.retrieveDoi(doi);
-        if (doiResponse != null) {
-            throw new DoiClientException(String.format(
-                "Record '%s' looks to be already published on DataCite on DOI '%s'." +
-                    "If the DOI is not correct, remove it from the record and ask for a new one.",
-                metadata.getUuid(), doi));
-        }
-        
 		
 	}
 

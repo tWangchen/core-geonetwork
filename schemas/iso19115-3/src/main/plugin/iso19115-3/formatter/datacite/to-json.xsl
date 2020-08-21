@@ -55,7 +55,7 @@
     <!-- TODO: Convert language code eng > en_US ? -->
     <xsl:variable name="metadataLanguage" select="//mdb:MD_Metadata/mdb:defaultLocale/*/lan:language/*/@codeListValue" />
     
-    <xsl:variable name="creatorRoles" select="'pointOfContact', 'custodian'" />
+    <xsl:variable name="creatorRoles" select="'pointOfContact', 'custodian', 'author', 'coAuthor'" />
     <xsl:variable name="authorRoles" select="'author', 'coAuthor'" />
     
     <xsl:variable name="dateMapping">
@@ -77,18 +77,23 @@
         "resourceType": "<xsl:value-of select="concat(upper-case(substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 1, 1)), substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 2))" />"
         },
         "creators": [
-        <xsl:for-each select="mdb:identificationInfo/*/mri:pointOfContact/*">
+        <xsl:variable name="creatorRolesCount" select="count(mdb:identificationInfo/*/mri:pointOfContact/*/cit:role/*/@codeListValue = ($creatorRoles) and exists(mdb:identificationInfo/*/mri:pointOfContact/*/cit:party/cit:CI_Individual))"/>
+        <xsl:message>Creator Role count: <xsl:value-of select="$creatorRolesCount"/></xsl:message>
+        
+        <xsl:for-each select="mdb:identificationInfo/*/mri:pointOfContact/* | mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*">
             <xsl:if test="cit:role/*/@codeListValue = ($creatorRoles) and exists(cit:party/cit:CI_Individual)">
                 {
                 <xsl:variable name="name" select="cit:party/cit:CI_Individual/cit:name/*/text()" />
                 <xsl:call-template name="creator">
                     <xsl:with-param name="name" select="$name" />
                 </xsl:call-template>
-                },
+                }
+                <xsl:if test="position() != last()">,</xsl:if>
             </xsl:if>
         </xsl:for-each>
-        
-        <xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*">
+       
+        <!--<xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*">
+           
             <xsl:if
                 test="cit:role/*/@codeListValue = ($authorRoles) and exists(cit:party/cit:CI_Individual)">
                 {
@@ -100,7 +105,7 @@
                 <xsl:if test="position() != last()">,</xsl:if>
             </xsl:if>
             
-        </xsl:for-each>
+        </xsl:for-each>-->
         ],
         "titles": [
         <xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:title">
@@ -110,9 +115,9 @@
             <xsl:if test="position() != last()">,</xsl:if>
         </xsl:for-each>
         ],
-        <xsl:for-each select="//cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']">
+        <xsl:for-each select="//cit:CI_Organisation[../parent::cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']]">
             <xsl:if test="position() = 1">
-            "publisher":"<xsl:value-of select="cit:party/cit:CI_Organisation/cit:name/gco:CharacterString" />",
+            "publisher":"<xsl:value-of select="cit:name/gco:CharacterString" />",
             </xsl:if>
         </xsl:for-each>
         "subjects": [

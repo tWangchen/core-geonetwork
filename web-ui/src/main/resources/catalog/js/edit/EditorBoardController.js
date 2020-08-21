@@ -132,6 +132,7 @@
           });
           defer.reject(error);
         });
+        return defer.promise;
       };
 
       $scope.createDOI = function(md){
