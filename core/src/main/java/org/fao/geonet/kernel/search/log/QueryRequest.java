@@ -28,7 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.fao.geonet.ApplicationContextHolder;
 import org.fao.geonet.constants.Geonet;
+import org.fao.geonet.domain.MetadataIndexedField;
 import org.fao.geonet.es.EsClient;
+import org.fao.geonet.kernel.ECatOperationManager;
 import org.fao.geonet.utils.Log;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A bean representing a query request. Performs the mapping with the database.
@@ -48,6 +52,11 @@ import java.util.UUID;
  * @author nicolas
  */
 public class QueryRequest {
+	
+	ECatOperationManager eCatManager;
+	
+	Pattern pattern = Pattern.compile("\\+eCatId:(.*?)\\s");
+	
     /**
      * the date format when inserting date into database
      */
@@ -360,6 +369,20 @@ public class QueryRequest {
             doc.put("hits", this.hits);
             doc.put("language", this.language);
             doc.put("query", this.luceneQuery);
+            Matcher matcher = pattern.matcher(this.luceneQuery);
+    		if (matcher.find()) {
+    			String eCatId = matcher.group(1);
+    			if(eCatManager == null)
+    				eCatManager = ApplicationContextHolder.get().getBean(ECatOperationManager.class);
+    		
+    			MetadataIndexedField field = eCatManager.getMetadataIndexedFieldsFromECatId(eCatId);
+    			doc.put("eCatId", field.geteCatId());
+    			doc.put("uuid", field.getUuid());
+    			doc.put("pid", field.getPid());
+    			doc.put("author", field.getAuthors());
+    			doc.put("keyword", field.getKeywords());
+    		}
+    		
             doc.put("recordType", this.mdType.name());
             doc.put("sortBy", this.sortBy);
             doc.put("spatialFilter", this.spatialFilter);
