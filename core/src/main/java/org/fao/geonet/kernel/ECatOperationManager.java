@@ -1,16 +1,23 @@
 package org.fao.geonet.kernel;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.domain.Metadata;
+import org.fao.geonet.domain.MetadataIndexedField;
 import org.fao.geonet.exceptions.BatchEditException;
 import org.fao.geonet.kernel.search.IndexAndTaxonomy;
+import org.fao.geonet.kernel.search.IndexFields;
 import org.fao.geonet.kernel.search.LuceneConfig;
 import org.fao.geonet.kernel.search.LuceneQueryBuilder;
 import org.fao.geonet.kernel.search.LuceneQueryInput;
@@ -56,7 +63,6 @@ public class ECatOperationManager {
 			Document doc = getLuceneTopDocs(element, Geonet.IndexFieldNames.UUID);
 			
 			String uuid = doc.get(Geonet.IndexFieldNames.UUID);
-			Log.debug(Geonet.SEARCH_ENGINE, "ECatOperationManager >> getMetadataByLuceneSearch --> uuid: " + uuid);
 			
 			if (uuid != null) {
 				Metadata md = mdRepo.findOneByUuid(uuid);
@@ -68,6 +74,46 @@ public class ECatOperationManager {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * Search metadata using lucene index
+	 * @param context
+	 * @param srvContext
+	 * @param request
+	 * @return
+	 * @throws JDOMException 
+	 * @throws IOException 
+	 * @throws BatchEditException
+	 */
+	public MetadataIndexedField getMetadataIndexedFieldsFromECatId(String eCatId) throws Exception  {
+	
+		Element element = Xml
+				.loadString("<request><isAdmin>true</isAdmin><_isTemplate>n</_isTemplate><eCatId>"
+						+ eCatId + "</eCatId><fast>index</fast></request>", false);
+		
+		try {
+			
+			Document doc = getLuceneTopDocs(element, IndexFields.UUID, IndexFields.KEYWORD, IndexFields.PID, IndexFields.AUTHOR);
+			
+			String uuid = doc.get(IndexFields.UUID).trim();
+			String pid = doc.get(IndexFields.PID).trim();
+			String authors = Arrays.asList(doc.getFields(IndexFields.AUTHOR)).stream().map(IndexableField::stringValue).collect(Collectors.joining(", "));
+			String keywords = Arrays.asList(doc.getFields(IndexFields.KEYWORD)).stream().map(IndexableField::stringValue).collect(Collectors.joining(", "));
+			
+			MetadataIndexedField indexField = new MetadataIndexedField();
+			indexField.setUuid(uuid);
+			indexField.seteCatId(eCatId);
+			indexField.setAuthors(authors);
+			indexField.setKeywords(keywords);
+			indexField.setPid(pid);
+			
+			return indexField;
+			
+
+		} catch (Exception e) {
+			throw new Exception("failed to get MetadataIndexedFields using lucene search" + e.getMessage());
+		}
 	}
 	
 	/**
@@ -92,8 +138,6 @@ public class ECatOperationManager {
 			Document doc = getLuceneTopDocs(element, Geonet.IndexFieldNames.ECAT_ID);
 			String eCatId = doc.get(Geonet.IndexFieldNames.ECAT_ID);
 			
-			Log.debug(Geonet.SEARCH_ENGINE, "ECatOperationManager >> getECatIdFromUUID --> eCatId: " + eCatId);
-			
 			return eCatId;
 
 		} catch (Exception e) {
@@ -103,7 +147,7 @@ public class ECatOperationManager {
 		
 	}
 	
-	private Document getLuceneTopDocs(Element element, String fieldVisitor) throws IOException {
+	private Document getLuceneTopDocs(Element element, String... fieldVisitor) throws IOException {
 		IndexAndTaxonomy indexAndTaxonomy = null;
 		try {
 			indexAndTaxonomy = this.tracker.acquire("eng", -1);

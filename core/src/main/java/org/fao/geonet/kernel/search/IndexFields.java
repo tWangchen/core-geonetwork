@@ -77,6 +77,8 @@ public class IndexFields {
     public static final String INSPIRE_THEME = "inspiretheme";
     public static final String IS_TEMPLATE = "_isTemplate";
     public static final String KEYWORD = "keyword";
+    public static final String AUTHOR = "author";
+    public static final String PID = "PID";
     public static final String METADATA_STANDARD_NAME = "metadataStandardName";
     public static final String NORTH = "northBL";
     public static final String OPERATESON = "operatesOn";
