@@ -16,6 +16,58 @@
                 xmlns:gn-fn-metadata="http://geonetwork-opensource.org/xsl/functions/metadata"
                 exclude-result-prefixes="#all">
 
+  <xsl:template mode="mode-iso19115-3" priority="2000"
+                match="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty|
+                  mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact|
+                  mdb:contact
+">
+
+    <xsl:param name="schema" select="$schema" required="no"/>
+    <xsl:param name="labels" select="$labels" required="no"/>
+
+    <xsl:variable name="xpath" select="gn-fn-metadata:getXPath(.)"/>
+    <xsl:variable name="isoType" select="if (../@gco:isoType) then ../@gco:isoType else ''"/>
+
+    <xsl:variable name="attributes">
+      <!-- Create form for all existing attribute (not in gn namespace)
+      and all non existing attributes not already present. -->
+      <xsl:apply-templates mode="render-for-field-for-attribute"
+                           select="
+        @*|
+        gn:attribute[not(@name = parent::node()/@*/name())]">
+        <xsl:with-param name="ref" select="gn:element/@ref"/>
+        <xsl:with-param name="insertRef" select="gn:element/@ref"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+
+    <xsl:variable name="errors">
+      <xsl:if test="$showValidationErrors">
+        <xsl:call-template name="get-errors"/>
+      </xsl:if>
+    </xsl:variable>
+
+
+    <xsl:call-template name="render-boxed-element">
+      <xsl:with-param name="label"
+                      select="gn-fn-metadata:getLabel($schema, name(), $labels, name(..), $isoType, $xpath)/label"/>
+      <xsl:with-param name="editInfo" select="gn:element"/>
+      <xsl:with-param name="errors" select="$errors"/>
+      <xsl:with-param name="cls" select="local-name()"/>
+      <xsl:with-param name="xpath" select="$xpath"/>
+      <xsl:with-param name="attributesSnippet" select="$attributes"/>
+      <xsl:with-param name="subTreeSnippet">
+        <!-- Process child of those element. Propagate schema
+        and labels to all sub-children (eg. needed like iso19110 elements
+        contains gmd:* child. -->
+        <xsl:apply-templates mode="mode-iso19115-3" select="*">
+          <xsl:with-param name="schema" select="$schema"/>
+          <xsl:with-param name="labels" select="$labels"/>
+          <xsl:with-param name="isDisabled" select="true()" />
+        </xsl:apply-templates>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
   <!--
   ```
    <cit:phone>
@@ -35,10 +87,12 @@
   <xsl:template mode="mode-iso19115-3" match="*[cit:CI_Telephone]" priority="2000">
     <xsl:param name="schema" select="$schema" required="no"/>
     <xsl:param name="labels" select="$labels" required="no"/>
+    <xsl:param name="isDisabled" required="no" />
 
     <xsl:apply-templates mode="mode-iso19115-3" select="*/cit:*">
       <xsl:with-param name="schema" select="$schema"/>
       <xsl:with-param name="labels" select="$labels"/>
+      <xsl:with-param name="isDisabled" select="$isDisabled" />
     </xsl:apply-templates>
   </xsl:template>
 
@@ -51,6 +105,7 @@
                 match="cit:number[parent::node()/name() = 'cit:CI_Telephone']">
     <xsl:param name="schema" select="$schema" required="no"/>
     <xsl:param name="labels" select="$labels" required="no"/>
+    <xsl:param name="isDisabled" required="no"/>
 
     <xsl:variable name="labelConfig"
                   select="gn-fn-metadata:getLabel($schema, name(), $labels)"/>
@@ -73,7 +128,7 @@
         <xsl:call-template name="render-codelist-as-select">
           <xsl:with-param name="listOfValues" select="$codelist"/>
           <xsl:with-param name="lang" select="$lang"/>
-          <xsl:with-param name="isDisabled" select="ancestor-or-self::node()[@xlink:href]"/>
+          <xsl:with-param name="isDisabled" select="$isDisabled or ancestor-or-self::node()[@xlink:href]"/>
           <xsl:with-param name="elementRef" select="../cit:numberType/cit:CI_TelephoneTypeCode/gn:element/@ref"/>
           <xsl:with-param name="isRequired" select="true()"/>
           <xsl:with-param name="hidden" select="false()"/>
@@ -93,7 +148,7 @@
                type="tel"
                name="{concat('_', gco:CharacterString/gn:element/@ref)}"
                value="{normalize-space(gco:CharacterString)}">
-          <xsl:if test="ancestor-or-self::node()[@xlink:href]">
+          <xsl:if test="$isDisabled or ancestor-or-self::node()[@xlink:href]">
             <xsl:attribute name="disabled" select="'disabled'"/>
           </xsl:if>
         </input>
@@ -112,12 +167,16 @@
         </div>
       </div>
       <div class="col-sm-1 gn-control">
-        <xsl:call-template name="render-form-field-control-remove">
-          <xsl:with-param name="editInfo" select="../gn:element"/>
-          <xsl:with-param name="parentEditInfo" select="../../gn:element"/>
-        </xsl:call-template>
+        <xsl:if test="not($isDisabled)">
+          <xsl:call-template name="render-form-field-control-remove">
+            <xsl:with-param name="editInfo" select="../gn:element"/>
+            <xsl:with-param name="parentEditInfo" select="../../gn:element"/>
+          </xsl:call-template>
+        </xsl:if>
       </div>
     </div>
   </xsl:template>
+
+
 
 </xsl:stylesheet>

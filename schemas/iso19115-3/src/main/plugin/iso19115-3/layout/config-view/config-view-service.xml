@@ -8,7 +8,7 @@
 	xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/1.0"
 	xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
 	xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0">
-	
+
 	<sidePanel>
         <directive data-gn-validation-report=""/>
         <directive data-gn-onlinesrc-list=""/>
@@ -19,18 +19,18 @@
         <!-- <directive data-gn-suggestion-list=""/>
         <directive data-gn-need-help="user-guide/describing-information/creating-metadata.html"/> -->
     </sidePanel>
-    
+
 	<tab id="resourceDescription" default="true" mode="flat">
 		<section name=" ">
 			<field xpath="/mdb:MD_Metadata/mdb:alternativeMetadataReference" />
-			
-			<field name="PID" 
+
+			<field name="PID"
 			xpath="/mdb:MD_Metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:identifier[1]/mcc:MD_Identifier/mcc:code" />
-						
-			<field name="DOI" 
+
+			<field name="DOI"
 			xpath="/mdb:MD_Metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:identifier[2]/mcc:MD_Identifier/mcc:code" />
-			
-			
+
+
 			<field
 				xpath="/mdb:MD_Metadata/mdb:identificationInfo/srv:SV_ServiceIdentification/mri:citation/cit:CI_Citation/cit:title" />
 			<field
@@ -201,7 +201,7 @@
 	<tab id="distribution" mode="flat">
 		<section name=" ">
 			<field xpath="/mdb:MD_Metadata/mdb:distributionInfo" />
-			<!-- <text ref="useAssociatedResources" if="count(mdb:MD_Metadata/mdb:distributionInfo/*) 
+			<!-- <text ref="useAssociatedResources" if="count(mdb:MD_Metadata/mdb:distributionInfo/*)
 				= 0"/> -->
 			<text ref="useAssociatedResources" />
 		</section>
@@ -212,7 +212,6 @@
 	<flatModeExceptions>
 		<for name="cit:date" />
 		<for name="mri:descriptiveKeywords" />
-		<for name="cit:party" />
 		<for name="cit:CI_Individual" />
 		<for name="cit:CI_Organisation" />
 		<for name="mrl:LI_Lineage" />
