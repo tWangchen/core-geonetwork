@@ -55,8 +55,14 @@
     <!-- TODO: Convert language code eng > en_US ? -->
     <xsl:variable name="metadataLanguage" select="//mdb:MD_Metadata/mdb:defaultLocale/*/lan:language/*/@codeListValue" />
     
-    <xsl:variable name="creatorRoles" select="'pointOfContact', 'custodian', 'author', 'coAuthor'" />
+    
     <xsl:variable name="authorRoles" select="'author', 'coAuthor'" />
+    <xsl:variable name="pocRoles" select="'pointOfContact'" />
+    <xsl:variable name="otherRoles" select="'custodian','publisher'" />
+    
+    <xsl:variable name="authors" select="/mdb:MD_Metadata/mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*/cit:party/cit:CI_Individual[../parent::cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = ($authorRoles)]]"/>
+    <xsl:variable name="pocs" select="/mdb:MD_Metadata/mdb:identificationInfo/*/mri:pointOfContact/*/cit:party/cit:CI_Individual[../parent::cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = ($pocRoles)]]"/>
+    <xsl:variable name="others" select="/mdb:MD_Metadata/mdb:identificationInfo/*/mri:pointOfContact/*/cit:party/cit:CI_Individual[../parent::cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = ($otherRoles)]]"/>
     
     <xsl:variable name="dateMapping">
         <entry key="creation">Created</entry>
@@ -69,6 +75,7 @@
         {
         "data": {
         "type": "dois",
+        "state": "findable",
         "attributes": {
         "id": "<xsl:value-of select="concat($defaultDoiPrefix, '/', $doi)" />",
         "doi": "<xsl:value-of select="$doi" />",
@@ -77,39 +84,50 @@
         "resourceType": "<xsl:value-of select="concat(upper-case(substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 1, 1)), substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 2))" />"
         },
         "creators": [
-        <xsl:variable name="creatorRolesCount" select="count(mdb:identificationInfo/*/mri:pointOfContact/*/cit:role/*/@codeListValue = ($creatorRoles) and exists(mdb:identificationInfo/*/mri:pointOfContact/*/cit:party/cit:CI_Individual))"/>
-        <xsl:message>Creator Role count: <xsl:value-of select="$creatorRolesCount"/></xsl:message>
         
-        <xsl:for-each select="mdb:identificationInfo/*/mri:pointOfContact/* | mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*">
-            <xsl:if test="cit:role/*/@codeListValue = ($creatorRoles) and exists(cit:party/cit:CI_Individual)">
-                {
-                <xsl:variable name="name" select="cit:party/cit:CI_Individual/cit:name/*/text()" />
-                <xsl:call-template name="creator">
-                    <xsl:with-param name="name" select="$name" />
-                </xsl:call-template>
-                }
-                <xsl:if test="position() != last()">,</xsl:if>
-            </xsl:if>
-        </xsl:for-each>
-       
-        <!--<xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*">
-           
-            <xsl:if
-                test="cit:role/*/@codeListValue = ($authorRoles) and exists(cit:party/cit:CI_Individual)">
-                {
-                <xsl:variable name="name" select="cit:party/cit:CI_Individual/cit:name/*/text()" />
-                <xsl:call-template name="creator">
-                    <xsl:with-param name="name" select="$name" />
-                </xsl:call-template>
-                }
-                <xsl:if test="position() != last()">,</xsl:if>
-            </xsl:if>
-            
-        </xsl:for-each>-->
+        <xsl:choose>
+            <xsl:when test="count($authors) > 0">
+                <xsl:for-each select="$authors">
+                    {
+                    <xsl:variable name="name" select="cit:name/*/text()" />
+                    <xsl:call-template name="creator">
+                        <xsl:with-param name="name" select="$name" />
+                    </xsl:call-template>
+                    }
+                    <xsl:if test="position() != last()">,</xsl:if>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:when test="count($pocs) > 0">
+                <xsl:for-each select="$pocs">
+                    {
+                    <xsl:variable name="name" select="cit:name/*/text()" />
+                    <xsl:call-template name="creator">
+                        <xsl:with-param name="name" select="$name" />
+                    </xsl:call-template>
+                    }
+                    <xsl:if test="position() != last()">,</xsl:if>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:for-each select="$others"> 
+                    { 
+                    <xsl:variable name="name" select="cit:name/*/text()"/>
+                    <xsl:call-template name="creator">
+                        <xsl:with-param name="name" select="$name"/>
+                    </xsl:call-template> 
+                    } 
+                    <xsl:if test="position() != last()">,</xsl:if>
+                </xsl:for-each>
+            </xsl:otherwise>
+        </xsl:choose>
         ],
         "titles": [
         <xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:title">
             {
+            "lang": "en",
+            <xsl:if test="../cit:alternateTitle">
+            "titleType":"<xsl:value-of select="../cit:alternateTitle/gco:CharacterString"/>",   
+            </xsl:if>
             "title": "<xsl:value-of select="gco:CharacterString" />"
             }
             <xsl:if test="position() != last()">,</xsl:if>
@@ -125,8 +143,14 @@
             <xsl:for-each select="mdb:identificationInfo/*/mri:descriptiveKeywords/*/mri:keyword">
                 {
                 <xsl:variable name="thesaurusTitle" select="../mri:thesaurusName/*/cit:title" />
-                    "subject":"<xsl:value-of select="gco:CharacterString" />",
-                    "subjectScheme": "<xsl:value-of select="normalize-space($thesaurusTitle/(gco:CharacterString | gcx:Anchor)/text()[. != ''])" />"
+                "subject":"<xsl:value-of select="gco:CharacterString" />",
+                <xsl:if test="gcx:Anchor/@xlink:href">
+                    "valueUri": "<xsl:value-of select="gcx:Anchor/@xlink:href"/>",
+                </xsl:if>
+                <xsl:if test="$thesaurusTitle/gcx:Anchor/@xlink:href">
+                    "schemeURI": "<xsl:value-of select="$thesaurusTitle/gcx:Anchor/@xlink:href"/>",
+                </xsl:if>
+                "subjectScheme": "<xsl:value-of select="normalize-space($thesaurusTitle/(gco:CharacterString | gcx:Anchor)/text()[. != ''])" />"
                 }
                 <xsl:if test="position() != last()">,</xsl:if>
             </xsl:for-each>
@@ -160,6 +184,7 @@
         
         <xsl:for-each select="mdb:identificationInfo/*/mri:abstract">
             {
+            "lang": "en",
             "description": "<xsl:value-of select="gco:CharacterString" />",
             "descriptionType": "Abstract"
             }
