@@ -156,7 +156,74 @@
                    <gco:CharacterString>Geoscience Australia Persistent Identifier</gco:CharacterString>
 				</mcc:codeSpace>
 			</mcc:MD_Identifier>
-			</cit:identifier>			
+			</cit:identifier>
+                   <cit:citedResponsibleParty>
+                  <cit:CI_Responsibility>
+                     <cit:role>
+                        <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="publisher"/>
+                     </cit:role>
+                     <cit:party>
+                        <cit:CI_Organisation>
+                           <cit:name>
+                              <gco:CharacterString>Commonwealth of Australia (Geoscience Australia)</gco:CharacterString>
+                           </cit:name>
+                           <cit:contactInfo>
+                              <cit:CI_Contact>
+                                 <cit:phone>
+                                    <cit:CI_Telephone>
+                                       <cit:number>
+                                          <gco:CharacterString>1800 800 173</gco:CharacterString>
+                                       </cit:number>
+                                       <cit:numberType>
+                                          <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="voice"/>
+                                       </cit:numberType>
+                                    </cit:CI_Telephone>
+                                 </cit:phone>
+                                 <cit:phone>
+                                    <cit:CI_Telephone>
+                                       <cit:number>
+                                          <gco:CharacterString>02 6249 9960</gco:CharacterString>
+                                       </cit:number>
+                                       <cit:numberType>
+                                          <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="facsimile"/>
+                                       </cit:numberType>
+                                    </cit:CI_Telephone>
+                                 </cit:phone>
+                                 <cit:address>
+                                    <cit:CI_Address>
+                                       <cit:deliveryPoint>
+                                          <gco:CharacterString>Cnr Jerrabomberra Ave and Hindmarsh Dr GPO Box 378</gco:CharacterString>
+                                       </cit:deliveryPoint>
+                                       <cit:city>
+                                          <gco:CharacterString>Canberra</gco:CharacterString>
+                                       </cit:city>
+                                       <cit:administrativeArea>
+                                          <gco:CharacterString>ACT</gco:CharacterString>
+                                       </cit:administrativeArea>
+                                       <cit:postalCode>
+                                          <gco:CharacterString>2601</gco:CharacterString>
+                                       </cit:postalCode>
+                                       <cit:country>
+                                          <gco:CharacterString>Australia</gco:CharacterString>
+                                       </cit:country>
+                                       <cit:electronicMailAddress>
+                                          <gco:CharacterString>clientservices@ga.gov.au</gco:CharacterString>
+                                       </cit:electronicMailAddress>
+                                    </cit:CI_Address>
+                                 </cit:address>
+                              </cit:CI_Contact>
+                           </cit:contactInfo>
+                           <cit:individual>
+                              <cit:CI_Individual>
+                                 <cit:positionName>
+                                    <gco:CharacterString>Manager Client Services</gco:CharacterString>
+                                 </cit:positionName>
+                              </cit:CI_Individual>
+                           </cit:individual>
+                        </cit:CI_Organisation>
+                     </cit:party>
+                  </cit:CI_Responsibility>
+               </cit:citedResponsibleParty> 
 		<cit:series>
 			<cit:CI_Series>
         		<cit:name>
