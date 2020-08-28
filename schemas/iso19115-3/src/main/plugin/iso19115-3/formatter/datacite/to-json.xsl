@@ -133,7 +133,7 @@
             <xsl:if test="position() != last()">,</xsl:if>
         </xsl:for-each>
         ],
-        <xsl:for-each select="//cit:CI_Organisation[../parent::cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']]">
+        <xsl:for-each select="mdb:identificationInfo/*/mri:citation/*/cit:citedResponsibleParty/*/cit:party/cit:CI_Organisation[../parent::cit:CI_Responsibility[cit:role/*/@codeListValue = 'publisher']]">
             <xsl:if test="position() = 1">
             "publisher":"<xsl:value-of select="cit:name/gco:CharacterString" />",
             </xsl:if>

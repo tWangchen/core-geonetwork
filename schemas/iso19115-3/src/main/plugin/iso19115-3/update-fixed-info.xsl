@@ -219,7 +219,7 @@
 			</xsl:choose>
      
 		 	<!-- Now process all other alternativeMetadataReference elements -->
-      <xsl:apply-templates select="mdb:alternativeMetadataReference[cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:codeSpace/gco:CharacterString!='eCatId']"/>
+      <!-- <xsl:apply-templates select="mdb:alternativeMetadataReference[cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:codeSpace/gco:CharacterString!='eCatId']"/> -->
       <!--<xsl:apply-templates select="mdb:alternativeMetadataReference"/>-->
       <xsl:apply-templates select="mdb:otherLocale"/>
       <xsl:apply-templates select="mdb:metadataLinkage"/>
