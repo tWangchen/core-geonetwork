@@ -75,13 +75,14 @@
         {
         "data": {
         "type": "dois",
-        "state": "findable",
         "attributes": {
         "id": "<xsl:value-of select="concat($defaultDoiPrefix, '/', $doi)" />",
         "doi": "<xsl:value-of select="$doi" />",
         "url": "<xsl:value-of select="$url" />",
-        "types": {
-        "resourceType": "<xsl:value-of select="concat(upper-case(substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 1, 1)), substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 2))" />"
+        "state": "findable",
+        "event": "publish",
+		"types": {
+        "resourceTypeGeneral": "<xsl:value-of select="concat(upper-case(substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 1, 1)), substring(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 2))" />"
         },
         "creators": [
         
