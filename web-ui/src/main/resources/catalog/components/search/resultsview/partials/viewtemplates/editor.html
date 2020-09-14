@@ -81,6 +81,20 @@
                title="{{'duplicate' | translate}}">
               <i class="fa fa-copy text-muted"></i>
             </a>
+            <a class="btn btn-default"
+               data-ng-show="user.isAdmin() && md.isPublished() && !md.DOI"
+               data-gn-click-and-spin="createDOI(md)"
+               data-gn-confirm-click="{{'createDoiForRecord' | translate:md}}"
+               title="{{'doiCreationTaskCreateAction' | translate}}">
+              <i  class="fa fa-external-link"></i>
+            </a>
+            <a class="btn btn-success" 
+               data-ng-show="user.isAdmin() && md.isPublished() && md.DOI"
+               data-gn-click-and-spin="updateDOI(md)"
+               data-gn-confirm-click="{{'doiUpdateAction' | translate:md}}"
+               title="{{'doiUpdateAction' | translate}}">
+              <i  class="fa fa-external-link"></i>
+            </a>
           </div>
         </div>
       </div>

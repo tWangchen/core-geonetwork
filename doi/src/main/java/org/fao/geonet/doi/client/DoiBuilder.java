@@ -33,7 +33,7 @@ public class DoiBuilder {
      *
      * @return
      */
-    public static String create(String prefix, String metadataUuid) {
-        return prefix + "/" + metadataUuid;
+    public static String create(String prefix, String eCatId) {
+        return prefix + "/" + eCatId;
     }
 }

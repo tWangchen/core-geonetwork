@@ -112,6 +112,61 @@
         return $scope;
       };
 
+      $scope.updateDOI = function(md){
+        var vals = md.DOI.split('/');
+        var doi = vals[vals.length - 2] + '/' + vals[vals.length - 1];
+        console.log(doi);
+        var defer = $q.defer();
+        $http.put('../api/records/doi/' + md.eCatId + "?doi=" + doi).then(function(data) {
+          $rootScope.$broadcast('StatusUpdated', {
+            title: $translate.instant('doiUpdateAction', {title: md.title || md.defaultTitle}),
+            timeout: 10
+          });
+          defer.resolve(data);
+        }, function(error){
+          $rootScope.$broadcast('StatusUpdated', {
+            title: $translate.instant('doiUpdateAction', {title: md.title || md.defaultTitle}),
+            description: error.data.description,
+            timeout: 0,
+            type: 'danger'
+          });
+          defer.reject(error);
+        });
+        return defer.promise;
+      };
+
+      $scope.createDOI = function(md){
+        var defer = $q.defer();
+        $http.get('../api/records/' + md.eCatId + '/doi/checkPreConditions').then(function(data) {
+          $http.post('../api/records/' + md.eCatId + '/doi').then(function(data) {
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+              timeout: 500
+            });
+            $rootScope.$broadcast('resetSearch');
+            defer.resolve(data);
+          }, function(error){
+            $rootScope.$broadcast('StatusUpdated', {
+              title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+              description: error.data.description,
+              timeout: 0,
+              type: 'danger'
+            });
+            defer.reject(error);
+          });
+        }, function(error){
+          $rootScope.$broadcast('StatusUpdated', {
+            title: $translate.instant('createDoiForRecord', {title: md.title || md.defaultTitle}),
+            description: error.data.description,
+            timeout: 0,
+            type: 'danger'
+          });
+          defer.reject(error);
+        });
+        return defer.promise;        
+      };
+
+
       $scope.deleteRecord = function(md) {
         var deferred = $q.defer();
 
