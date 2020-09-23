@@ -235,7 +235,7 @@
         $scope.$broadcast('search');        
       }
       $scope.displayKeyword = function(thesaurus, keywords){
-        if(thesaurus.toLowerCase() === 'other' && keywords.length <= 1){
+        if(thesaurus.toLowerCase() === 'other' && keywords.length <= 0){
           return false;
         }
         return true;
