@@ -174,7 +174,7 @@
               <cit:identifier>
 					<mcc:MD_Identifier>
 					   <mcc:code>
-						  <gco:CharacterString>http://pid.geoscience.gov.au/dataset/ga/<xsl:value-of select="/root/env/gaid" /></gco:CharacterString>
+						  <gco:CharacterString>http://pid.geoscience.gov.au/dataset/ga/122551</gco:CharacterString>
 					   </mcc:code>
 					</mcc:MD_Identifier>
 				 </cit:identifier>
