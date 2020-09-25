@@ -515,6 +515,37 @@
 
       };
 
+      this.retire = function(bucket, scope){
+        $rootScope.$broadcast('operationOnSelectionStart');
+        $http.put('../api/records/retire?bucket=' + bucket).then(function() {
+            checkRetireStatus();            
+        });
+      }
+
+      function checkRetireStatus(){
+        
+        // Check if completed
+        return $http.get('../api/records/retire/status').
+          then(function(res) {
+           
+            isCompleted = res.data;
+            if (!isCompleted) {
+              $timeout(checkRetireStatus, 1000);
+            } else {
+              $rootScope.$broadcast('operationOnSelectionStop');
+              $rootScope.$broadcast('resetSearch');
+              return $http.get('../api/records/retire/report')
+                .then(function(report) {
+                  var holder = reportHTML(report.data);
+                  $rootScope.$broadcast('StatusUpdated', { title: "Retiring records report",  message: holder.innerHTML, timeout: 500 });
+                });
+            }
+            
+          });
+          
+        };
+
+
       this.assignGroup = function(metadataId, groupId) {
         var defer = $q.defer();
         $http.put('../api/records/' + metadataId +
@@ -629,8 +660,7 @@
         
         // Check if completed
         return $http.get('../api/records/doi/status').
-          then(function(res) {
-           
+          then(function(res) {           
             isCompleted = res.data;
             if (!isCompleted) {
               $timeout(checkDOICreateCompleted, 1000);
@@ -639,29 +669,28 @@
               $rootScope.$broadcast('resetSearch');
               return $http.get('../api/records/doi/report')
                 .then(function(report) {
-                  var holder = document.createElement('div');
-
-                  angular.forEach(report.data, function(value, key){
-                    var str = document.createElement('strong');
-                    str.innerText = "eCatId: " + key; + ", ";
-                    var p = document.createElement('p');
-                    p.innerText = value;
-                    holder.appendChild(str);
-                    holder.appendChild(p);
-                  });
-                  
-                  $rootScope.$broadcast('StatusUpdated', {
-                    title: "Bulk DOI creation report",
-                    message: holder.innerHTML,
-                    timeout: 500
-                  });
-
+                  var holder = reportHTML(report.data);
+                  $rootScope.$broadcast('StatusUpdated', { title: "Bulk DOI creation report", message: holder.innerHTML, timeout: 500 });
                 });
-            }
-            
-          });
-          
+            }            
+          });          
         };
+
+        function reportHTML(data){
+
+          var holder = document.createElement('div');
+
+          angular.forEach(data, function(value, key){
+            var str = document.createElement('strong');
+            str.innerText = "eCatId: " + key; + ", ";
+            var p = document.createElement('p');
+            p.innerText = value;
+            holder.appendChild(str);
+            holder.appendChild(p);
+          });
+
+          return holder;
+        }
 
       /**
        * Format a CRS description object for rendering

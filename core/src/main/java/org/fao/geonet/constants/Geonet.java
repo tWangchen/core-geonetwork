@@ -134,6 +134,7 @@ public final class Geonet {
         public static final String UNSET_THUMBNAIL = "unset-thumbnail.xsl";
         public static final String PUBLICATION_INFO = "publicationInfo-add.xsl";
         public static final String SET_KEYWORD = "set-keyword.xsl";
+        public static final String KEYWORD_REMOVE = "keyword-remove.xsl";
         public static final String SCHEMA_SUGGESTIONS = "schema-suggestions.xml";
         public static final String SCHEMA_SUBSTITUTES = "schema-substitutes.xml";
         public static final String SCHEMA_CONVERSIONS = "schema-conversions.xml";
