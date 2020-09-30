@@ -109,22 +109,22 @@
           <i class="fa fa-cogs"></i>&nbsp;<span translate>index</span>
         </a>
       </li>
-      <li class="divider" data-ng-if="user.isConnected()"></li>
+      <li class="divider" data-ng-if="user.isUserAdminOrMore()"></li>
       <li  data-ng-show="!excludePattern.test('updateCategories')"
-           data-ng-if="user.isEditorOrMore()">
+           data-ng-if="user.isUserAdminOrMore()">
         <a href="" data-ng-click="mdService.openCategoriesBatchPanel(searchResults.selectionBucket, getCatScope())">
           <i class="fa fa-tags"></i>&nbsp;<span translate>updateCategories</span>
         </a>
       </li>
       <li  data-ng-show="!excludePattern.test('validate')"
-           data-ng-if="user.isEditorOrMore()">
+           data-ng-if="user.isUserAdminOrMore()">
         <a href="" data-ng-click="mdService.validateMd(undefined, searchResults.selectionBucket)"
            data-gn-confirm-click="{{'validateSelectedRecordConfirm' | translate:searchResults}}">
           <i class="fa fa-check"></i>&nbsp;<span translate>validate</span>
         </a>
       </li>
       <li  data-ng-show="!excludePattern.test('validate')"
-           data-ng-if="user.isEditorOrMore() && isInspireValidationEnabled">
+           data-ng-if="user.isUserAdminOrMore() && isInspireValidationEnabled">
         <a href="" data-ng-click="mdService.validateMdInspire(searchResults.selectionBucket)"
                    data-gn-confirm-click="{{'validateSelectedRecordINSPIREConfirm' | translate:searchResults}}">
           <i class="fa fa-check"></i>&nbsp;<span translate>validateInspire</span>
