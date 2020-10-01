@@ -72,7 +72,7 @@
 
   <xsl:template mode="getMetadataAuthors" match="mdb:MD_Metadata">
     <xsl:variable name="value"
-                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Individual"/>
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Individual/cit:name"/>
     <xsl:value-of select="$value/*"/>
   </xsl:template>
 
@@ -203,9 +203,16 @@
   </xsl:template>
 
   <xsl:template mode="getMetadataDistributions" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
+    <!--<xsl:variable name="value"
                   select="mdb:distributionInfo"/>
-    <xsl:value-of select="$value/*"/>
+    <xsl:value-of select="$value/*"/>-->
+    <xsl:for-each select="mdb:distributionInfo/*/mrd:distributor/*/mrd:distributorTransferOptions/*/mrd:onLine">
+      <p><xsl:value-of select="*/cit:name/gco:CharacterString"/>, 
+      <xsl:variable name="onlineSrcLink" select="*/cit:linkage/gco:CharacterString"/>
+      <a href="{$onlineSrcLink}"><xsl:value-of select="$onlineSrcLink"/></a>
+      </p> 
+    </xsl:for-each> 
+
   </xsl:template>
 
 <xsl:template mode="getMetadataSourceInfo" match="mdb:MD_Metadata">

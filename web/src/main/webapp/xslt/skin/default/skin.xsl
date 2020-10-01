@@ -27,38 +27,20 @@
           </button>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav" id="topbar-left">
-            <li>
-              <a href="{/root/gui/nodeUrl}">
-                <img class="gn-logo"
-                     alt="{$i18n/siteLogo}"
-                     src="{/root/gui/url}/images/logos/{$env//system/site/siteId}.png"></img>
-                <xsl:value-of select="$env//system/site/name"/>
+          
+          <div class="col-md-6">
+              <a href="http://www.ga.gov.au/"  title="Navigate to the Geoscience Australia home page">
+                <img src="../catalog/views/default/images/ga.header.logo.png" />
               </a>
-            </li>
-            <li>
-              <a title="{$t/search}" href="{/root/gui/nodeUrl}search" onclick="location.href=('{/root/gui/nodeUrl}{$lang}/catalog.search#/search');return false;">
-                <i class="fa fa-fw fa-search hidden-sm">&#160;</i>
-                <span><xsl:value-of select="$t/search"/></span>
-              </a>
-            </li>
-            <li id="map-menu" class="hidden-nojs">
-              <a  title="{$t/map}"
-                  href="{/root/gui/nodeUrl}{$lang}/catalog.search#/map">
-                <i class="fa fa-fw fa-globe hidden-sm">&#160;</i>
-                <span><xsl:value-of select="$t/map"/></span></a>
-            </li>
-          </ul>
-
-          <ul class="nav navbar-nav navbar-right">
-            <li>
-              <a href="{/root/gui/nodeUrl}{$lang}/catalog.signin"
-                 title="{$t/signIn}">
-                <i class="fa fa-sign-in fa-fw">&#160;</i>
-                <xsl:value-of select="$t/signIn"/>
-              </a>
-            </li>
-          </ul>
+          </div>
+          <div class="title-lg col-md-6">
+            <span>Data and Publications Search</span>
+            <a title="{$t/search}" href="{/root/gui/nodeUrl}search" onclick="location.href=('{/root/gui/nodeUrl}{$lang}/catalog.search#/search');return false;">
+              <i class="fa fa-fw fa-search hidden-sm">&#160;</i>
+              <!-- <span><xsl:value-of select="$t/search"/></span> -->
+            </a>
+          </div> 
+               
         </div>
       </div>
     </div>
@@ -100,28 +82,31 @@
 
   <xsl:template name="footer">
 
-    <div class="navbar navbar-default gn-bottom-bar" role="navigation">
-      <ul class="nav navbar-nav">
-        <li class="gn-footer-text">
+    <footer id="footer-main" class="footer-global">
 
-        </li>
-        <li>
-          <a href="http://geonetwork-opensource.org/">
-            <i class="fa fa-fw">&#160;</i>
-            <span><xsl:value-of select="$t/about"/></span>
-          </a>
-        </li>
-        <li class="hidden-sm">
-          <a href="https://github.com/geonetwork/core-geonetwork">
-            <i class="fa fa-github">&#160;</i>
-            <span><xsl:value-of select="$t/github"/></span>
-          </a>
-        </li>
-        <li>
-          <a href="{/root/gui/url}/doc/api" title="{$t/learnTheApi}"><xsl:value-of select="$t/api"/>&#160;</a>
-        </li>
-      </ul>
-    </div>
+      <div class="container">
+        <div class="block-group">
+    
+          <nav id="footer-bottom-nav" class="block col-width-auto">
+            <ul class="nav nav-pills">
+              <!--  <li>&copy; Commonwealth of Australia</li> -->
+              <li><a href="http://www.ga.gov.au/copyright">Copyright</a></li>
+              <li><a href="http://www.ga.gov.au/privacy">Privacy</a></li>
+              <li><a href="http://www.ga.gov.au/accessibility">Accessibility</a></li>
+              <li><a href="http://www.ga.gov.au/sitemap">Sitemap</a></li>
+              <li><a href="http://www.ga.gov.au/ips">Information Publication Scheme</a></li>
+              <li><a href="http://www.ga.gov.au/ips/foi">Freedom of Information</a></li>
+            </ul>
+          </nav>
+    
+          <div class="block col-lg-1-12" style="padding-top:15px;">Geoscience Australia acknowledges the
+            traditional owners of the country throughout Australia and their continuing connection to land, sea
+            and community. We pay our respect to them and their cultures and to the elders past and present.
+          </div>
+    
+        </div>
+      </div>
+    </footer>
   </xsl:template>
 
 
