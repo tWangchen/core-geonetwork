@@ -307,6 +307,9 @@
                   return gnFacetConfigService.isInFilter(scope, category);
                 };
 
+                scope.isCustomFilter = function(val){
+                  return (val.indexOf('Published') !== 0 && val.indexOf('Retired') !== 0);
+                }
                 scope.toggleNode = function(evt) {
                   el = evt ?
                       $(evt.currentTarget).parent().parent() :

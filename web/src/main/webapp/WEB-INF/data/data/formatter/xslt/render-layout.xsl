@@ -54,16 +54,31 @@
                itemscope="itemscope"
                itemtype="{gn-fn-core:get-schema-org-class($type)}">
         <header>
-          <h1>
-            <xsl:apply-templates mode="getMetadataTitle" select="$metadata"/>
-          </h1>
+         <h1>
+          <xsl:apply-templates mode="getMetadataTitle" select="$metadata"/>
+         </h1>
+          <!-- PID Link -->
+         <xsl:variable name="pidlink">
+           <xsl:apply-templates mode="getMetadataPID" select="$metadata" />
+         </xsl:variable>
+         <p><a href="{$pidlink}"><xsl:value-of select="$pidlink"/></a></p>
+
          <h3>Authors</h3><p><xsl:apply-templates mode="getMetadataAuthors" select="$metadata"/></p>
          <h3>Abstract</h3><p><xsl:apply-templates mode="getMetadataAbstract" select="$metadata"/></p>
          <h3>Product Type</h3><p><xsl:apply-templates mode="getMetadataType" select="$metadata"/></p>
          <h3>eCat Id</h3><p><xsl:apply-templates mode="getMetadataeCatId" select="$metadata"/></p>
          <h3>Contacts</h3><p><xsl:apply-templates mode="getMetadataPOC" select="$metadata"/></p>
-         <h3>Digital Object Identifier</h3><p><xsl:apply-templates mode="getMetadataDOI" select="$metadata"/></p>
-         <h3>Persistant Identifier</h3><p><xsl:apply-templates mode="getMetadataPID" select="$metadata"/></p>
+         
+         <!-- DOI Url -->
+         <xsl:variable name="doilink">
+            <xsl:apply-templates mode="getMetadataDOI" select="$metadata" />
+         </xsl:variable>
+         <xsl:if test="$doilink!=''">
+          <h3>Digital Object Identifier</h3>
+          <p><a href="{$doilink}"><xsl:value-of select="$doilink"/></a></p>
+         </xsl:if>
+
+        
          <h3>Publication Date</h3><p><xsl:apply-templates mode="getMetadataPubDate" select="$metadata"/></p>
          <h3>Creation Date</h3><p><xsl:apply-templates mode="getMetadataCreateDate" select="$metadata"/></p>
          <h3>Status</h3><p><xsl:apply-templates mode="getMetadataStatus" select="$metadata"/></p>

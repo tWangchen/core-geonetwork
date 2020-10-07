@@ -27,6 +27,7 @@ import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_OPS;
 import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
 import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUID;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import org.fao.geonet.api.records.model.MetadataStatusParameter;
 import org.fao.geonet.api.records.model.MetadataStatusResponse;
 import org.fao.geonet.api.records.model.MetadataWorkflowStatusResponse;
 import org.fao.geonet.api.tools.i18n.LanguageUtils;
+import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.domain.MetadataStatus;
@@ -75,6 +77,8 @@ import org.fao.geonet.repository.MetadataStatusRepository;
 import org.fao.geonet.repository.SortUtils;
 import org.fao.geonet.repository.StatusValueRepository;
 import org.fao.geonet.repository.UserRepository;
+import org.fao.geonet.utils.Xml;
+import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
@@ -265,7 +269,26 @@ public class MetadataWorkflowApi {
                 throw new Exception("Metadata is invalid: can't be submitted or approved");
             }
         }
-
+        
+        /* GA - Add to remove Retired_Internal Keyword while restoring retired records to draft - start */
+        MetadataStatus recordStatus = metadataStatus.getStatus(metadata.getId());
+        if(recordStatus.getStatusValue().getId() == Integer.valueOf(StatusValue.Status.RETIRED)) {
+        	String schema = dataManager.getMetadataSchema(String.valueOf(metadata.getId()));
+        	
+        	Element md = metadata.getXmlData(false);
+            
+            Map<String, Object> xslParameters = new HashMap<String, Object>();
+    		xslParameters.put("keyword", Geonet.Transform.RETIRED_INTERNAL);
+    		Path file = dataManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.KEYWORD_REMOVE);
+    		md = Xml.transform(md, file, xslParameters);
+    		
+    		// --- update Metadata
+    		dataManager.updateMetadata(context, String.valueOf(metadata.getId()), md, false, false, false, context.getLanguage(), new ISODate().toString(), false);
+            
+        }
+        /* GA - Add to remove Retired_Internal Keyword while restoring retired records to draft - end */
+        
+        
         // --- use StatusActionsFactory and StatusActions class to
         // --- change status and carry out behaviours for status changes
         StatusActions sa = statusActionFactory.createStatusActions(context);

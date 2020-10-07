@@ -99,7 +99,7 @@
           <ul>
             <li data-ng-repeat="k in keywords track by $index" data-ng-if="k" class="tt-cursor item-case"
               title="{{'clickToFilterOn' | translate}} {{k}}">
-              <a ng-show="k.indexOf('Published') !== 0" href="" data-ng-click="search({'keyword': k})"><i
+              <a ng-show="k.indexOf('Published') !== 0 && k.indexOf('Retired') !== 0" href="" data-ng-click="search({'keyword': k})"><i
                   data-ng-if="$index > 0"> | </i> {{k}}</a>
             </li>
           </ul>

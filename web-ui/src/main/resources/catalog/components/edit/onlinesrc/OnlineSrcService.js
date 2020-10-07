@@ -250,7 +250,7 @@
               src.url[Object.keys(src.url)[0]];
             
               //Is it a draft?
-              if(src.lUrl.indexOf("/api/records/") >= 0 
+              if(src.lUrl && src.lUrl.indexOf("/api/records/") >= 0 
                   &&  src.lUrl.indexOf("/api/records/")< src.lUrl.indexOf("/attachments/")) {
                 if(src.lUrl.indexOf("?") > 0) {
                   src.lUrl  += "&approved=false";
@@ -266,7 +266,7 @@
               img.url[Object.keys(img.url)[0]];
             
               //Is it a draft?
-              if(img.lUrl.indexOf("/api/records/") >= 0 
+              if(img.lUrl && img.lUrl.indexOf("/api/records/") >= 0 
                   &&  img.lUrl.indexOf("/api/records/")< img.lUrl.indexOf("/attachments/")) {
                 if(img.lUrl.indexOf("?") > 0) {
                   img.lUrl  += "&approved=false";
