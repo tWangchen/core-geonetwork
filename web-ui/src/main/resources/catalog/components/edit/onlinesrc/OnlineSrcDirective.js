@@ -1232,7 +1232,7 @@
                         scope.srcParams.url = scope.onlineSrcLink;
                         scope.srcParams.uuidSrv = gnCurrentEdit.uuid;
 
-                        scope.addOnlineSrcInDataset = true;
+                        //scope.addOnlineSrcInDataset = true;
                       } else {
                         scope.alertMsg =
                             $translate.instant('linkToServiceWithoutURLError');
@@ -1243,7 +1243,7 @@
                         scope.onlineSrcLink = gnConfigService.getServiceURL() +
                           "api/records/" + gnCurrentEdit.uuid;
 
-                        scope.addOnlineSrcInDataset = false;
+                        //scope.addOnlineSrcInDataset = false;
                       }
                     }
                   });
@@ -1320,14 +1320,14 @@
                         scope.srcParams.uuidDS = gnCurrentEdit.uuid;
                         //the uuid of the source catalog (harvester)
                         scope.srcParams.source = gnCurrentEdit.metadata.source;
-
+                        scope.addOnlineSrcInDataset = true;
 
                         if (links.length > 0) {
                           scope.onlineSrcLink = links[0].url;
                           scope.srcParams.protocol = links[0].protocol || 'OGC:WMS';
                           scope.loadCurrentLink(scope.onlineSrcLink);
                           scope.srcParams.url = scope.onlineSrcLink;
-                          scope.addOnlineSrcInDataset = true;
+                          //scope.addOnlineSrcInDataset = true;
                         } else {
                           scope.srcParams.name = scope.currentMdTitle;
                           scope.srcParams.desc = scope.currentMdTitle;
@@ -1335,7 +1335,7 @@
                           scope.onlineSrcLink = gnConfigService.getServiceURL() +
                             "api/records/" + md.getUuid();
                           scope.srcParams.url = scope.onlineSrcLink;
-                          scope.addOnlineSrcInDataset = false;
+                          //scope.addOnlineSrcInDataset = false;
                           
                         }
                         
