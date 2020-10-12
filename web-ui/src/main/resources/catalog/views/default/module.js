@@ -304,8 +304,14 @@
       }
 
       $scope.goToSearch = function (any) {
-        $location.path('/search').search({'any': any});
+        $location.path('/search').search({'title_OR_altTitle_OR_any': any});
       };
+
+      $scope.goToSearchFromEvent = function (event) {
+        $location.path('/search')
+            .search({'title_OR_altTitle_OR_any': event.currentTarget.value});
+      };
+
       $scope.canEdit = function(record) {
         // TODO: take catalog config for harvested records
         if (record && record['geonet:info'] &&

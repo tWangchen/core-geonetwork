@@ -168,13 +168,13 @@
 
       //GA - To search by eCatId - start
       var regexp = /^\d+(?:(?:[\s])?[,](?:[\s])?\d+)+?$/;
-      if($scope.searchObj.params.any){
-        var iseCatIds = regexp.test($scope.searchObj.params.any);
-        if(iseCatIds){
+      if ($scope.searchObj.params.title_OR_altTitle_OR_any){
+        var iseCatIds = regexp.test($scope.searchObj.params.title_OR_altTitle_OR_any);
+        if (iseCatIds) {
           var eCatIdParam = {
-            eCatId: $scope.searchObj.params.any
+            eCatId: $scope.searchObj.params.title_OR_altTitle_OR_any
           }
-          delete $scope.searchObj.params.any;
+          delete $scope.searchObj.params.title_OR_altTitle_OR_any;
           angular.extend($scope.searchObj.params, eCatIdParam);
         }
       }
@@ -282,8 +282,11 @@
 
       // Add wildcard char to search, limit to subtemplates and the _root
       // element of the subtemplate we want
-      if (params.any) params.any = params.any + '*';
-      else params.any = '*';
+      if (params.title_OR_altTitle_OR_any) {
+        params.title_OR_altTitle_OR_any = params.title_OR_altTitle_OR_any + '*';
+      } else {
+        params.title_OR_altTitle_OR_any = '*';
+      }
 
       params._isTemplate = 's';
       params._root = element;
