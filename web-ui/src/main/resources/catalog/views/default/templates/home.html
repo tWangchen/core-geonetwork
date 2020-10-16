@@ -1,10 +1,10 @@
 <!-- Carousel -->
 <div class="container">
   <div class="home-container-outer">
-    <input type="search" class="form-control input-md" id="gn-any-field" data-ng-model="searchObj.params.any"
+    <input type="search" class="form-control input-md" id="gn-any-field" data-ng-model="searchObj.params.title_OR_altTitle_OR_any"
       data-ng-model-options="modelOptionsForm" 
       placeholder="Search..."
-      data-ng-keyup="$event.keyCode == 13 && triggerSearch()" 
+      data-ng-keyup="$event.keyCode == 13 && goToSearchFromEvent($event)"
       class="form-control" />
     <span>
       <button class="btn btn-lg searchbutton" type="button" data-ng-click="homeSearch()">

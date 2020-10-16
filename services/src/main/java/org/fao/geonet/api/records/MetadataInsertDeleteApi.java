@@ -63,6 +63,9 @@ import org.fao.geonet.domain.MetadataCategory;
 import org.fao.geonet.domain.MetadataResource;
 import org.fao.geonet.domain.MetadataResourceVisibility;
 import org.fao.geonet.domain.MetadataType;
+import org.fao.geonet.domain.MetadataValidation;
+import org.fao.geonet.domain.MetadataValidationId;
+import org.fao.geonet.domain.MetadataValidationStatus;
 import org.fao.geonet.domain.Pair;
 import org.fao.geonet.domain.Profile;
 import org.fao.geonet.domain.ReservedGroup;
@@ -92,6 +95,7 @@ import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.lib.Lib;
 import org.fao.geonet.repository.MetadataDraftRepository;
 import org.fao.geonet.repository.MetadataRepository;
+import org.fao.geonet.repository.MetadataValidationRepository;
 import org.fao.geonet.repository.Updater;
 import org.fao.geonet.repository.UserGroupRepository;
 import org.fao.geonet.repository.specification.UserGroupSpecs;
@@ -201,6 +205,9 @@ public class MetadataInsertDeleteApi {
 
     @Autowired
     private AccessManager accessManager;
+    
+    @Autowired
+    private MetadataValidationRepository validationRepository;
 
     @ApiOperation(value = "Delete a record", notes = "User MUST be able to edit the record to delete it. "
             + "By default, a backup is made in ZIP format. After that, "
@@ -1005,6 +1012,7 @@ public class MetadataInsertDeleteApi {
             final boolean rejectIfInvalid, final boolean publishToAll, final String transformWith, String schema,
             final String extra, HttpServletRequest request) throws Exception {
 
+    	boolean isValid = false;
         ServiceContext context = ApiUtils.createServiceContext(request);
 
         if (!transformWith.equals("_none_")) {
@@ -1036,8 +1044,9 @@ public class MetadataInsertDeleteApi {
                     groupId = Integer.parseInt(group);
                 }
                 DataManager.validateExternalMetadata(schema, xmlElement, context, groupId);
+                isValid = true;
             } catch (XSDValidationErrorEx e) {
-                throw new IllegalArgumentException(e);
+            	throw new IllegalArgumentException(e);
             }
         }
 
@@ -1075,6 +1084,7 @@ public class MetadataInsertDeleteApi {
         final List<Element> md = new ArrayList<Element>();
         md.add(xmlElement);
 
+        
         // Import record
         Map<String, String> sourceTranslations = Maps.newHashMap();
         try {
@@ -1087,6 +1097,15 @@ public class MetadataInsertDeleteApi {
             throw ex;
         }
         int iId = Integer.parseInt(id.get(0));
+        
+        if (rejectIfInvalid && isValid) {
+        	List<MetadataValidation> validations = new ArrayList<>();
+        	validations.add(new MetadataValidation().setId(new MetadataValidationId(iId, "xsd"))
+                    .setStatus(MetadataValidationStatus.VALID).setRequired(true).setNumTests(1).setNumFailures(0));
+        	validationRepository.deleteAllById_MetadataId(iId);
+            validationRepository.save(validations);
+        }
+        
         uuid = dataManager.getMetadataUuid(iId + "");
         
         // Set template

@@ -195,7 +195,7 @@
 			  'VerticalCRS',
 			  'TemporalExtent',
 			  'MetadataSecurityConstraint',
-			  'ResourceSecurityConstraint',
+			  'SecurityConstraint',
 			  'ResourceLegalConstraint',
 			  'UseLimitations',
 			  'DistributionLink',

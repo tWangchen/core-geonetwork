@@ -251,7 +251,7 @@
        
          $scope.homeSearch = function(){
            var anytext = {
-             any : $scope.searchObj.params.any
+             title_OR_altTitle_OR_any : $scope.searchObj.params.title_OR_altTitle_OR_any
            }           
           $scope.$broadcast('resetSearch', anytext);             
         }

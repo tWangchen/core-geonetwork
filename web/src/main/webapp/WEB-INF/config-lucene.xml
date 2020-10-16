@@ -367,6 +367,10 @@
     <Field name="_dummy" boost="0.0F"/>
     <Field name="_isTemplate" boost="0.0F"/>
     <Field name="_owner" boost="0.0F"/>
+
+    <!-- GeoScience Australia custom search field weights  -->
+    <Field name="title" boost="1.8F" />
+    <Field name="altTitle" boost="1.25" />
   </fieldBoosting>
 
 
