@@ -46,8 +46,10 @@ import org.fao.geonet.api.records.model.related.RelatedResponse;
 import org.fao.geonet.api.tools.i18n.LanguageUtils;
 import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.domain.AbstractMetadata;
+import org.fao.geonet.domain.MetadataIndexedField;
 import org.fao.geonet.domain.ReservedOperation;
 import org.fao.geonet.kernel.DataManager;
+import org.fao.geonet.kernel.ECatOperationManager;
 import org.fao.geonet.kernel.GeonetworkDataDirectory;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.datamanager.IMetadataUtils;
@@ -117,6 +119,9 @@ public class MetadataApi {
     @Autowired
     GeonetworkDataDirectory dataDirectory;
 
+    @Autowired
+    ECatOperationManager opManager;
+    
     private ApplicationContext context;
 
     public synchronized void setApplicationContext(ApplicationContext context) {
@@ -170,6 +175,11 @@ public class MetadataApi {
     )
         throws Exception {
         try {
+        	if(!ApiUtils.isUuid(metadataUuid)){
+        		metadataUuid = opManager.getUuidFromECatId(metadataUuid);
+        		if(StringUtils.isEmpty(metadataUuid))
+        			throw new Exception(ApiParams.API_RESPONSE_RESOURCE_NOT_FOUND);
+        	}
             ApiUtils.canViewRecord(metadataUuid, request);
         } catch (SecurityException e) {
             Log.debug(API.LOG_MODULE_NAME, e.getMessage(), e);
