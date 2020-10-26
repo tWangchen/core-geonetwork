@@ -145,8 +145,6 @@
   <xsl:variable name="requestedLanguageId"
                 select="concat('#', //mdb:MD_Metadata/mdb:otherLocale/*[lan:language/*/@codeListValue = $requestedLanguage]/@id)"/>
 
-
-
   <xsl:template name="getJsonLD"
                 mode="getJsonLD" match="mdb:MD_Metadata">
   {
@@ -160,7 +158,7 @@
       </xsl:otherwise>
     </xsl:choose>
     <!-- TODO: Use the identifier property to attach any relevant Digital Object identifiers (DOIs). -->
-    "@id": "<xsl:value-of select="concat($baseUrl, 'api/records/', mdb:metadataIdentifier[1]/*/mcc:code/*/text())"/>",
+    "@id": "<xsl:value-of select="mdb:identificationInfo/*/mri:citation/*/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString='Geoscience Australia Persistent Identifier']/mcc:code/gco:CharacterString"/>",
     "includedInDataCatalog":[{"url":"<xsl:value-of select="concat($baseUrl, 'search#', $catalogueName)"/>","name":"<xsl:value-of select="$catalogueName"/>"}],
     <!-- TODO: is the dataset language or the metadata language ? -->
     "inLanguage":"<xsl:value-of select="if ($requestedLanguage  != '') then $requestedLanguage else $defaultLanguage"/>",
