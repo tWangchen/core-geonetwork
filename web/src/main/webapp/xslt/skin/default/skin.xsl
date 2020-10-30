@@ -30,7 +30,7 @@
           
           <div class="col-md-6">
               <a href="http://www.ga.gov.au/"  title="Navigate to the Geoscience Australia home page">
-                <img src="../catalog/views/default/images/ga.header.logo.png" />
+                <img src="../../../catalog/views/default/images/ga.header.logo.png" />
               </a>
           </div>
           <div class="title-lg col-md-6">

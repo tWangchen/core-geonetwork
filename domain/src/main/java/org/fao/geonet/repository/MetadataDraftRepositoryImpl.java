@@ -254,4 +254,16 @@ public class MetadataDraftRepositoryImpl implements MetadataRepositoryCustom<Met
         return result;
     }
 
+	@Override
+	public TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids, Pageable pageable) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

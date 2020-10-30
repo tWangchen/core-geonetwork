@@ -55,7 +55,7 @@
         link: function(scope, element, attrs) {
           scope.iconOnly = attrs.iconOnly === 'true';
           var helpBaseUrl = gnGlobalSettings.docUrl ||
-              'https://geonetwork-opensource.org/manuals/trunk/';
+              'https://intranet.ga.gov.au/records-and-data/ecat/ecat-help';
 
           var testAndOpen = function(url) {
             var defer = $q.defer();

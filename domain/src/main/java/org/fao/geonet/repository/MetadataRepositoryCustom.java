@@ -28,6 +28,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 
 import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.ISODate;
@@ -127,5 +129,25 @@ public interface MetadataRepositoryCustom<T extends AbstractMetadata> {
      */
     @Nullable
     Element findAllUuidsAndChangeDatesAndSchemaId(List<Integer> ids);
+    
+    
+    /**
+     * Find all metadata on specified page. Returns the uuid, changedate and schemaid
+     *
+     * @param uuid the uuid of the harvester
+     * @return all metadata harvested by the identified harvester.
+     */
+    @Nullable
+    TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids, @Nonnull Pageable pageable);
+
+    /**
+     * Find all metadata. Returns the uuid, changedate and schemaid
+     *
+     * @param uuid the uuid of the harvester
+     * @return all metadata harvested by the identified harvester.
+     */
+    @Nullable
+    TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids);
+    
     
 }

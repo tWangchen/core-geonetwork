@@ -44,6 +44,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -253,4 +254,45 @@ public class MetadataRepositoryImpl implements MetadataRepositoryCustom<Metadata
         return result;
     }
 
+	@Override
+	public TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids, Pageable pageable) {
+		CriteriaBuilder cb = _entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cbQuery = cb.createQuery(Tuple.class);
+        Root<Metadata> root = cbQuery.from(Metadata.class);
+
+        cbQuery.multiselect(root.get(Metadata_.uuid), root.get(Metadata_.dataInfo).get(MetadataDataInfo_.changeDate));
+
+        cbQuery.where(root.get(Metadata_.id).in(ids), cb.equal(root.get(Metadata_.dataInfo).get(MetadataDataInfo_.type_JPAWorkaround), 'n'));
+
+        if (pageable != null && pageable.getSort() != null) {
+            final Sort sort = pageable.getSort();
+            List<Order> orders = SortUtils.sortToJpaOrders(cb, sort, root);
+
+            cbQuery.orderBy(orders);
+        }
+
+        TypedQuery<Tuple> query = _entityManager.createQuery(cbQuery);
+        if (pageable != null) {
+            query.setFirstResult(pageable.getOffset());
+            query.setMaxResults(pageable.getPageSize());
+        }
+
+        return query;
+	}
+
+	@Override
+	public TypedQuery<Tuple> findAllUuidsAndChangeDates(List<Integer> ids) {
+		CriteriaBuilder cb = _entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cbQuery = cb.createQuery(Tuple.class);
+        Root<Metadata> root = cbQuery.from(Metadata.class);
+        
+        cbQuery.multiselect(root.get(Metadata_.uuid), root.get(Metadata_.dataInfo).get(MetadataDataInfo_.changeDate));
+
+        cbQuery.where(root.get(Metadata_.id).in(ids), cb.equal(root.get(Metadata_.dataInfo).get(MetadataDataInfo_.type_JPAWorkaround), 'n'));
+
+        TypedQuery<Tuple> query = _entityManager.createQuery(cbQuery);
+
+        return query;
+	}
+    
 }

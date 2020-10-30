@@ -114,6 +114,7 @@
       xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
       <xsl:for-each select="metadata/record">
+      	<xsl:variable name="eCatId" select="eCatId"/>
         <xsl:variable name="uuid" select="uuid"/>
         <xsl:variable name="schemaid" select="schemaid"/>
         <xsl:variable name="changedate" select="changedate"/>
@@ -126,7 +127,7 @@
               </xsl:when>
 
               <xsl:otherwise>
-                <xsl:value-of select="concat($siteUrl, '/srv/api/records/', $uuid)"/>
+                <xsl:value-of select="concat($siteUrl, '/srv/api/records/', $eCatId)"/>
               </xsl:otherwise>
             </xsl:choose>
           </loc>
