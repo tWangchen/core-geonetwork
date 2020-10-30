@@ -51,6 +51,11 @@
                   var opt = scope.$eval(iAttrs['gnMapFieldOpt']) || {};
                   scope.relations = opt.relations;
 
+                  scope.autoTriggerSearch = true;
+                  if (angular.isDefined(opt.autoTriggerSearch)) {
+                    scope.autoTriggerSearch = opt.autoTriggerSearch;
+                  }
+
                   scope.gnMap = gnMap;
 
                   /**
@@ -79,10 +84,23 @@
                    */
                   scope.setRelation = function(rel) {
                     scope.searchObj.params.relation = rel;
-                    if (!!scope.searchObj.params.geometry) {
+                    if (scope.autoTriggerSearch && !!scope.searchObj.params.geometry) {
                       scope.triggerSearch();
                     }
                   };
+
+
+                  scope.renderMap = function() {
+                    scope.map.renderSync();
+                  };
+
+                  var loadPromise = scope.map.get('sizePromise');
+                  if (loadPromise) {
+                    loadPromise.then(function() {
+                      scope.renderMap();
+                    });
+                  }
+
                 }
               };
             }
@@ -161,7 +179,9 @@
               scope.interaction.on('boxend', function() {
                 scope.$apply(function() {
                   updateField(scope.interaction.getGeometry());
-                  scope.triggerSearch();
+                  if (scope.autoTriggerSearch) {
+                    scope.triggerSearch();
+                  }
                 });
               });
 
@@ -174,7 +194,7 @@
               scope.$watch('interaction.active', function(v, o) {
                 if (!v && o) {
                   resetSpatialFilter();
-                  if (!!scope.searchObj.params.geometry) {
+                  if (scope.autoTriggerSearch && !!scope.searchObj.params.geometry) {
                     scope.triggerSearch();
                   }
                 }
