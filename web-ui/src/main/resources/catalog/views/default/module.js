@@ -464,7 +464,8 @@
         searchMap: searchMap,
         recordMap: recordMap,
         mapfieldOption: {
-          relations: ['within_bbox']
+          relations: ['within_bbox'],
+          autoTriggerSearch: false
         },
         hitsperpageValues: gnSearchSettings.hitsperpageValues,
         filters: gnSearchSettings.filters,
