@@ -6,22 +6,33 @@
 [data-gn-map-field] > [ol-map] {
   border: 1px solid #ccc;
   border-radius: 3px;
-  right: 0;
-  bottom: 0;
-  position: fixed !important;
-  z-index: 99;
-  width: 250px !important;
+  width: calc(~"100% - 20px") !important;
   height: 250px !important;
-  margin: 5px;
+  margin: 10px;
+}
+[gn-map-field], [data-gn-map-field] {
+  .gn-draw-btn, .btn-group-vertical {
+    top: auto !important;
+    margin: 4px;
+    .btn {
+      width: auto;
+    }
+  }
+  .btn-group-vertical {
+    display: none !important;
+  }
+  .gn-draw-btn {
+    left: auto !important;
+  }
 }
 
 // map viewer
 [gn-main-viewer] {
   position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   .ol-attribution {
     .gn-attribution();
     bottom: 1em;
@@ -122,7 +133,7 @@
   margin-right: -15px;
   position: fixed;
   padding: 7px;
-  right: 0px;
+  right: 0;
   bottom: calc(~"@{gn-bottombar-height} + 20px");
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
@@ -138,7 +149,7 @@
 
 gn-wps-process-form {
   .panel-body {
-    padding: 0px;
+    padding: 0;
   }
 }
 // drag/zoom box for on the map
