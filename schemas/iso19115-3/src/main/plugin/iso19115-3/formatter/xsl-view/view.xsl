@@ -41,8 +41,8 @@
   3 levels of priority are defined: 100, 50, none
 
   -->
-
-
+  <xsl:include href="../../formatter/jsonld/iso19115-3-to-jsonld.xsl"/>
+  
   <!-- Load the editor configuration to be able
   to render the different views -->
   <xsl:variable name="configuration"
@@ -71,9 +71,15 @@
   </xsl:template>
 
   <xsl:template mode="getMetadataAuthors" match="mdb:MD_Metadata">
+
     <xsl:variable name="value"
                   select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Individual/cit:name"/>
-    <xsl:value-of select="$value/*"/>
+    <!--<xsl:value-of select="$value/*"/>-->
+    <xsl:for-each select="$value">
+      <xsl:value-of select="gco:CharacterString" />
+      <xsl:if test="position() != last()"><strong> | </strong></xsl:if>
+    </xsl:for-each>
+   
   </xsl:template>
 
   <xsl:template mode="getMetadataAbstract" match="mdb:MD_Metadata">
@@ -88,6 +94,13 @@
     <xsl:value-of select="$value/@codeListValue"/>
   </xsl:template>
 
+  <xsl:template mode="getMetadataKeywords" match="mdb:MD_Metadata">
+    <!--<xsl:variable name="value"
+                  select="mdb:identificationInfo/*/mri:descriptiveKeywords"/>
+    <xsl:value-of select="$value/@codeListValue"/>-->
+    <xsl:apply-templates mode="render-field" select="mdb:identificationInfo/*/mri:descriptiveKeywords"></xsl:apply-templates>
+  </xsl:template>
+
   <xsl:template mode="getMetadataeCatId" match="mdb:MD_Metadata">
     <xsl:variable name="value"
                   select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code"/>
@@ -95,9 +108,10 @@
   </xsl:template>
 
     <xsl:template mode="getMetadataPOC" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
-                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact"/>
-    <xsl:value-of select="$value/*"/>
+    <!--<xsl:variable name="value"
+                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact"/>-->
+        <xsl:apply-templates mode="render-field" select="mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact"></xsl:apply-templates>
+        <!--<xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
    <xsl:template mode="getMetadataDOI" match="mdb:MD_Metadata">
@@ -108,7 +122,7 @@
 
    <xsl:template mode="getMetadataPID" match="mdb:MD_Metadata">
     <xsl:variable name="value"
-                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString='Geoscience Australia Persistent Identifier']/mcc:code"/>
+                  select="mdb:identificationInfo/*/mri:citation/*/cit:identifier/mcc:MD_Identifier[mcc:codeSpace/gco:CharacterString='Geoscience Australia Persistent Identifier']/mcc:code"/>
     <xsl:value-of select="$value/gco:CharacterString"/>
   </xsl:template>
 
@@ -124,10 +138,32 @@
     <xsl:value-of select="$value"/>
   </xsl:template>
 
-  <xsl:template mode="getMetadataResConstraints" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
-                  select="mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints"/>
-    <xsl:value-of select="$value/*"/>
+  <xsl:template mode="getMetadataSecurityConstraints" match="mdb:MD_Metadata">
+      <xsl:variable name="value"
+      select="mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_SecurityConstraints"/>
+      <xsl:apply-templates mode="render-field-custom" select="$value/mco:reference"></xsl:apply-templates>
+      <xsl:variable name="classification" select="$value/mco:classification/*/@codeListValue" />
+      <xsl:if test="$classification">
+          <p>Classification - <xsl:value-of select="$classification" /></p>
+      </xsl:if>
+      <!--<xsl:value-of select="$value/*"/>-->
+  </xsl:template>
+
+  <xsl:template mode="getMetadataLegalConstraints" match="mdb:MD_Metadata">
+      <xsl:variable name="value"
+      select="mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_LegalConstraints"/>
+      <xsl:apply-templates mode="render-field-custom" select="$value/mco:reference"></xsl:apply-templates>
+      <xsl:variable name="access" select="$value/mco:accessConstraints/*/@codeListValue" />
+      <xsl:if test="$access">
+          <p>Access - <xsl:value-of select="$access" /></p>
+      </xsl:if>
+      
+      <xsl:variable name="use" select="$value/mco:useConstraints/*/@codeListValue" />
+      <xsl:if test="$use">
+          <p>Use - <xsl:value-of select="$use" /></p>
+      </xsl:if>
+      
+      <!--<xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
   <xsl:template mode="getMetadataStatus" match="mdb:MD_Metadata">
@@ -167,21 +203,28 @@
   </xsl:template>
 
   <xsl:template mode="getMetadataParent" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
+    <xsl:apply-templates mode="render-field-custom" select="mdb:parentMetadata"></xsl:apply-templates>
+    <!--<xsl:variable name="value"
                   select="mdb:parentMetadata"/>
-    <xsl:value-of select="$value/*"/>
+    
+    <xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
   <xsl:template mode="getMetadataExtent" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
+      <xsl:variable name="value" select="mdb:identificationInfo/mri:MD_DataIdentification/mri:extent/*/gex:geographicElement"/>
+      <xsl:if test="$value">
+        <p>[<xsl:value-of select="$value/*/gex:southBoundLatitude/gco:Decimal"/>, <xsl:value-of select="$value/*/gex:northBoundLatitude/gco:Decimal"/>, 
+            <xsl:value-of select="$value/*/gex:westBoundLongitude/gco:Decimal"/>, <xsl:value-of select="$value/*/gex:eastBoundLongitude/gco:Decimal"/>]</p>
+      </xsl:if>
+          <!--<xsl:variable name="value"
                   select="mdb:identificationInfo/mri:MD_DataIdentification/mri:extent"/>
-    <xsl:value-of select="$value/*"/>
+    <xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
   <xsl:template mode="getMetadataRefSys" match="mdb:MD_Metadata">
     <xsl:variable name="value"
-                  select="mdb:referenceSystemInfo"/>
-    <xsl:value-of select="$value/*"/>
+                  select="mdb:referenceSystemInfo/*/mrs:referenceSystemIdentifier/*/mcc:code/gco:CharacterString"/>
+    <xsl:value-of select="$value"/>
   </xsl:template>
 
   <xsl:template mode="getMetadataSpatial" match="mdb:MD_Metadata">
@@ -191,26 +234,39 @@
   </xsl:template>
 
   <xsl:template mode="getMetadataServiceInfo" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
+      <xsl:if test="mdb:identificationInfo/srv:SV_ServiceIdentification">
+      <xsl:variable name="value" select="mdb:identificationInfo/srv:SV_ServiceIdentification"/>
+        <p>Type - <xsl:value-of select="$value/srv:serviceType" /></p>
+        <p>Version - <xsl:value-of select="$value/srv:serviceTypeVersion" /></p>
+        <p>Coupled Resource - <xsl:value-of select="$value/srv:coupledResource" /></p>
+        <p>Connect Point - <xsl:value-of select="$value/srv:containsOperations/*/srv:connectPoint/*/cit:linkage/gco:CharacterString" /></p>
+      </xsl:if>
+    <!--<xsl:variable name="value"
                   select="mdb:identificationInfo/srv:SV_ServiceIdentification"/>
-    <xsl:value-of select="$value/*"/>
+    <xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
   <xsl:template mode="getMetadataAssoc" match="mdb:MD_Metadata">
-    <xsl:variable name="value"
+    <xsl:for-each select="mdb:identificationInfo/*/mri:associatedResource/*">
+      <xsl:if test="mri:associationType/*[@codeListValue != 'null']">
+        <p>Association Type - <xsl:value-of select="mri:associationType/*/@codeListValue"/></p>
+      </xsl:if>
+      <xsl:apply-templates mode="render-field-custom" select="mri:metadataReference"></xsl:apply-templates>
+    </xsl:for-each>
+    <!--<xsl:variable name="value"
                   select="mdb:identificationInfo/mri:MD_DataIdentification/mri:associatedResource"/>
-    <xsl:value-of select="$value/*"/>
+    <xsl:value-of select="$value/*"/>-->
   </xsl:template>
 
   <xsl:template mode="getMetadataDistributions" match="mdb:MD_Metadata">
     <!--<xsl:variable name="value"
                   select="mdb:distributionInfo"/>
     <xsl:value-of select="$value/*"/>-->
-    <xsl:for-each select="mdb:distributionInfo/*/mrd:distributor/*/mrd:distributorTransferOptions/*/mrd:onLine">
-      <p><xsl:value-of select="*/cit:name/gco:CharacterString"/>, 
-      <xsl:variable name="onlineSrcLink" select="*/cit:linkage/gco:CharacterString"/>
-      <a href="{$onlineSrcLink}"><xsl:value-of select="$onlineSrcLink"/></a>
-      </p> 
+    <xsl:for-each select="//mrd:distributorTransferOptions/*/mrd:onLine">
+    <xsl:variable name="onlineSrcLink" select="*/cit:linkage/gco:CharacterString"/>  
+        <p>
+          <xsl:value-of select="*/cit:name/gco:CharacterString"/><a href="{$onlineSrcLink}"><i class="fa fa-external-link-square">&#160;</i></a>
+        </p> 
     </xsl:for-each> 
 
   </xsl:template>
@@ -363,69 +419,67 @@
                              select="*/cit:role/*/@codeListValue"/>
       </h4>
       <div class="row">
-        <div class="col-md-6">
-          <!-- Needs improvements as contact/org are more flexible in ISO19115-3 -->
-          <address>
-            <strong>
-              <xsl:choose>
-                <xsl:when test="normalize-space($email) != ''">
-                  <a href="mailto:{normalize-space($email)}">
-                    <xsl:value-of select="$displayName"/>
-                  </a>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:value-of select="$displayName"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </strong><br/>
-            <xsl:for-each select="*//cit:contactInfo/*">
-              <xsl:for-each select="cit:address/*/(
-                                          cit:deliveryPoint|cit:city|
-                                          cit:administrativeArea|cit:postalCode|cit:country)">
-                <xsl:if test="normalize-space(.) != ''">
-                  <xsl:apply-templates mode="render-value" select="."/><br/>
-                </xsl:if>
-              </xsl:for-each>
-            </xsl:for-each>
-          </address>
-        </div>
-        <div class="col-md-6">
+        
+        <!-- Needs improvements as contact/org are more flexible in ISO19115-3 -->
+        <address>
+            <xsl:choose>
+              <xsl:when test="normalize-space($email) != ''">
+                  <strong><a href="mailto:{normalize-space($email)}">
+                  <xsl:value-of select="$displayName"/></a>&#160;</strong>
+              </xsl:when>
+              <xsl:otherwise>
+                  <strong><xsl:value-of select="$displayName"/>&#160;</strong>
+              </xsl:otherwise>
+            </xsl:choose>
+          <br/>
           <xsl:for-each select="*//cit:contactInfo/*">
-            <address>
-              <xsl:for-each select="cit:phone/*/cit:voice[normalize-space(.) != '']">
-                <xsl:variable name="phoneNumber">
-                  <xsl:apply-templates mode="render-value" select="."/>
-                </xsl:variable>
-                <i class="fa fa-phone"></i>
-                <a href="tel:{$phoneNumber}">
-                  <xsl:value-of select="$phoneNumber"/>
-                </a>
-              </xsl:for-each>
-              <xsl:for-each select="cit:phone/*/cit:facsimile[normalize-space(.) != '']">
-                <xsl:variable name="phoneNumber">
-                  <xsl:apply-templates mode="render-value" select="."/>
-                </xsl:variable>
-                <i class="fa fa-fax"></i>
-                <a href="tel:{normalize-space($phoneNumber)}">
-                  <xsl:value-of select="normalize-space($phoneNumber)"/>
-                </a>
-              </xsl:for-each>
-              <xsl:for-each select="cit:onlineResource/*/cit:linkage[normalize-space(.) != '']">
-                <xsl:variable name="linkage">
-                  <xsl:apply-templates mode="render-value" select="."/>
-                </xsl:variable>
-                <i class="fa fa-link"></i>
-                <a href="{normalize-space($linkage)}">
-                  <xsl:value-of select="if (../cit:name)
-                                        then ../cit:name/* else
-                                        normalize-space(linkage)"/>
-                </a>
-              </xsl:for-each>
-              <xsl:apply-templates mode="render-field"
-                                   select="cit:hoursOfService|cit:contactInstructions"/>
-            </address>
+            <xsl:for-each select="cit:address/*/(
+                                        cit:deliveryPoint|cit:city|
+                                        cit:administrativeArea|cit:postalCode|cit:country)">
+              <xsl:if test="normalize-space(.) != ''">
+                <xsl:apply-templates mode="render-value" select="."/><br/>
+              </xsl:if>
+            </xsl:for-each>
           </xsl:for-each>
-        </div>
+        </address>
+      
+      
+        <xsl:for-each select="*//cit:contactInfo/*">
+          <address>
+            <xsl:for-each select="cit:phone/*/cit:voice[normalize-space(.) != '']">
+              <xsl:variable name="phoneNumber">
+                <xsl:apply-templates mode="render-value" select="."/>
+              </xsl:variable>
+              <i class="fa fa-phone"></i>
+              <a href="tel:{$phoneNumber}">
+                <xsl:value-of select="$phoneNumber"/>
+              </a>
+            </xsl:for-each>
+            <xsl:for-each select="cit:phone/*/cit:facsimile[normalize-space(.) != '']">
+              <xsl:variable name="phoneNumber">
+                <xsl:apply-templates mode="render-value" select="."/>
+              </xsl:variable>
+              <i class="fa fa-fax"></i>
+              <a href="tel:{normalize-space($phoneNumber)}">
+                <xsl:value-of select="normalize-space($phoneNumber)"/>
+              </a>
+            </xsl:for-each>
+            <xsl:for-each select="cit:onlineResource/*/cit:linkage[normalize-space(.) != '']">
+              <xsl:variable name="linkage">
+                <xsl:apply-templates mode="render-value" select="."/>
+              </xsl:variable>
+              <i class="fa fa-link"></i>
+              <a href="{normalize-space($linkage)}">
+                <xsl:value-of select="if (../cit:name)
+                                      then ../cit:name/* else
+                                      normalize-space(linkage)"/>
+              </a>
+            </xsl:for-each>
+            <xsl:apply-templates mode="render-field"
+                                  select="cit:hoursOfService|cit:contactInstructions"/>
+          </address>
+        </xsl:for-each>
+       
       </div>
     </div>
   </xsl:template>
@@ -791,6 +845,22 @@
     <span data-gn-humanize-time="{.}"><xsl:value-of select="."/></span>
   </xsl:template>
 
+  <xsl:template mode="render-field-custom" match="cit:CI_Citation">
+      <p><xsl:value-of select="cit:title"/>
+      <xsl:if test="cit:onlineResource/*/cit:linkage">
+          <xsl:variable name="link" select="cit:onlineResource/*/cit:linkage/gco:CharacterString"/>&#160;<a href="{$link}" target="_blank"><i class="fa fa-external-link-square">&#160;</i></a>  
+      </xsl:if>
+      </p>
+      <xsl:if test="cit:identifier/*/mcc:code">
+        <xsl:for-each select="cit:identifier/*">
+          <p>
+            <xsl:value-of select="mcc:codeSpace/gco:CharacterString | mcc:description/gco:CharacterString"/> - <xsl:value-of select="mcc:code/*/text()"/>
+            <xsl:if test="position()!=last()">, </xsl:if> 
+          </p>
+        </xsl:for-each>         
+      </xsl:if>
+  </xsl:template>
+  
   <!-- TODO -->
   <xsl:template mode="render-value"
           match="lan:language/gco:CharacterString">

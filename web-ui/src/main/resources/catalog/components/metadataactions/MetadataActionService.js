@@ -682,7 +682,7 @@
 
           angular.forEach(data, function(value, key){
             var str = document.createElement('strong');
-            str.innerText = "eCatId: " + key; + ", ";
+            str.innerText = "eCatId: " + key + ", ";
             var p = document.createElement('p');
             p.innerText = value;
             holder.appendChild(str);

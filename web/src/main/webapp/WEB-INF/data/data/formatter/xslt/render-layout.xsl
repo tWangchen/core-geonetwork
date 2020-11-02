@@ -47,75 +47,365 @@
   <xsl:template name="render-record">
     <div class="container-fluid gn-metadata-view gn-schema-{$schema}">
 
-      <xsl:variable name="type">
-        <xsl:apply-templates mode="getMetadataHierarchyLevel" select="$metadata"/>
-      </xsl:variable>
-      <article id="gn-metadata-view-{$metadataId}"
-               itemscope="itemscope"
-               itemtype="{gn-fn-core:get-schema-org-class($type)}">
-        <header>
-         <h1>
-          <xsl:apply-templates mode="getMetadataTitle" select="$metadata"/>
-         </h1>
+			<xsl:variable name="type">
+				<xsl:apply-templates
+					mode="getMetadataHierarchyLevel" select="$metadata" />
+			</xsl:variable>
+			<article id="gn-metadata-view-{$metadataId}"
+				itemscope="itemscope"
+				itemtype="{gn-fn-core:get-schema-org-class($type)}">
+				<header>
           <!-- PID Link -->
-         <xsl:variable name="pidlink">
-           <xsl:apply-templates mode="getMetadataPID" select="$metadata" />
-         </xsl:variable>
-         <p><a href="{$pidlink}"><xsl:value-of select="$pidlink"/></a></p>
+					<xsl:variable name="pidlink"><xsl:apply-templates mode="getMetadataPID" select="$metadata" /> </xsl:variable> 
+          
+          <div class="container-fluid gn-rv-container">
+						<div class="row">
+							<div class="col-lg-12 col-md-12 rv-title">
+								<h1>
+									<xsl:apply-templates mode="getMetadataTitle" select="$metadata" />
+									<a href="{$pidlink}" target="_blank">
+										<i class="fa fa-external-link">&#160;</i>
+									</a>
+								</h1>
+							</div>
+						</div>
+						<!--<p><a href="{$pidlink}"><xsl:value-of select="$pidlink"/></a></p> -->
 
-         <h3>Authors</h3><p><xsl:apply-templates mode="getMetadataAuthors" select="$metadata"/></p>
-         <h3>Abstract</h3><p><xsl:apply-templates mode="getMetadataAbstract" select="$metadata"/></p>
-         <h3>Product Type</h3><p><xsl:apply-templates mode="getMetadataType" select="$metadata"/></p>
-         <h3>eCat Id</h3><p><xsl:apply-templates mode="getMetadataeCatId" select="$metadata"/></p>
-         <h3>Contacts</h3><p><xsl:apply-templates mode="getMetadataPOC" select="$metadata"/></p>
-         
-         <!-- DOI Url -->
-         <xsl:variable name="doilink">
-            <xsl:apply-templates mode="getMetadataDOI" select="$metadata" />
-         </xsl:variable>
-         <xsl:if test="$doilink!=''">
-          <h3>Digital Object Identifier</h3>
-          <p><a href="{$doilink}"><xsl:value-of select="$doilink"/></a></p>
-         </xsl:if>
+						<br />
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Authors / CoAuthors</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataAuthors" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Abstract</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataAbstract" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Product Type</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataType" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>eCat Id</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataeCatId" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Contact for the resource</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataPOC" select="$metadata" />
+								</p>
+							</div>
+						</div>
 
-        
-         <h3>Publication Date</h3><p><xsl:apply-templates mode="getMetadataPubDate" select="$metadata"/></p>
-         <h3>Creation Date</h3><p><xsl:apply-templates mode="getMetadataCreateDate" select="$metadata"/></p>
-         <h3>Status</h3><p><xsl:apply-templates mode="getMetadataStatus" select="$metadata"/></p>
-         <h3>Purpose</h3><p><xsl:apply-templates mode="getMetadataPurpose" select="$metadata"/></p>
-         <h3>Maintenance Information</h3><p><xsl:apply-templates mode="getMetadataMaintenance" select="$metadata"/></p>
-         <h3>Topic Category</h3><p><xsl:apply-templates mode="getMetadataTopic" select="$metadata"/></p>
-         <h3>Series Information</h3><p><xsl:apply-templates mode="getMetadataSeries" select="$metadata"/></p>
-         <h3>Lineage</h3><p><xsl:apply-templates mode="getMetadataLineage" select="$metadata"/></p>
-         <h3>Parent Information</h3><p><xsl:apply-templates mode="getMetadataParent" select="$metadata"/></p>
-         <h3>Extents</h3><p><xsl:apply-templates mode="getMetadataExtent" select="$metadata"/></p>
-         <h3>Reference System</h3><p><xsl:apply-templates mode="getMetadataRefSys" select="$metadata"/></p>
-         <h3>Spatial Resolution</h3><p><xsl:apply-templates mode="getMetadataSpatial" select="$metadata"/></p>
-         <h3>Service Information</h3><p><xsl:apply-templates mode="getMetadataServiceInfo" select="$metadata"/></p>
-         <h3>Associations</h3><p><xsl:apply-templates mode="getMetadataAssoc" select="$metadata"/></p>
-         <h3>Downloads and Links</h3><p><xsl:apply-templates mode="getMetadataDistributions" select="$metadata"/></p>
-         <h3>Source Information</h3><p><xsl:apply-templates mode="getMetadataSourceInfo" select="$metadata"/></p>
-         
-          <!-- TODO : Add thumbnail to header -->
+						<!-- DOI Url -->
+						<xsl:variable name="doilink">
+							<xsl:apply-templates mode="getMetadataDOI" select="$metadata" />
+						</xsl:variable>
+						<xsl:if test="$doilink!=''">
+							<div class="row">
+								<div class="col-lg-3 col-md-3">
+									<p>
+										<strong>Digital Object Identifier</strong>
+									</p>
+								</div>
+								<div class="col-lg-9 col-md-9">
+									<p>
+										<a href="{$doilink}"><xsl:value-of select="$doilink" /></a>
+									</p>
+								</div>
+							</div>
+						</xsl:if>
 
-          <xsl:apply-templates mode="getMetadataHeader" select="$metadata"/>
-          <!--<xsl:apply-templates mode="render-toc" select="$viewConfig"/>-->
-        </header>
-        <xsl:apply-templates mode="render-view" select="$viewConfig/*"/>
-        <!--
-        TODO: scrollspy or tabs on header ?
-        <div class="gn-scroll-spy"
-             data-gn-scroll-spy="gn-metadata-view-{$metadataId}"
-             data-watch=""
-             data-filter="div > h3"/>-->
-        <footer>
+            <div class="row">
+                <div class="col-lg-3 col-md-3">
+                  <p>
+                    <strong>Keywords</strong>
+                  </p>
+                </div>
+                <div class="col-lg-9 col-md-9">
+                  <p>
+                    <xsl:apply-templates mode="getMetadataKeywords" select="$metadata" />
+                  </p>
+                </div>
+              </div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Publication Date</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataPubDate" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Creation Date</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataCreateDate" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Security Constraints</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p><xsl:apply-templates mode="getMetadataSecurityConstraints" select="$metadata" /></p>
+							</div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-3">
+                  <p>
+                    <strong>Legal Constraints</strong>
+                  </p>
+                </div>
+                <div class="col-lg-9 col-md-9">
+                  <p><xsl:apply-templates mode="getMetadataLegalConstraints" select="$metadata" /></p>
+                </div>
+              </div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Status</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataStatus" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Purpose</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataPurpose" select="$metadata" />
+								</p>
+							</div>
+						</div>
 
-        </footer>
-      </article>
-      <br/>
-      <br/>
-    </div>
-  </xsl:template>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Maintenance Information</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataMaintenance" select="$metadata" />
+								</p>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Topic Category</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataTopic" select="$metadata" />
+								</p>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Series Information</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataSeries" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Lineage</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataLineage" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Parent Information</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataParent" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Extents</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataExtent" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Reference System</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataRefSys" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Spatial Resolution</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataSpatial" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Service Information</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataServiceInfo" select="$metadata" />
+								</p>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Associations</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataAssoc" select="$metadata" />
+								</p>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Downloads and Links</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataDistributions" select="$metadata" />
+								</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-3 col-md-3">
+								<p>
+									<strong>Source Information</strong>
+								</p>
+							</div>
+							<div class="col-lg-9 col-md-9">
+								<p>
+									<xsl:apply-templates mode="getMetadataSourceInfo" select="$metadata" />
+								</p>
+							</div>
+						</div>
+
+						<!-- TODO : Add thumbnail to header -->
+
+						<xsl:apply-templates mode="getMetadataHeader" select="$metadata" />
+						<!--<xsl:apply-templates mode="render-toc" select="$viewConfig"/> -->
+
+            <script type="application/ld+json">
+              <xsl:apply-templates mode="getJsonLD"
+                                   select="$metadata"/>
+            </script>
+			
+					</div>
+				</header>
+				<xsl:apply-templates mode="render-view"
+					select="$viewConfig/*" />
+				<!-- TODO: scrollspy or tabs on header ? <div class="gn-scroll-spy" data-gn-scroll-spy="gn-metadata-view-{$metadataId}" 
+					data-watch="" data-filter="div > h3"/> -->
+				<footer>
+
+				</footer>
+			</article>
+			<br />
+			<br />
+		</div>
+	</xsl:template>
 
 
 

@@ -25,6 +25,10 @@ package org.fao.geonet.guiservices.metadata;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 
 import org.fao.geonet.Util;
 import org.fao.geonet.domain.ISODate;
@@ -35,11 +39,14 @@ import org.fao.geonet.domain.OperationAllowed;
 import org.fao.geonet.domain.OperationAllowedId_;
 import org.fao.geonet.domain.ReservedOperation;
 import org.fao.geonet.exceptions.SitemapDocumentNotFoundEx;
+import org.fao.geonet.kernel.ECatOperationManager;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.OperationAllowedRepository;
 import org.fao.geonet.repository.specification.MetadataSpecs;
 import org.fao.geonet.repository.specification.OperationAllowedSpecs;
 import org.jdom.Element;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -57,6 +64,7 @@ import jeeves.server.context.ServiceContext;
  * See http://www.sitemaps.org/protocol.php
  */
 public class Sitemap implements Service {
+	
     private static final String FORMAT_XML = "xml";
     private static final String FORMAT_HTML = "html";
 
@@ -113,8 +121,12 @@ public class Sitemap implements Service {
             if (doc <= pages) {
 
                 final PageRequest pageRequest = new PageRequest(doc - 1, _maxItemsPage, sortByChangeDateDesc);
-                result = metadataRepository.findAllUuidsAndChangeDatesAndSchemaId(list, pageRequest);
+                //result = metadataRepository.findAllUuidsAndChangeDatesAndSchemaId(list, pageRequest);
 
+                TypedQuery<Tuple> query = metadataRepository.findAllUuidsAndChangeDates(list, pageRequest);
+                
+                result = getResultWitheCatId(query, context.getApplicationContext());
+                
                 Element formatEl = new Element("format");
                 formatEl.setText(format.toLowerCase());
                 result.addContent(formatEl);
@@ -127,7 +139,9 @@ public class Sitemap implements Service {
             // Request the sitemap (no specific document) 
             if (metadatataCount <= _maxItemsPage) { 
                 // Request the full sitemap 
-                result = metadataRepository.findAllUuidsAndChangeDatesAndSchemaId(list);
+            	TypedQuery<Tuple> query = metadataRepository.findAllUuidsAndChangeDates(list);
+                
+                result = getResultWitheCatId(query, context.getApplicationContext());
 
                 Element formatEl = new Element("format");
                 formatEl.setText(format.toLowerCase());
@@ -149,4 +163,15 @@ public class Sitemap implements Service {
 
         return result;
     }
+    
+    private Element getResultWitheCatId(TypedQuery<Tuple> query, ApplicationContext context) throws Exception {
+    	
+    	ECatOperationManager opManager = context.getBean(ECatOperationManager.class);;
+    	
+    	List<String> uuids = query.getResultList().stream().map(tuple -> (String)tuple.get(0)).collect(Collectors.toList());
+    	
+    	return opManager.getResults(context, uuids);
+    	
+    }
+
 }

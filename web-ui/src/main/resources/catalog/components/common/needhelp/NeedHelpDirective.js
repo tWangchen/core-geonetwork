@@ -55,29 +55,14 @@
         link: function(scope, element, attrs) {
           scope.iconOnly = attrs.iconOnly === 'true';
           var helpBaseUrl = gnGlobalSettings.docUrl ||
-              'https://geonetwork-opensource.org/manuals/trunk/';
+              'https://intranet.ga.gov.au/records-and-data/ecat/ecat-help';
 
           var testAndOpen = function(url) {
-            var defer = $q.defer();
-            $http.head(url).then(function(data) {
-              window.open(url, 'gn-documentation');
-              defer.resolve(data);
-            }, function(data) {
-              gnAlertService.addAlert({
-                msg: $translate.instant('docPageNotFoundAtUrl') + ' ' + url,
-                type: 'warning'
-              });
-              defer.reject(data);
-            });
-            return defer.promise;
+        	  window.open(url);
           };
 
           scope.showHelp = function() {
-            var page = attrs.gnNeedHelp;
-            var helpPageUrl = helpBaseUrl + gnGlobalSettings.lang + '/' + page;
-            testAndOpen(helpPageUrl).then(function() {}, function() {
-              testAndOpen( helpBaseUrl + 'en/' + page)
-            });
+        	testAndOpen( helpBaseUrl);
             return true;
           };
         }
