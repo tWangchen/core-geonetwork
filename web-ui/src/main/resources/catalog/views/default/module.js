@@ -249,20 +249,18 @@
         }       
         return title;
       }
-     
+      $scope.bboxStr = '';
       $scope.getBoundingBox = function(bbox) {
-        var bboxStr = '';
-        if(bbox){
-          var vals = bbox[0].split(',');
-          if(vals[0]){
-            bboxStr += parseFloat(vals[0].split(' ')[0]).toFixed(2) + ', ' + parseFloat(vals[0].split(' ')[1]).toFixed(2) + ', ';
+        $scope.bboxStr = '';
+          if(bbox[1]){
+            var vals = bbox[1].split('|');
+            if(vals[0]){
+              $scope.bboxStr += "west longitude : " + parseFloat(vals[0]).toFixed(2) + "<br>" + 
+                          "south latitude: " + parseFloat(vals[1]).toFixed(2) + "<br>" + 
+                          "east longitude: " + parseFloat(vals[2]).toFixed(2) + "<br>" + 
+                          "north latitude: " + parseFloat(vals[3]).toFixed(2);
+            }
           }
-          if(vals[2]){
-            bboxStr += parseFloat(vals[2].split(' ')[0]).toFixed(2) + ', ' + parseFloat(vals[2].split(' ')[1]).toFixed(2);
-          }
-        }
-
-        return bboxStr;
       }
       $scope.getCitation = function(md){
         if(md){
