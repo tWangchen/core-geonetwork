@@ -361,6 +361,9 @@ public class GetCapabilities extends AbstractOperation implements CatalogService
         vars.put("$PROVIDER_SITE", StringUtils.isNotEmpty(sm.getValue(Settings.SYSTEM_SITE_ORGANIZATION_WEBSITE)) ? sm.getValue(Settings.SYSTEM_SITE_ORGANIZATION_WEBSITE) : sm.getValue(Settings.SYSTEM_SERVER_PROTOCOL)+"://"+sm.getValue(Settings.SYSTEM_SERVER_HOST)+("80".equals(sm.getValue(Settings.SYSTEM_SERVER_PORT)) ? "" : ":" +sm.getValue(Settings.SYSTEM_SERVER_PORT)) +context.getBaseUrl());
 
         vars.put("$SERVLET", context.getBaseUrl());
+        
+        String maxRecords = sm.getValue(Settings.SYSTEM_SELECTIONMANAGER_MAXRECORDS);
+        vars.put("$MAX_RECORDS", maxRecords);
 
         // Set CSW contact information
         if (contact != null) {

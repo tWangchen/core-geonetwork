@@ -53,6 +53,7 @@ import org.fao.geonet.kernel.search.LuceneSearcher;
 import org.fao.geonet.kernel.search.SearchManager;
 import org.fao.geonet.kernel.setting.SettingInfo;
 import org.fao.geonet.kernel.setting.SettingManager;
+import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.repository.CustomElementSetRepository;
 import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.util.xml.NamespaceUtils;
@@ -78,7 +79,7 @@ import static org.fao.geonet.kernel.setting.Settings.SYSTEM_CSW_ENABLEWHENINDEXI
 public class GetRecords extends AbstractOperation implements CatalogService {
 
     static final String NAME = "GetRecords";
-
+    static final int DEFAULT_MAX_RECORDS = 10;
     /**
      * OGC 07-006 10.8.4.4.
      */
@@ -684,11 +685,10 @@ public class GetRecords extends AbstractOperation implements CatalogService {
      */
     private int getMaxRecords(Element request, ServiceContext context) throws InvalidParameterValueEx {
     	SettingRepository settingRepo = context.getBean(SettingRepository.class);
-        Setting se = settingRepo.findOne("system/selectionmanager/maxrecords");
-        
+        Setting se = settingRepo.findOne(Settings.SYSTEM_SELECTIONMANAGER_MAXRECORDS);
         String max = request.getAttributeValue("maxRecords");
         if (max == null) {
-            return 10;
+            return DEFAULT_MAX_RECORDS;
         }
         try {
             int value = Integer.parseInt(max);

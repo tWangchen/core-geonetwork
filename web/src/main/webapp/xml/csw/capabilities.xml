@@ -111,6 +111,9 @@
         <ows:Value>FILTER</ows:Value>
         <ows:Value>CQL_TEXT</ows:Value>
       </ows:Parameter>
+      <ows:Parameter name="maxRecords">
+        <ows:Value>$MAX_RECORDS</ows:Value>
+      </ows:Parameter>
       <ows:Constraint name="PostEncoding">
         <ows:Value>XML</ows:Value>
         <ows:Value>SOAP</ows:Value>
