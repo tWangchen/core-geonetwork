@@ -588,3 +588,31 @@ form.gn-editor.gn-indent-bluescale {
 
   }
 }
+
+.gn-item.active, .gn-item.active:hover, .gn-item.active:focus {
+  z-index: 2;
+  color: #000;
+  background-color: #ddd;
+  border-color: #ddd;
+}
+
+.tpl-badge {
+  display: block;
+  justify-content: space-between;
+  .badge {
+    font-size: 9px;
+    font-weight: lighter;
+  }
+  .approved {
+    color: #fff !important;
+    background-color: #28a745 !important;
+  }
+
+  .draft {
+    color: #fff !important;
+    background-color: #555555 !important;
+  }
+  span:not(:last-child) {
+    margin-right: 10px;
+  }
+}
