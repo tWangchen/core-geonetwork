@@ -49,6 +49,8 @@
       $scope.isTemplate = false;
       $scope.hasTemplates = true;
       $scope.mdList = null;
+      $scope.userTemplates = 0;
+      $scope.defaultTemplates = 0;
 
       // Used for the metadata identifier fields
       $scope.mdIdentifierTemplateTokens = {};
@@ -156,17 +158,28 @@
        */
       $scope.getTemplateNamesByType = function(type) {
         var tpls = [];
+        $scope.userTemplates = 0;
+        $scope.defaultTemplates = 0;
         for (var i = 0; i < $scope.mdList.metadata.length; i++) {
           var md = $scope.mdList.metadata[i];
           md.title = md.title || md.defaultTitle;
           var mdType = md.type || unknownType;
           if (mdType instanceof Array) {
             if (mdType.indexOf(type) >= 0) {
+              updateTemplateCount(md);
               tpls.push(md);
             }
           } else if (mdType == type) {
-            tpls.push(md);
+              updateTemplateCount(md);
+              tpls.push(md);
           }
+        }
+
+        function updateTemplateCount(md){
+          if(md.eCatId)
+            $scope.userTemplates++;
+          else
+            $scope.defaultTemplates++;
         }
 
         // Sort template list

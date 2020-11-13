@@ -35,30 +35,33 @@
       </div>
     </div>
     <div class="col-sm-4">
-      <div class="panel-default panel">
-        <div class="panel-heading">
-          <span data-translate="">fromTemplate</span>
-          <strong>{{(activeTpl.title || '...') | translate}}</strong>
+      
+      <input type="text" autofocus="" placeholder="{{'filter' | translate}}"
+              class="form-control" data-ng-show="tpls.length > 10"
+              data-ng-model="tplFilter.title" data-ng-model-options="{debounce: 200}" />
+        
+        <div class="panel panel-success" data-ng-if="defaultTemplates > 0"> 
+          <div class="panel-heading"><strong>Default Templates</strong></div> 
+          <ul class = "list-group">
+              <li class = "list-group-item gn-item" data-ng-repeat="tpl in tpls | filter:tplFilter" ng-if="!tpl.eCatId"  
+              data-ng-click="setActiveTpl(tpl)" data-ng-class="{'active': tpl==activeTpl}">{{tpl.title}}</li>
+          </ul>
         </div>
-        <div class="panel-body">
-          <input type="text"
-                 autofocus=""
-                 placeholder="{{'filter' | translate}}"
-                 class="form-control"
-                 data-ng-show="tpls.length > 10"
-                 data-ng-model="tplFilter.title"
-                 data-ng-model-options="{debounce: 200}"
-          />
 
-          <div class="list-group">
-            <a data-ng-repeat="tpl in tpls | filter:tplFilter" href="" class="list-group-item"
-               data-ng-click="setActiveTpl(tpl)"
-               data-ng-class="{'active': tpl==activeTpl}">{{tpl.title}}</a>
-          </div>
+        <div class="panel panel-success" data-ng-if="userTemplates > 0"> 
+            <div class="panel-heading"><strong>User Templates</strong></div> 
+            <ul class = "list-group">
+                <li class = "list-group-item gn-item tpl-badge" data-ng-repeat="tpl in tpls | filter:tplFilter" ng-if="tpl.eCatId" 
+                    data-ng-click="setActiveTpl(tpl)" data-ng-class="{'active': tpl==activeTpl}"><span>{{tpl.title}}</span> 
+                    <span class="badge approved" ng-if="tpl.mdStatus == '2'">Approved</span>
+                    <span class="badge draft" ng-if="tpl.mdStatus == '1'">Draft</span>
+                  </li>
+            </ul>
         </div>
-      </div>
+
     </div>
     <div class="col-sm-3" data-ng-show="groups && groups.length > 1">
+      <div class="row">
       <div class="panel-default panel">
         <div class="panel-heading"><span data-translate="">inGroup</span>
           <strong>{{(ownerGroup.label[lang] || '...') | translate}}</strong>
@@ -73,6 +76,36 @@
                data-exclude-special-groups="true"/>
         </div>
       </div>
+    </div>
+      <div class="row" data-ng-show="user.isUserAdminOrMore()">
+          <div class="form-inline">
+            <div class="col-sm-5">
+              <input type="number" max="100" data-ng-model="mdCount">
+            </div>
+            <div class="col-sm-4">
+              <div class="btn-group">
+              <button type="button" class="btn btn-success btn-md" data-gn-click-and-spin="createMultiMetadata()"
+                  data-ng-class="{'disabled': (!activeType || !activeTpl || !ownerGroup || ((!generateUuid) && (!isMdIdentifierFilled())) )}">
+                <i class="fa fa-plus"/><span data-translate="">Create Metadatas</span>
+              </button>             
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <br >
+	  <div class="row">
+		<div ng-hide="msg==''">
+			<label class="alert alert-info">{{msg}}</label>
+		  </div>
+		  <div ng-if="eCatIds.length">
+			<label style="text-decoration:underline; font-style:italic">eCatIds:</label>
+		  </div>
+		  <div data-ng-repeat="id in eCatIds">
+			<label>{{id}}</label>
+		  </div>
+    </div>
+    
     </div>
     <div class="col-sm-3">
       <div class="panel-default panel" data-ng-show="hasTemplates && !generateUuid">
@@ -131,33 +164,6 @@
         <span data-translate="">cancel</span>
       </a>
     </div>
-	<div class="row" data-ng-show="user.isUserAdminOrMore()">
-		<div class="col-sm-5">
-		  <input type="number" max="100" class="form-control" data-ng-model="mdCount">
-		</div>
-		<div class="col-sm-4">
-		  <div class="btn-group">
-			<button type="button" class="btn btn-success btn-md"
-					data-gn-click-and-spin="createMultiMetadata()"
-					data-ng-class="{'disabled': (!activeType || !activeTpl || !ownerGroup || ((!generateUuid) && (!isMdIdentifierFilled())) )}">
-			  <i class="fa fa-plus"/>
-			  <span data-translate="">Create Metadatas</span>
-			</button>
-		  </div>
-		</div>
-	  </div>
-	  <br >
-	  <div class="row">
-		<div ng-hide="msg==''">
-			<label class="alert alert-info">{{msg}}</label>
-		  </div>
-		  <div ng-if="eCatIds.length">
-			<label style="text-decoration:underline; font-style:italic">eCatIds:</label>
-		  </div>
-		  <div data-ng-repeat="id in eCatIds">
-			<label>{{id}}</label>
-		  </div>
-	  </div>
 	
   </div>
 

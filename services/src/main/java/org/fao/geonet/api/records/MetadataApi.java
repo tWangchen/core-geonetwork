@@ -33,6 +33,7 @@ import jeeves.server.context.ServiceContext;
 import jeeves.services.ReadWriteController;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.http.entity.StringEntity;
 import org.fao.geonet.api.API;
 import org.fao.geonet.api.ApiParams;
@@ -175,10 +176,13 @@ public class MetadataApi {
     )
         throws Exception {
         try {
-        	if(!ApiUtils.isUuid(metadataUuid)){
-        		metadataUuid = opManager.getUuidFromECatId(metadataUuid);
-        		if(StringUtils.isEmpty(metadataUuid))
-        			throw new Exception(ApiParams.API_RESPONSE_RESOURCE_NOT_FOUND);
+        	if(!ApiUtils.isUuid(metadataUuid) && NumberUtils.isDigits(metadataUuid)){
+        		String eCatId = metadataUuid;
+        		String newMetadataUuid = opManager.getUuidFromECatId(eCatId);
+        		if(StringUtils.isEmpty(newMetadataUuid))
+        			Log.error(API.LOG_MODULE_NAME, ApiParams.API_RESPONSE_RESOURCE_NOT_FOUND + " - " + eCatId);
+        		else
+        			metadataUuid = newMetadataUuid;
         	}
             ApiUtils.canViewRecord(metadataUuid, request);
         } catch (SecurityException e) {

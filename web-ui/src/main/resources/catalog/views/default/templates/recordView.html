@@ -406,8 +406,8 @@
             <div class="row tab-items" data-ng-if="isAvailable(mdView.current.record.geoBox)">
               <div class="col-md-3"><b>Geographical Bounding Box</b></div>
               <div class="col-md-9">
-                <!--<p>{{mdView.current.record.geoBox}}</p>-->
-                <p>{{getBoundingBox(mdView.current.record.geoBox)}}</p>
+                <!--<p>{{getBoundingBox(mdView.current.record.geoBox)}}</p>-->
+                <p ng-bind-html="bboxStr">{{getBoundingBox(mdView.current.record.geoBox)}}</p>
               </div>
             </div>
             <!--<div class="row tab-items" data-ng-if="isAvailable(mdView.current.record.geoBox)">

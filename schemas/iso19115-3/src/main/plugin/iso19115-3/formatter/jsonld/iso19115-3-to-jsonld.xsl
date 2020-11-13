@@ -150,8 +150,8 @@
   {
     "@context": "http://schema.org/",
     <xsl:choose>
-      <xsl:when test="mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue != ''">
-        "@type": "<xsl:value-of select="schema-org-fn:getType(mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue, 'schema:')"/>",
+      <xsl:when test="mdb:metadataScope[1]/*/mdb:resourceScope/*/@codeListValue != ''">
+        "@type": "<xsl:value-of select="schema-org-fn:getType(mdb:metadataScope[1]/*/mdb:resourceScope/*/@codeListValue, 'schema:')"/>",
       </xsl:when>
       <xsl:otherwise>
         "@type": "schema:Dataset",
