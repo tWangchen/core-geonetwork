@@ -43,6 +43,9 @@ import org.fao.geonet.kernel.datamanager.IMetadataOperations;
 import org.fao.geonet.kernel.datamanager.IMetadataSchemaUtils;
 import org.fao.geonet.kernel.metadata.StatusActions;
 import org.fao.geonet.kernel.metadata.StatusActionsFactory;
+import org.fao.geonet.kernel.schema.AssociatedResource;
+import org.fao.geonet.kernel.schema.AssociatedResourcesSchemaPlugin;
+import org.fao.geonet.kernel.schema.SchemaPlugin;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.repository.StatusValueRepository;
@@ -140,7 +143,7 @@ public class MetadataRetireApi {
 
 		if (report != null && !report.isEmpty())
 			report.clear();
-
+        
 		request.getSession().setAttribute(RETIRE_STATUS, false);
 		ServiceContext context = ApiUtils.createServiceContext(request);
 		Runnable task = () -> {
@@ -202,15 +205,9 @@ public class MetadataRetireApi {
 	private boolean retire(String metadataUuid, ServiceContext srvContext) throws Exception {
 		
 		AbstractMetadata metadata = ApiUtils.getRecord(metadataUuid);
-        
+		
         UserSession us = srvContext.getUserSession();
         String schema = metadataSchemaUtils.getMetadataSchema(String.valueOf(metadata.getId()));
-        
-        MetadataStatusParameter status = new MetadataStatusParameter();
-        status.setStatus(Integer.parseInt(StatusValue.Status.RETIRED));
-        status.setCloseDate(new ISODate().toString());
-        status.setOwner(us.getUserIdAsInt());
-        status.setChangeMessage("Retiring records");
         
 		boolean isMdWorkflowEnable = settingManager.getValueAsBool(Settings.METADATA_WORKFLOW_ENABLE);
 
@@ -218,6 +215,14 @@ public class MetadataRetireApi {
             throw new FeatureNotEnabledException(
                     "Metadata workflow is disabled, can not be set the status of metadata");
         }
+        
+        removeAssociations(metadata, schema, srvContext);
+        
+        MetadataStatusParameter status = new MetadataStatusParameter();
+        status.setStatus(Integer.parseInt(StatusValue.Status.RETIRED));
+        status.setCloseDate(new ISODate().toString());
+        status.setOwner(us.getUserIdAsInt());
+        status.setChangeMessage("Retiring records");
         
         // --- use StatusActionsFactory and StatusActions class to
         // --- change status and carry out behaviours for status changes
@@ -248,6 +253,63 @@ public class MetadataRetireApi {
         return true;
 	}
 	
+	private void removeAssociations(AbstractMetadata metadata, String schema, ServiceContext srvContext) {
+		/*
+		 * If service record - get the operatesOn uuidref and remove the association from dataset
+		 * If dataset record - get the all the associations and remove 
+		 */
+		
+        String schemaIdentifier;
+		try {
+			schemaIdentifier = metadataSchemaUtils.getMetadataSchema(String.valueOf(metadata.getId()));
+			SchemaPlugin instance = SchemaManager.getSchemaPlugin(schemaIdentifier);
+	        AssociatedResourcesSchemaPlugin schemaPlugin = null;
+	        if (instance instanceof AssociatedResourcesSchemaPlugin) {
+	            schemaPlugin = (AssociatedResourcesSchemaPlugin) instance;
+	        }
+	        
+	        if(schemaPlugin != null) {
+	        	Set<String> listOfAssociatedResources = schemaPlugin.getAssociatedDatasetUUIDs(metadata.getXmlData(false));
+	        	listOfAssociatedResources.stream().forEach(uuidref -> {
+	        		
+	        		Map<String, Object> xslAssocParameters = new HashMap<String, Object>();
+	        		xslAssocParameters.put("type", "UUID");
+	        		xslAssocParameters.put("code", metadata.getUuid());
+	        		xslAssocParameters.put("forceRemove", "true");
+	        		
+	        		// --- update Metadata
+	        		try {
+	        			
+	        			//Remove service from dataset (association)
+	        			AbstractMetadata associatedMetadata = ApiUtils.getRecord(uuidref);
+	        			Element association_md = associatedMetadata.getXmlData(false);
+		         		Path file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.ASSOCIATION_REMOVE);
+		        		association_md = Xml.transform(association_md, file, xslAssocParameters);
+						metadataManager.updateMetadata(srvContext, String.valueOf(associatedMetadata.getId()), association_md, false, false, false, srvContext.getLanguage(), new ISODate().toString(), false);
+						metadataIndexer.indexMetadata(String.valueOf(associatedMetadata.getId()), true, null);
+						
+
+						
+						//Remove dataset from service (operatesOn)
+						file = schemaManager.getSchemaDir(schema).resolve("process").resolve(Geonet.File.SERVICES_REMOVE);
+		        		Element md = metadata.getXmlData(false);
+		        		Map<String, Object> xslParameters = new HashMap<String, Object>();
+		        		xslParameters.put("uuidref", uuidref);
+		         		md = Xml.transform(md, file, xslParameters);
+		         		metadataManager.updateMetadata(srvContext, String.valueOf(metadata.getId()), md, false, false, false, srvContext.getLanguage(), new ISODate().toString(), false);
+						
+		         		
+					} catch (Exception e) {
+						
+					}
+	                
+	        	});
+	        }
+		} catch (Exception e) {
+			Log.error(Geonet.DATA_MANAGER, "Unable to remove associations");
+		}
+        
+	}
 	 /**
      * Convert request parameter to a metadata status.
      */
