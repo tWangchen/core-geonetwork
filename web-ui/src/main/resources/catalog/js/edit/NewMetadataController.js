@@ -160,6 +160,8 @@
         var tpls = [];
         $scope.userTemplates = 0;
         $scope.defaultTemplates = 0;
+        
+        $scope.mdList.metadata.sort(compare);
         for (var i = 0; i < $scope.mdList.metadata.length; i++) {
           var md = $scope.mdList.metadata[i];
           md.title = md.title || md.defaultTitle;
@@ -178,8 +180,13 @@
         function updateTemplateCount(md){
           if(md.eCatId)
             $scope.userTemplates++;
-          else
+          else{
+            if($scope.defaultTemplates == 0){
+              $scope.setActiveTpl(md);
+            }
             $scope.defaultTemplates++;
+          }
+            
         }
 
         // Sort template list
@@ -190,11 +197,16 @@
             return 1;
           return 0;
         }
-        tpls.sort(compare);
+        //tpls.sort(compare);
 
         $scope.tpls = tpls;
         $scope.activeType = type;
-        $scope.setActiveTpl($scope.tpls[0]);
+        
+        if($scope.defaultTemplates <= 0){
+          $scope.setActiveTpl($scope.tpls[0]);
+        }
+        //$scope.setActiveTpl($scope.tpls[0]);
+        
         return false;
       };
 
