@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2016 Food and Agriculture Organization of the
+ * Copyright (C) 2001-2020 Food and Agriculture Organization of the
  * United Nations (FAO-UN), United Nations World Food Programme (WFP)
  * and United Nations Environment Programme (UNEP)
  *
@@ -78,35 +78,33 @@
                     scope.currentExtent = scope.$eval(scope.gnDrawBboxBtn);
                   });
 
-                  /**
-                   * Set active relation (intersect, within, etc..). Run search
-                   * when changed.
-                   */
-                  scope.setRelation = function(rel) {
-                    scope.searchObj.params.relation = rel;
-                    if (scope.autoTriggerSearch && !!scope.searchObj.params.geometry) {
-                      scope.triggerSearch();
-                    }
-                  };
-
-
-                  scope.renderMap = function() {
-                    scope.map.renderSync();
-                  };
-
-                  var loadPromise = scope.map.get('sizePromise');
-                  if (loadPromise) {
-                    loadPromise.then(function() {
-                      scope.renderMap();
-                    });
-                  }
-
+              /**
+               * Set active relation (intersect, within, etc..). Run search
+               * when changed.
+               */
+              scope.setRelation = function(rel) {
+                scope.searchObj.params.relation = rel;
+                if (scope.autoTriggerSearch && !!scope.searchObj.params.geometry) {
+                  scope.triggerSearch();
                 }
               };
+
+              scope.renderMap = function() {
+                scope.map.renderSync();
+              };
+
+              var loadPromise = scope.map.get('sizePromise');
+              if (loadPromise) {
+                loadPromise.then(function() {
+                  scope.renderMap();
+                });
+              }
             }
           };
         }
-      ])
+      };
+    }
+  ])
 
       .directive('gnDrawBboxBtn', [
         'olDecorateInteraction',
