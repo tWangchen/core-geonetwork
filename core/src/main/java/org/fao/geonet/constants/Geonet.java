@@ -104,6 +104,7 @@ public final class Geonet {
     public static final String BATCHEDIT_BACKUP = "be_backup";
     public static final String BATCHEDIT_PROGRESS = "be_progress";
     public static final String CSV_DOWNLOAD_STATUS = "csv_download_status";
+    public static final String SCHEMA_ISO_19115_3 = "iso19115-3";
     
     /**
      * Container for file names.
