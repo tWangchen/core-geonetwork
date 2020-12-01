@@ -23,25 +23,36 @@
 
 package org.fao.geonet.api.records;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
+import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_OPS;
+import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
+import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUID;
+import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUIDS_OR_SELECTION;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import jeeves.constants.Jeeves;
-import jeeves.server.ServiceConfig;
-import jeeves.server.UserSession;
-import jeeves.server.context.ServiceContext;
-import jeeves.services.ReadWriteController;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import javax.annotation.Nonnull;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -60,7 +71,6 @@ import org.fao.geonet.domain.AbstractMetadata;
 import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.domain.MetadataCategory;
-import org.fao.geonet.domain.MetadataResource;
 import org.fao.geonet.domain.MetadataResourceVisibility;
 import org.fao.geonet.domain.MetadataType;
 import org.fao.geonet.domain.MetadataValidation;
@@ -79,7 +89,6 @@ import org.fao.geonet.exceptions.XSDValidationErrorEx;
 import org.fao.geonet.kernel.AccessManager;
 import org.fao.geonet.kernel.DataManager;
 import org.fao.geonet.kernel.GeonetworkDataDirectory;
-import org.fao.geonet.kernel.Schema;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.SelectionManager;
 import org.fao.geonet.kernel.aws.S3Operation;
@@ -105,6 +114,7 @@ import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.filter.ElementFilter;
 import org.jdom.input.JDOMParseException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
@@ -124,36 +134,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import jeeves.constants.Jeeves;
+import jeeves.server.ServiceConfig;
+import jeeves.server.UserSession;
+import jeeves.server.context.ServiceContext;
+import jeeves.services.ReadWriteController;
 import springfox.documentation.annotations.ApiIgnore;
-
-import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_OPS;
-import static org.fao.geonet.api.ApiParams.API_CLASS_RECORD_TAG;
-import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUID;
-import static org.fao.geonet.api.ApiParams.API_PARAM_RECORD_UUIDS_OR_SELECTION;
-import static org.springframework.data.jpa.domain.Specifications.where;
 
 @RequestMapping(value = { "/{portal}/api/records", "/{portal}/api/" + API.VERSION_0_1 + "/records" })
 @Api(value = API_CLASS_RECORD_TAG, tags = API_CLASS_RECORD_TAG, description = API_CLASS_RECORD_OPS)
@@ -365,7 +366,9 @@ public class MetadataInsertDeleteApi {
         }else if (xml != null) {
             Element element = null;
             try {
-                element = Xml.loadString(xml, false);
+            	
+            	element = Xml.loadString(xml, false);
+            	
             } catch (JDOMParseException ex) {
                 throw new IllegalArgumentException(
                         String.format("XML fragment is invalid. Error is %s", ex.getMessage()));
@@ -1056,6 +1059,9 @@ public class MetadataInsertDeleteApi {
             // subtemplates may need to be loaded with a specific uuid
             // that will be attached to the root element so check for that
             // and if not found, generate a new uuid
+        	
+        	xmlElement = transformSubtemplate(xmlElement);
+        	
             uuid = xmlElement.getAttributeValue("uuid");
             if (StringUtils.isEmpty(uuid)) {
               uuid = UUID.randomUUID().toString();
@@ -1191,5 +1197,29 @@ public class MetadataInsertDeleteApi {
             elData.addContent(new Element(p[0]).setText(p[1]));
 		
 		return elData;
+	}
+	
+	private Element transformSubtemplate(Element contactXml)   {
+		
+		try {
+			ElementFilter org_filter = new ElementFilter("CI_Organisation", Geonet.Namespaces.CIT);
+			ElementFilter ind_filter = new ElementFilter("CI_Individual", Geonet.Namespaces.CIT);
+			Boolean isOrg = contactXml.getDescendants(org_filter).hasNext();
+			Boolean isInd = contactXml.getDescendants(ind_filter).hasNext();
+	
+			if(contactXml.getName().equals("CI_Responsibility")) {
+				if(isOrg) {
+					Path p = schemaManager.getSchemaDir("iso19115-3").resolve("process").resolve("transform_org.xsl");
+					return Xml.transform(contactXml, p);
+				}else if(isInd) {
+					Path p = schemaManager.getSchemaDir("iso19115-3").resolve("process").resolve("transform_ind.xsl");
+					return Xml.transform(contactXml, p);
+				}
+			}
+		}catch(Exception e) {
+			Log.error(Geonet.DATA_MANAGER, "Unable to transform contact subtemplate.");
+		}
+		
+		return contactXml;
 	}
 }
