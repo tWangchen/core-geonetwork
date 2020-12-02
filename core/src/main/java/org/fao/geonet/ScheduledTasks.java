@@ -84,8 +84,6 @@ public class ScheduledTasks {
 			S3Object object = s3client.getObject(new GetObjectRequest(s3uri.getBucket(), s3uri.getKey()));
 			InputStream objectData = object.getObjectContent();
 			
-			Log.info(Geonet.DATA_MANAGER, "AWS S3 bucket and key: " + s3uri.getBucket() + ", " + s3uri.getKey());
-			
 			final Reader reader = new InputStreamReader(objectData);
 
 			CSVParser parser = new CSVParser(reader, CSVFormat.EXCEL.withHeader().withIgnoreEmptyLines());
@@ -128,18 +126,14 @@ public class ScheduledTasks {
 					boolean ufo = false, indexImmediate = true;
 					try {
 						
-						
 						Metadata md = metadataRepository.findOneByUuid(uid);
 						String extra = Joiner.on("|").join(INTERNAL, title, company);
 						
 						if (md == null) {
 							
 							AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
-					        
-							Log.info(Geonet.DATA_MANAGER, "Adding new user.. " + dn + "(" + uid + ")");
-							Log.info(Geonet.DATA_MANAGER, "Citation Name: " + dn + ", title: " + title + ", company: " + company + "extra: " + extra);
-							
-							
+
+							Log.info(Geonet.DATA_MANAGER, String.format("Adding user %s, %s, %s", dn, title, company));
 							metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
 							
 							
@@ -148,13 +142,11 @@ public class ScheduledTasks {
 							if(!md.getDataInfo().getExtra().equals(extra)) {
 								
 								AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
-								Log.info(Geonet.DATA_MANAGER, "Updating user ---> Citation Name: " + dn + ", title: " + title + ", company: " + company + "extra: " + extra);
+								Log.info(Geonet.DATA_MANAGER, String.format("Updating user %s, %s, %s. Changing role from %s to %s.", dn, title, company, md.getDataInfo().getExtra(), extra));
 								
 								metadataManager.deleteMetadata(context, String.valueOf(md.getId()));
 								metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
 								
-								Log.info(Geonet.DATA_MANAGER, "Changed role from " + md.getDataInfo().getExtra() + " to " + extra);
-								//metadataManager.updateMetadata(context, String.valueOf(md.getId()), ci_resp, false, ufo, indexImmediate, "", date, false);
 							}
 							
 						}

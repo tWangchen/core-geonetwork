@@ -587,8 +587,7 @@ public class BaseMetadataIndexer implements IMetadataIndexer, ApplicationEventPu
                 forceRefreshReaders);
 
         } catch (Exception x) {
-            Log.error(Geonet.DATA_MANAGER, "The metadata document index with id=" + metadataId
-                + " is corrupt/invalid - ignoring it. Error: " + x.getMessage(), x);
+            Log.error(Geonet.DATA_MANAGER, String.format( "The metadata document index with id = %s is corrupt/invalid - ignoring it. Error: %s ", metadataId, x.getMessage()));
             fullMd = null;
         } finally {
             indexingLock.lock();
