@@ -42,6 +42,9 @@
   <logger name="geonetwork.datamanager">
     <level value="ERROR"/>
   </logger>
+  <logger name="geonetwork.ga">
+    <level value="INFO"/>
+  </logger>
   <logger name="geonetwork.cors">
     <level value="ERROR"/>
   </logger>

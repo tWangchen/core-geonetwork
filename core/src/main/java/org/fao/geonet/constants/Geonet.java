@@ -77,6 +77,8 @@ public final class Geonet {
     public static final String EDITORFILLELEMENT = GEONETWORK + ".editorfillelement";
     public static final String SPATIAL = GEONETWORK + ".spatial";
     public static final String REGION = GEONETWORK + ".region";
+    public static final String GA = GEONETWORK + ".ga";
+    
     public static final String CSW_SEARCH = CSW + ".search";
     public static final String CSW_HARVEST = CSW + ".harvest";
     public static final String SRU = GEONETWORK + ".sru";

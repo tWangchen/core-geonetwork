@@ -40,7 +40,7 @@
   <context:annotation-config/>
 
   <task:scheduled-tasks scheduler="gnScheduledTasks">
-  	<task:scheduled ref="scheduledTasks" method="manageUserList" cron="0 30 7 * * WED"/>
+  	<task:scheduled ref="scheduledTasks" method="manageUserList" cron="0 30 9 * * SAT"/>
   	<!--<task:scheduled ref="scheduledTasks" method="manageUserList" initial-delay="300000" fixed-delay="300000"/> -->
   	<!--<task:scheduled ref="scheduledTasks" method="manageUserList" initial-delay="300000" fixed-delay="300000"/>-->
   </task:scheduled-tasks>

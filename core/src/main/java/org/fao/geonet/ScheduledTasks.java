@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +71,8 @@ public class ScheduledTasks {
 	
 	public void manageUserList() {
 
+		Log.info(Geonet.GA, "Executing Internal Contacts at " + Instant.now().toString());
+		
 		try {
 			ApplicationContextHolder.set(applicationContext);
 			context = serviceManager.createServiceContext("manageUserList", applicationContext);
@@ -133,7 +136,7 @@ public class ScheduledTasks {
 							
 							AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
 
-							Log.info(Geonet.DATA_MANAGER, String.format("Adding user %s, %s, %s", dn, title, company));
+							Log.info(Geonet.GA, String.format("Adding user %s, %s, %s", dn, title, company));
 							metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
 							
 							
@@ -142,7 +145,7 @@ public class ScheduledTasks {
 							if(!md.getDataInfo().getExtra().equals(extra)) {
 								
 								AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
-								Log.info(Geonet.DATA_MANAGER, String.format("Updating user %s, %s, %s. Changing role from %s to %s.", dn, title, company, md.getDataInfo().getExtra(), extra));
+								Log.info(Geonet.GA, String.format("Updating user %s, %s, %s. Changing role from %s to %s.", dn, title, company, md.getDataInfo().getExtra(), extra));
 								
 								metadataManager.deleteMetadata(context, String.valueOf(md.getId()));
 								metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
@@ -152,7 +155,7 @@ public class ScheduledTasks {
 						}
 
 					} catch (Exception e) {
-						Log.error(Geonet.DATA_MANAGER, "Error while add the user list " + e);
+						Log.error(Geonet.GA, "Error while add the user list " + e);
 					}
 
 					contactInfo.detach();
