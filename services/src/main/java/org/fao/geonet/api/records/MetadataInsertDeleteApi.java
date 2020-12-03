@@ -1060,7 +1060,7 @@ public class MetadataInsertDeleteApi {
             // that will be attached to the root element so check for that
             // and if not found, generate a new uuid
         	
-        	xmlElement = transformSubtemplate(xmlElement);
+        	xmlElement = schemaManager.transformSubtemplate(xmlElement);
         	
             uuid = xmlElement.getAttributeValue("uuid");
             if (StringUtils.isEmpty(uuid)) {
@@ -1199,27 +1199,5 @@ public class MetadataInsertDeleteApi {
 		return elData;
 	}
 	
-	private Element transformSubtemplate(Element contactXml)   {
-		
-		try {
-			ElementFilter org_filter = new ElementFilter("CI_Organisation", Geonet.Namespaces.CIT);
-			ElementFilter ind_filter = new ElementFilter("CI_Individual", Geonet.Namespaces.CIT);
-			Boolean isOrg = contactXml.getDescendants(org_filter).hasNext();
-			Boolean isInd = contactXml.getDescendants(ind_filter).hasNext();
 	
-			if(contactXml.getName().equals("CI_Responsibility")) {
-				if(isOrg) {
-					Path p = schemaManager.getSchemaDir("iso19115-3").resolve("process").resolve("transform_org.xsl");
-					return Xml.transform(contactXml, p);
-				}else if(isInd) {
-					Path p = schemaManager.getSchemaDir("iso19115-3").resolve("process").resolve("transform_ind.xsl");
-					return Xml.transform(contactXml, p);
-				}
-			}
-		}catch(Exception e) {
-			Log.error(Geonet.DATA_MANAGER, "Unable to transform contact subtemplate.");
-		}
-		
-		return contactXml;
-	}
 }

@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
@@ -21,9 +21,9 @@ import org.fao.geonet.domain.ISODate;
 import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.domain.MetadataType;
 import org.fao.geonet.domain.ReservedGroup;
-import org.fao.geonet.domain.Setting;
 import org.fao.geonet.kernel.SchemaManager;
 import org.fao.geonet.kernel.UpdateDatestamp;
+import org.fao.geonet.kernel.datamanager.IMetadataIndexer;
 import org.fao.geonet.kernel.datamanager.IMetadataManager;
 import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
@@ -33,6 +33,7 @@ import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -47,6 +48,8 @@ import jeeves.server.dispatchers.ServiceManager;
 public class ScheduledTasks {
 
 	private final static String INTERNAL = "Internal";
+	private final static String INTERNAL_CONTACT = "Internal Contact";
+	
 	@Autowired
 	SchemaManager schemaManager;
 
@@ -102,6 +105,14 @@ public class ScheduledTasks {
 			//List<String> userIds = parser.getRecords().stream().map(record -> record.get("samAccountName")).collect(Collectors.toList());
 			List<String> userIds = new ArrayList<>();
 			
+			ci_ind.addContent(name);				
+			ci_ind.addContent(contactInfo);				
+			ci_ind.addContent(position);
+			
+			party.addContent(ci_ind);
+			ci_resp.addContent(role);
+			ci_resp.addContent(party);
+			
 			
 			try {
 				for (CSVRecord record : parser) {
@@ -112,19 +123,6 @@ public class ScheduledTasks {
 					String uid = record.get("samAccountName");
 					userIds.add(uid);
 					
-					name.getChild("CharacterString", Namespaces.GCO_3).setText(dn);
-					ci_ind.addContent(name);
-
-					contactInfo.getChild("CI_Contact", Namespaces.CIT).getChild("contactInstructions", Namespaces.CIT)
-							.getChild("CharacterString", Namespaces.GCO_3).setText(company);
-					ci_ind.addContent(contactInfo);
-
-					position.getChild("CharacterString", Namespaces.GCO_3).setText(title);
-					ci_ind.addContent(position);
-					
-					party.addContent(ci_ind);
-					ci_resp.addContent(role);
-					ci_resp.addContent(party);
 
 					boolean ufo = false, indexImmediate = true;
 					try {
@@ -132,24 +130,30 @@ public class ScheduledTasks {
 						Metadata md = metadataRepository.findOneByUuid(uid);
 						String extra = Joiner.on("|").join(INTERNAL, title, company);
 						
+						if(md == null || (md != null && !md.getDataInfo().getExtra().equals(extra))) {
+							Element resp = ci_resp.getChild("party", Namespaces.CIT).getChild("CI_Individual", Namespaces.CIT);
+							resp.getChild("name", Namespaces.CIT).getChild("CharacterString", Namespaces.GCO_3).setText(dn);
+							resp.getChild("contactInfo", Namespaces.CIT).getChild("CI_Contact", Namespaces.CIT).getChild("contactInstructions", Namespaces.CIT)
+								.getChild("CharacterString", Namespaces.GCO_3).setText(company);
+							resp.getChild("positionName", Namespaces.CIT).getChild("CharacterString", Namespaces.GCO_3).setText(title);
+						}
+						
 						if (md == null) {
 							
 							AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
-
+							
 							Log.info(Geonet.GA, String.format("Adding user %s, %s, %s", dn, title, company));
 							metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
-							
 							
 						} else {
 							
 							if(!md.getDataInfo().getExtra().equals(extra)) {
-								
+							
 								AbstractMetadata newMetadata = newMetadata(uid, extra, ci_resp.getQualifiedName());
 								Log.info(Geonet.GA, String.format("Updating user %s, %s, %s. Changing role from %s to %s.", dn, title, company, md.getDataInfo().getExtra(), extra));
 								
 								metadataManager.deleteMetadata(context, String.valueOf(md.getId()));
 								metadataManager.insertMetadata(context, newMetadata, ci_resp, false, indexImmediate, ufo, UpdateDatestamp.NO, false, true);
-								
 							}
 							
 						}
@@ -157,40 +161,56 @@ public class ScheduledTasks {
 					} catch (Exception e) {
 						Log.error(Geonet.GA, "Error while add the user list " + e);
 					}
-
-					contactInfo.detach();
-					role.detach();
-					name.detach();
-
-					position.detach();
-					ci_ind.detach();
-					party.detach();
-					// ci_resp.detach();
 					
 				}
 			} finally {
 				parser.close();
 				reader.close();
 			}
+
+			ci_resp.detach();
 			
 			List<String> existingUserIds = metadataRepository.findAllByDataInfo_ExtraStartsWith(INTERNAL).stream().map(m -> m.getUuid()).collect(Collectors.toList()); 
 			existingUserIds.removeAll(userIds);
 			
 			try {
 				if(existingUserIds.size() > 0) {
-					Log.info(Geonet.DATA_MANAGER, "Removing Users: " + Arrays.toString(existingUserIds.toArray()));
+					Log.info(Geonet.GA, "Removing Users: " + Arrays.toString(existingUserIds.toArray()));
+					
+					
+					String date = new ISODate().toString();
 					
 					for (String uuid : existingUserIds) {
-						metadataManager.deleteMetadata(context, String.valueOf(metadataRepository.findOneByUuid(uuid).getId()));
+						
+						Metadata removeMd = metadataRepository.findOneByUuid(uuid);
+						
+						//After deleting Internal Contacts, update those contacts as External
+						Element xmlElement = schemaManager.transformInternalSubtemplate(removeMd.getXmlData(false));
+						metadataManager.deleteMetadata(context, String.valueOf(removeMd.getId()));
+						
+						try {
+				            String metadataId = metadataManager.insertMetadata(context, "iso19115-3", xmlElement, UUID.randomUUID().toString(),
+				                    1, String.valueOf(ReservedGroup.all.getId()), settingManager.getSiteId(), MetadataType.SUB_TEMPLATE.codeString, null, null, date, date, false, true);
+				            
+				            Log.info(Geonet.GA, String.format("Changed user % from internal to external contact. metadataId %s ", uuid, metadataId));
+				            
+				            
+				        } catch (DataIntegrityViolationException ex) {
+				        	Log.error(Geonet.GA, "Error while updating Internal contact to External, " + ex.getMessage());
+				        } catch (Exception ex) {
+				        	Log.error(Geonet.GA, "Error while updating Internal contact to External, " + ex.getMessage());
+				        }
+						
+						
 					}
 				}
 				
 			}catch(Exception e) {
-				Log.error(Geonet.DATA_MANAGER, "Unable to delete terminated userIds, " + e);
+				Log.error(Geonet.GA, "Unable to delete terminated userIds, " + e.getMessage());
 			}
 			
 		} catch (IOException e) {
-			Log.error(Geonet.DATA_MANAGER, "Unable access user list, " + e);
+			Log.error(Geonet.GA, "Unable access user list, " + e.getMessage());
 		}
 
 	}
@@ -237,7 +257,7 @@ public class ScheduledTasks {
 
 		Element contactType = new Element("contactType", Namespaces.CIT);
 		Element contactTypeStr = new Element("CharacterString", Namespaces.GCO_3);
-		contactTypeStr.addContent("Internal Contact");
+		contactTypeStr.addContent(INTERNAL_CONTACT);
 		contactType.addContent(contactTypeStr);
 
 		ci_contact.addContent(contactInstructions);
