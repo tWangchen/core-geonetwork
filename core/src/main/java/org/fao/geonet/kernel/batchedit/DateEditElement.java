@@ -91,12 +91,12 @@ public class DateEditElement implements EditElement {
 
 		try {
 			if (values.length > 0) {
-				String dateStr = "Date";
+				
 				String dateVal = values[0];
-				if (dateVal.contains("T")) {
-					dateStr = "DateTime";
+				if (!dateVal.contains("T")) {
+					dateVal = dateVal + "T00:00:00";
 				}
-				date1.addContent(new Element(dateStr, Geonet.Namespaces.GCO_3).setText(values[0]));
+				date1.addContent(new Element("DateTime", Geonet.Namespaces.GCO_3).setText(dateVal));
 			}
 
 			if (values.length > 1) {

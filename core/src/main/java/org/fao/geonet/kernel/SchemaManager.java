@@ -1929,10 +1929,10 @@ public class SchemaManager {
 	
 			if(contactXml.getName().equals("CI_Responsibility")) {
 				if(isOrg) {
-					Path p = getSchemaDir("iso19115-3").resolve("process").resolve("transform_org.xsl");
+					Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_org.xsl");
 					return Xml.transform(contactXml, p);
 				}else if(isInd) {
-					Path p = getSchemaDir("iso19115-3").resolve("process").resolve("transform_ind.xsl");
+					Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_ind.xsl");
 					return Xml.transform(contactXml, p);
 				}
 			}
@@ -1946,7 +1946,7 @@ public class SchemaManager {
 	public Element transformInternalSubtemplate(Element contactXml) {
 
 		try {
-			Path p = getSchemaDir("iso19115-3").resolve("process").resolve("transform_internal_ind.xsl");
+			Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_internal_ind.xsl");
 			return Xml.transform(contactXml, p);
 
 		} catch (Exception e) {

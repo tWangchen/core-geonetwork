@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -455,10 +456,14 @@ public class BaseMetadataManager implements IMetadataManager {
 
         String schema = templateMetadata.getDataInfo().getSchemaId();
         String data = templateMetadata.getData();
+        
         Element xml = Xml.loadString(data, false);
+        
+        
         boolean isMetadata = templateMetadata.getDataInfo().getType() == MetadataType.METADATA;
         setMetadataTitle(schema, xml, context.getLanguage(), !isMetadata);
         if (isMetadata) {
+        	xml = addOwner(context, xml);
         	xml = updateFixedInfo(schema, Optional.<Integer>absent(), uuid, xml, parentUuid, UpdateDatestamp.NO,
                 context);
         }
@@ -1266,6 +1271,32 @@ public class BaseMetadataManager implements IMetadataManager {
                 }
             }
         }
+    }
+    
+    private Element addOwner(ServiceContext context, Element xml) {
+       
+        try {
+        	
+        	 UserSession user = context.getUserSession();
+             
+             String division = user.getOrganisation();
+             String position = user.getPosition();
+             
+             
+             Map<String, Object> params = new HashMap<>();
+             params.put("name", user.getSurname() + ", " + Character.toUpperCase(user.getName().charAt(0)));
+             params.put("division", division);
+             params.put("position", position);
+             
+             
+             Path p = schemaManager.getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("owner-add.xsl");
+             
+			xml = Xml.transform(xml, p , params);
+		} catch (Exception e) {
+			Log.error(Geonet.DATA_DIRECTORY, "Unable to add onwer to metadata");
+		}
+        
+        return xml;
     }
 
     /**
