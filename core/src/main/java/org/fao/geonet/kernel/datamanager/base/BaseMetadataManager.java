@@ -463,7 +463,6 @@ public class BaseMetadataManager implements IMetadataManager {
         boolean isMetadata = templateMetadata.getDataInfo().getType() == MetadataType.METADATA;
         setMetadataTitle(schema, xml, context.getLanguage(), !isMetadata);
         if (isMetadata) {
-        	xml = addOwner(context, xml);
         	xml = updateFixedInfo(schema, Optional.<Integer>absent(), uuid, xml, parentUuid, UpdateDatestamp.NO,
                 context);
         }
@@ -489,6 +488,10 @@ public class BaseMetadataManager implements IMetadataManager {
         newMetadata.getMetadataCategories().addAll(filteredCategories);
 
         boolean generateGAID = true;
+        
+        //Add default Owner 
+        xml = addOwner(context, xml);
+    	
         int finalId = insertMetadata(context, newMetadata, xml, false, true, true, UpdateDatestamp.YES,
             fullRightsForGroup, true, generateGAID).getId();
 
@@ -1282,6 +1285,16 @@ public class BaseMetadataManager implements IMetadataManager {
              String division = user.getOrganisation();
              String position = user.getPosition();
              
+             if(StringUtils.isEmpty(position) || StringUtils.isEmpty(division)) {
+            	 Metadata md = metadataRepository.findOneByUuid(user.getUsername());
+            	 if(md != null && md.getDataInfo() != null && !StringUtils.isEmpty(md.getDataInfo().getExtra())) {
+            		 String[] extras = md.getDataInfo().getExtra().split("\\|");
+            		 if(extras.length >= 3) {
+            			 position = extras[1];
+            			 division = extras[2];
+            		 }
+            	 }
+             }
              
              Map<String, Object> params = new HashMap<>();
              params.put("name", user.getSurname() + ", " + Character.toUpperCase(user.getName().charAt(0)));
