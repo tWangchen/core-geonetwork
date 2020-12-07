@@ -82,7 +82,7 @@ public class CSVBatchEdit {
 		try {
 			indexAndTaxonomy = tracker.acquire("eng", -1);
 		} catch (IOException e) {
-			Log.error(Geonet.SEARCH_ENGINE, "Unable to index and taxonomy, "+e.getMessage());
+			Log.error(Geonet.GA, "Unable to index and taxonomy, "+e.getMessage());
 		}
 		searcher = new IndexSearcher(indexAndTaxonomy.indexReader);
 		luceneConfig = context.getBean(LuceneConfig.class);
@@ -112,7 +112,7 @@ public class CSVBatchEdit {
 		if(editElement == null){
 			Path p = schemaManager.getSchemaDir("iso19115-3").resolve("csv").resolve(headerVal + ".xml");
 			if(p != null && p.toFile().exists()){
-				Log.debug(Geonet.SEARCH_ENGINE, "p.toFile().getAbsolutePath() ---> "+p.toFile().getAbsolutePath());
+				Log.debug(Geonet.GA, "p.toFile().getAbsolutePath() ---> "+p.toFile().getAbsolutePath());
 				editElement = new CustomElement();
 			}
 		}
@@ -128,7 +128,7 @@ public class CSVBatchEdit {
 					try {
 						List<Element> elements = _xpath.selectNodes(metadata);
 						if(elements != null && elements.size() > 0){
-							Log.debug(Geonet.SEARCH_ENGINE, "elements.size() ---> "+elements.size());
+							Log.debug(Geonet.GA, "elements.size() ---> "+elements.size());
 							elements.iterator().forEachRemaining(e -> {
 								//e.removeContent();
 								e.detach();
@@ -136,7 +136,7 @@ public class CSVBatchEdit {
 						}
 						
 					} catch (Exception e) {
-						//Log.error(Geonet.SEARCH_ENGINE, "Unable to remove existing element for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getLocalizedMessage());
+						//Log.error(Geonet.GA, "Unable to remove existing element for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getLocalizedMessage());
 						errs.add("Unable to remove existing element for the value " + csvr.get(headerVal) +", " + e.getMessage());
 					}
 				}
@@ -153,7 +153,7 @@ public class CSVBatchEdit {
 						listOfUpdates.add(e);
 					}
 				} catch (Exception e) {
-					//Log.error(Geonet.SEARCH_ENGINE, "Unable to set the attribute for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getMessage());
+					//Log.error(Geonet.GA, "Unable to set the attribute for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getMessage());
 					errs.add("Unable to set the attribute for the value, " + headerVal + ": "+ csvr.get(headerVal) +", " + e.getMessage());
 				}
 			} else {
@@ -168,7 +168,7 @@ public class CSVBatchEdit {
 						listOfUpdates.add(e);
 					}
 				} catch (Exception e) {
-					//Log.error(Geonet.SEARCH_ENGINE, "Unable to set text for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getLocalizedMessage());
+					//Log.error(Geonet.GA, "Unable to set text for eCatId/UUID " + id +" for the value " + csvr.get(headerVal) +", " + e.getLocalizedMessage());
 					errs.add("Unable to set text for the value, " + headerVal + ": "+ csvr.get(headerVal) +", " + e.getMessage());
 				}	
 			}
@@ -230,7 +230,7 @@ public class CSVBatchEdit {
 			org.apache.lucene.document.Document doc = docVisitor.getDocument();
 
 			String uuid = doc.get("_uuid");
-			Log.debug(Geonet.SEARCH_ENGINE, "getMetadataByLuceneSearch --> uuid: " + uuid);
+			Log.debug(Geonet.GA, "getMetadataByLuceneSearch --> uuid: " + uuid);
 
 			if (uuid != null) {
 				Metadata md = mdRepo.findOneByUuid(uuid);

@@ -37,6 +37,8 @@ public class ShibbolethUserConfiguration {
     private String profileKey;
     private String groupKey;
     private String emailKey;
+    private String divisionKey;
+    private String positionKey;
 
     private String defaultGroup;
 
@@ -97,7 +99,23 @@ public class ShibbolethUserConfiguration {
         this.groupKey = groupKey;
     }
 
-    public String getDefaultGroup() {
+    public String getDivisionKey() {
+		return divisionKey;
+	}
+
+	public void setDivisionKey(String divisionKey) {
+		this.divisionKey = divisionKey;
+	}
+
+	public String getPositionKey() {
+		return positionKey;
+	}
+
+	public void setPositionKey(String positionKey) {
+		this.positionKey = positionKey;
+	}
+
+	public String getDefaultGroup() {
         return defaultGroup;
     }
 
