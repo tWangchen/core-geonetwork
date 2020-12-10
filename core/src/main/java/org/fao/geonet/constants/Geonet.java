@@ -77,6 +77,8 @@ public final class Geonet {
     public static final String EDITORFILLELEMENT = GEONETWORK + ".editorfillelement";
     public static final String SPATIAL = GEONETWORK + ".spatial";
     public static final String REGION = GEONETWORK + ".region";
+    public static final String GA = GEONETWORK + ".ga";
+    
     public static final String CSW_SEARCH = CSW + ".search";
     public static final String CSW_HARVEST = CSW + ".harvest";
     public static final String SRU = GEONETWORK + ".sru";
@@ -104,6 +106,7 @@ public final class Geonet {
     public static final String BATCHEDIT_BACKUP = "be_backup";
     public static final String BATCHEDIT_PROGRESS = "be_progress";
     public static final String CSV_DOWNLOAD_STATUS = "csv_download_status";
+    public static final String SCHEMA_ISO_19115_3 = "iso19115-3";
     
     /**
      * Container for file names.

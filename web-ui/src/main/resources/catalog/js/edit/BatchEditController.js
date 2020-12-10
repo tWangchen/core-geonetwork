@@ -157,11 +157,13 @@
     '$location',
     '$http',
     '$compile',
+    '$route',
+    '$timeout',
     '$httpParamSerializer',
     'gnSearchSettings',
     'gnCurrentEdit',
     'gnSchemaManagerService',
-    function($scope, $location, $http, $compile, $httpParamSerializer,
+    function($scope, $location, $http, $compile, $route, $timeout, $httpParamSerializer,  
         gnSearchSettings, gnCurrentEdit, gnSchemaManagerService) {
 
       // Simple tab handling.
@@ -442,14 +444,14 @@
   		$http.post('../api/records/batchediting/csv', fd, {
   			headers: {'Content-Type': undefined }
   		}).success(function(data){
-  			$timeout(checkIsCompleted, 15000);	
+        checkIsCompleted();	
   		}).error( function(err){
   			console.log('Error.....');
   			$scope.processReport = err.data;
   		});
 	  };
 	  
-	  var temprecords = 0;
+	  var temprecords = -1;
 	  $scope.isCompleted = true;
 	  //var updateCheckInterval = 15000;
 	  $scope.processRecords = 1;
@@ -465,11 +467,9 @@
 					temprecords = data;
 				}
 				
-        /*if(data.numberOfRecords == data.numberOfRecordsProcessed){
-          $scope.isCompleted = true;  
-        }*/
+       
         if (!$scope.isCompleted) {
-          $timeout(checkIsCompleted, 15000);
+          $timeout(checkIsCompleted, 5000);
         }
       });
     }

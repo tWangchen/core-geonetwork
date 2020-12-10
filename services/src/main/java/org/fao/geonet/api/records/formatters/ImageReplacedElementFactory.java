@@ -129,7 +129,7 @@ public class ImageReplacedElementFactory implements ReplacedElementFactory {
                                       int cssWidth, int cssHeight, String url, float scaleFactor) {
         InputStream input = null;
         try {
-            Log.error(Geonet.GEONETWORK, "URL -> " + url.toString());
+            Log.info(Geonet.GEONETWORK, "URL -> " + url.toString());
 
             input = new URL(url).openStream();
             byte[] bytes = IOUtils.toByteArray(input);
@@ -149,7 +149,7 @@ public class ImageReplacedElementFactory implements ReplacedElementFactory {
 
             return new ITextImageElement(fsImage);
         } catch (Exception e) {
-            Log.error(Geonet.GEONETWORK, "Error writing metadata to PDF", e);
+            Log.error(Geonet.GEONETWORK, "Error writing metadata to PDF",e);
 
             try {
                 return superFactory.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);

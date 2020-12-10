@@ -26,9 +26,11 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://www.springframework.org/schema/beans"
   xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:task="http://www.springframework.org/schema/task"
   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
     ">
 
   <context:property-placeholder location="${app.properties}"
@@ -36,6 +38,16 @@
                                 ignore-unresolvable="true" />
 
   <context:annotation-config/>
+
+  <task:scheduled-tasks scheduler="gnScheduledTasks">
+  	<!--<task:scheduled ref="scheduledTasks" method="manageUserList" cron="0 30 9 * * SAT"/> -->
+  	<!--<task:scheduled ref="scheduledTasks" method="manageUserList" initial-delay="300000" fixed-delay="300000"/>-->
+  	<task:scheduled ref="scheduledTasks" method="manageUserList" initial-delay="1800000" fixed-delay="1800000"/>
+  </task:scheduled-tasks>
+
+  <task:scheduler id="gnScheduledTasks" />
+   
+  <bean id="scheduledTasks" class="org.fao.geonet.ScheduledTasks" lazy-init="true"/>
   <bean id="ProfileManager" class="jeeves.component.ProfileManager" lazy-init="true"/>
   <bean id="MonitorManager" class="jeeves.monitor.MonitorManager" lazy-init="true"/>
   <bean id="JeevesEngine" class="jeeves.server.JeevesEngine" lazy-init="true"/>

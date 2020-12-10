@@ -154,6 +154,15 @@ public class UserSession {
             return userDetails.getName();
         }
     }
+    
+    public String getPosition() {
+        User userDetails = getPrincipal();
+        if (userDetails == null) {
+            return null;
+        } else {
+            return userDetails.getPosition();
+        }
+    }
 
     public String getSurname() {
         User userDetails = getPrincipal();

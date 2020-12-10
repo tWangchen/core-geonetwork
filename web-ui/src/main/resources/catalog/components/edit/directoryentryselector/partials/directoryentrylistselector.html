@@ -18,7 +18,7 @@
             &nbsp;&nbsp;
           </button>
           <button type="button"
-                  data-ng-click="resetSearch(searchObj.defaultParams);"
+                  data-ng-click="resetSearch(searchObj.defaultParams); clear();"
                   title="{{'ClearTitle' | translate}}"
                   class="btn btn-link">
             <i class="fa fa-times"></i>
@@ -27,8 +27,9 @@
       </div>
     </div>
   </div>
+  
   <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div data-ng-show="searchResults.records.length > 0"
            data-gn-facet-dimension-list="searchResults.dimension"
            data-params="searchObj.params"
@@ -36,7 +37,7 @@
            data-current-facets="currentFacets">
       </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-6">
 
       <div data-gn-search-form-results
            data-gn-search-form-results-mode="directory"
@@ -45,6 +46,20 @@
            data-select-records="stateObj.selectRecords"
            data-pagination-info="paginationInfo">
       </div>
+    </div>
+    <div class="col-md-3">
+      <ul class="list-group">
+        <li class="list-group-item" data-ng-class="{'active': (searchObj.params.contactType == 'Internal Contact')}" 
+            data-ng-click="updateContacts('Internal Contact');triggerSearch()">
+          Internal (GA) Contacts
+        </li>
+  
+        <li class="list-group-item" data-ng-class="{'active': (searchObj.params.contactType == 'External Contact')}" 
+            data-ng-click="updateContacts('External Contact');triggerSearch()">
+          External Contacts
+        </li>
+  
+      </ul>
     </div>
     <!-- The contact to insert once received
     <div data-ng-if="snippet">

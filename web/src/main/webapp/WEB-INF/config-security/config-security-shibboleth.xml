@@ -59,6 +59,8 @@
     <property name="profileKey" value="${shibbolethConfiguration.profileKey}"/>
     <property name="groupKey" value="${shibbolethConfiguration.groupKey}"/>
     <property name="emailKey" value="${shibbolethConfiguration.emailKey}"/>
+    <property name="divisionKey" value="${shibbolethConfiguration.divisionKey}"/>
+    <property name="positionKey" value="${shibbolethConfiguration.positionKey}"/>
     
     <property name="defaultGroup" value="${shibbolethConfiguration.defaultGroup}"/>
 

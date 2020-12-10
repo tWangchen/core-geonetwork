@@ -112,6 +112,8 @@ public class ShibbolethUserUtils {
         String surname = getHeader(req, config.getSurnameKey(), "");
         String firstname = getHeader(req, config.getFirstnameKey(), "");
         String email = getHeader(req, config.getEmailKey(), "");
+        String position = getHeader(req, config.getPositionKey(), "");
+        String division = getHeader(req, config.getDivisionKey(), "");
         
         Profile profile = Profile.findProfileIgnoreCase(getHeader(req,config.getProfileKey(), ""));
         // TODO add group to user
@@ -171,6 +173,9 @@ public class ShibbolethUserUtils {
 
                 // TODO add group to user
                 // Group g = _groupRepository.findByName(group);
+            }finally {
+            	user.setPosition(position);
+            	user.setOrganisation(division);
             }
 
 

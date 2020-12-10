@@ -1918,4 +1918,41 @@ public class SchemaManager {
         }
         return listOfTypenames;
     }
+    
+    public Element transformSubtemplate(Element contactXml)   {
+		
+		try {
+			ElementFilter org_filter = new ElementFilter("CI_Organisation", Geonet.Namespaces.CIT);
+			ElementFilter ind_filter = new ElementFilter("CI_Individual", Geonet.Namespaces.CIT);
+			Boolean isOrg = contactXml.getDescendants(org_filter).hasNext();
+			Boolean isInd = contactXml.getDescendants(ind_filter).hasNext();
+	
+			if(contactXml.getName().equals("CI_Responsibility")) {
+				if(isOrg) {
+					Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_org.xsl");
+					return Xml.transform(contactXml, p);
+				}else if(isInd) {
+					Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_ind.xsl");
+					return Xml.transform(contactXml, p);
+				}
+			}
+		}catch(Exception e) {
+			Log.error(Geonet.DATA_MANAGER, "Unable to transform contact subtemplate.");
+		}
+		
+		return contactXml;
+	}
+    
+	public Element transformInternalSubtemplate(Element contactXml) {
+
+		try {
+			Path p = getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("transform_internal_ind.xsl");
+			return Xml.transform(contactXml, p);
+
+		} catch (Exception e) {
+			Log.error(Geonet.DATA_MANAGER, "Unable to transform contact subtemplate.");
+		}
+
+		return contactXml;
+	}
 }

@@ -83,6 +83,9 @@
     <xsl:variable name="mail"
                   select="string-join(.//cit:CI_Address/cit:electronicMailAddress[1]/gco:CharacterString, ', ')"/>
 
+    <xsl:variable name="contactType"
+                  select="normalize-space(cit:party/cit:CI_Individual/cit:contactInfo/cit:CI_Contact/cit:contactType)"/>
+
     <Field name="_title"
            string="{if ($title != '') then $title
                     else if ($name != '') then $name
@@ -92,6 +95,8 @@
 
     <Field name="orgName" string="{$org}" store="true" index="true"/>
 
+    <Field name="contactType" string="{$contactType}" store="true" index="true"/>
+    
     <xsl:call-template name="subtemplate-common-fields"/>
   </xsl:template>
 

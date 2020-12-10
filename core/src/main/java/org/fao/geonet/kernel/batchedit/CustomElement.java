@@ -50,7 +50,7 @@ public class CustomElement implements EditElement {
 
 					_xml = StringUtils.replaceEach(_xml, searchList, values);
 					
-					Log.debug(Geonet.SEARCH_ENGINE, "Custom EditElement value for the header " + headerVal + ": \n " + _xml);
+					Log.debug(Geonet.GA, "Custom EditElement value for the header " + headerVal + ": \n " + _xml);
 					
 					String _val = "<gn_add>" + _xml + "</gn_add>";
 					BatchEditParam e = new BatchEditParam(_xpath.getXPath(), _val);

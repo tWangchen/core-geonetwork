@@ -333,7 +333,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 		
 		ServiceContext serviceContext = ApiUtils.createServiceContext(request);
 		
-		Log.debug(Geonet.SEARCH_ENGINE, "ECAT, BatchEditsApi mode: " + mode);
+		Log.debug(Geonet.GA, "ECAT, BatchEditsApi mode: " + mode);
 
 		try {
 			
@@ -341,7 +341,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 			FileUtils.copyInputStreamToFile(file.getInputStream(), csvFile);
 			
 			Runnable task = () -> {
-				Log.debug(Geonet.SEARCH_ENGINE, "BatchEditAPI calling... startBackupOperation........");
+				Log.debug(Geonet.GA, "BatchEditAPI calling... startBackupOperation........");
 				processCsv(csvFile, context, serviceContext, mode, desc, backup, request.getSession());
 			};
 
@@ -349,7 +349,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 			new Thread(task).start();
 
 		} catch (Exception e) {
-			Log.error(Geonet.SEARCH_ENGINE, "ECAT, BatchEditsApi (C) Stacktrace is\n" + Util.getStackTrace(e));
+			Log.error(Geonet.GA, "ECAT, BatchEditsApi (C) Stacktrace is\n" + Util.getStackTrace(e));
 			
 		}
 
@@ -497,14 +497,14 @@ public class BatchEditsApi implements ApplicationContextAware {
 		Map<String, XPath> xpathExpr = bxpath.getXPathExpr();
 		
 		final String s3key = dateTimeStr;
-		Log.debug(Geonet.SEARCH_ENGINE, "CSVRecord, BatchEditsApi --> s3key : " + s3key);
+		Log.debug(Geonet.GA, "CSVRecord, BatchEditsApi --> s3key : " + s3key);
 		CSVParser parser = null;
 		try {
 			// Parse the csv file
 			parser = CSVParser.parse(csvFile, Charset.defaultCharset(), CSVFormat.EXCEL.withHeader());
 
 		} catch (IOException e1) {
-			Log.error(Geonet.SEARCH_ENGINE, e1.getMessage());
+			Log.error(Geonet.GA, e1.getMessage());
 		}
 		// Currently only supports iso19115-3 standard
 		Path p = schemaManager.getSchemaDir("iso19115-3");
@@ -512,20 +512,20 @@ public class BatchEditsApi implements ApplicationContextAware {
 
 			final int id;
 
-			//Log.debug(Geonet.SEARCH_ENGINE, "CSVRecord, BatchEditsApi --> csvRecord.toString() : " + csvr.toString());
+			//Log.debug(Geonet.GA, "CSVRecord, BatchEditsApi --> csvRecord.toString() : " + csvr.toString());
 			try {
 				Metadata record = null;
 				if (!csvr.isMapped("uuid")) {
 					if (csvr.isMapped("eCatId")) {
 						id = Integer.parseInt(csvr.get("eCatId"));
 
-						Log.debug(Geonet.SEARCH_ENGINE,
-								"CSVRecord, BatchEditsApi --> csvRecord.get(eCatId) : " + csvr.get("eCatId"));
+						Log.debug(Geonet.GA,
+								"CSVRecord, BatchEditsApi --> eCatId : " + id);
 
 						// Search record based on eCatId from lucene index
 						Element request = Xml
 								.loadString("<request><isAdmin>true</isAdmin><_isTemplate>n</_isTemplate><eCatId>"
-										+ csvr.get("eCatId") + "</eCatId><fast>index</fast></request>", false);
+										+ id + "</eCatId><fast>index</fast></request>", false);
 						try {
 							record = cbe.getMetadataByLuceneSearch(context, serviceContext, request);
 						} catch (BatchEditException e) {
@@ -573,7 +573,6 @@ public class BatchEditsApi implements ApplicationContextAware {
 				// parameter with xpath and values
 				while (iter.hasNext()) {
 					Map.Entry<String, Integer> header = (Map.Entry<String, Integer>) iter.next();
-					Log.debug(Geonet.SEARCH_ENGINE, header.getKey() + " - " + header.getValue());
 					
 					try {
 						if (xpathExpr.containsKey(header.getKey())) {
@@ -594,14 +593,14 @@ public class BatchEditsApi implements ApplicationContextAware {
 							}
 						}
 					} catch (Exception e) {
-						Log.error(Geonet.SEARCH_ENGINE, "Exception while getting Batch edit report: " + e.getMessage());						
+						Log.error(Geonet.GA, "Exception while getting Batch edit report: " + e.getMessage());						
 					}
 				}
 
 				boolean metadataChanged = false;
 
 				Iterator<BatchEditParam> listOfUpdatesIterator = listOfUpdates.iterator();
-				Log.debug(Geonet.SEARCH_ENGINE, "BatchEditsApi --> listOfUpdates : " + listOfUpdates.size());
+				Log.debug(Geonet.GA, "BatchEditsApi --> listOfUpdates : " + listOfUpdates.size());
 
 				metadata = document.getRootElement();
 
@@ -611,14 +610,14 @@ public class BatchEditsApi implements ApplicationContextAware {
 
 					AddElemValue propertyValue = new AddElemValue(batchEditParam.getValue());
 
-					Log.debug(Geonet.SEARCH_ENGINE, "BatchEditsApi, updating xpath " + batchEditParam.getXpath() + " with value : \n" + batchEditParam.getValue());
+					Log.debug(Geonet.GA, "BatchEditsApi, updating xpath " + batchEditParam.getXpath() + " with value : \n" + batchEditParam.getValue());
 					
 					metadataChanged = editLib.addElementOrFragmentFromXpath(metadata, metadataSchema,
 							batchEditParam.getXpath(), propertyValue, true);
 					
 				}
 				
-				Log.debug(Geonet.SEARCH_ENGINE, "BatchEditsApi --> updating Metadata: "  + record.getId());
+				Log.debug(Geonet.GA, "BatchEditsApi --> updating Metadata: "  + record.getId());
 				dataMan.updateMetadata(serviceContext, record.getId() + "", metadata, false, false, true, "eng",
 						null, false);
 				report.addMetadataInfos(id, "Metadata updated, uuid: " + record.getUuid());
@@ -626,7 +625,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 				session.setAttribute(Geonet.BATCHEDIT_REPORT, report);
 			
 			} catch (Exception e) {
-				Log.error(Geonet.SEARCH_ENGINE, "Exception :" + e.getMessage());
+				Log.error(Geonet.GA, "Exception :" + e.getMessage());
 			}
 
 		}
@@ -638,7 +637,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 		}
 		
 		if(backup){
-			Log.debug(Geonet.SEARCH_ENGINE, "BatchEditAPI calling... startBackupOperation........");
+			Log.debug(Geonet.GA, "BatchEditAPI calling... startBackupOperation........");
 			startBackupOperation(s3key, session);
 		}
 		
@@ -687,7 +686,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 			tempPath.toFile().mkdir();
 		}
         
-		Log.debug(Geonet.SEARCH_ENGINE, "BatchEditAPI, tmpDir for backup xml files --->" + tmpDir);
+		Log.debug(Geonet.GA, "BatchEditAPI, tmpDir for backup xml files --->" + tmpDir);
 		List<Metadata> backupData = (List<Metadata>) session.getAttribute(Geonet.BATCHEDIT_BACKUP);
 		List<File> files = backupData.stream().map(md -> {
 				
@@ -723,7 +722,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 		// print the final state of the transfer.
 		TransferState xfer_state = xfer.getState();
 		
-		Log.debug(Geonet.SEARCH_ENGINE, ": " + xfer_state);
+		Log.debug(Geonet.GA, ": " + xfer_state);
 		
         
         S3Operation op = new S3Operation();
@@ -742,7 +741,7 @@ public class BatchEditsApi implements ApplicationContextAware {
         		f.delete();	
         	});
         }catch(Exception e){
-        	Log.error(Geonet.SEARCH_ENGINE, "Unable to remove tmp xml files created during batch edit");
+        	Log.error(Geonet.GA, "Unable to remove tmp xml files created during batch edit");
         }
 	}
 	
@@ -759,7 +758,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 	@ResponseBody
 	public Double batchEditBackup(HttpServletRequest request) {
 		Double pct = (Double) request.getSession().getAttribute(Geonet.BATCHEDIT_PROGRESS);
-        Log.debug(Geonet.SEARCH_ENGINE, "Percentage transfer: " + pct);
+        Log.debug(Geonet.GA, "Percentage transfer: " + pct);
         return pct;
 	}
 
@@ -775,7 +774,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public void clearBatchEditSession(HttpServletRequest request) {
-		Log.debug(Geonet.SEARCH_ENGINE, "Remove batchedit attributes...");
+		Log.debug(Geonet.GA, "Remove batchedit attributes...");
 		request.getSession().removeAttribute(Geonet.BATCHEDIT_BACKUP);
 		request.getSession().removeAttribute(Geonet.BATCHEDIT_REPORT);
 		request.getSession().removeAttribute(Geonet.BATCHEDIT_PROGRESS);
@@ -837,7 +836,7 @@ public class BatchEditsApi implements ApplicationContextAware {
 			}
 			settingRepo.save(sett);
 		}catch (Exception e) {
-			Log.error(Geonet.SEARCH_ENGINE, "BatchEditsApi --> Unable to create an entry for this batch edit operation:" + e.getMessage());
+			Log.error(Geonet.GA, "BatchEditsApi --> Unable to create an entry for this batch edit operation:" + e.getMessage());
 			return false;
 		}
 		

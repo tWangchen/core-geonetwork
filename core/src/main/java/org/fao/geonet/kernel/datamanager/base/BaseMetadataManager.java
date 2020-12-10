@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -455,7 +456,10 @@ public class BaseMetadataManager implements IMetadataManager {
 
         String schema = templateMetadata.getDataInfo().getSchemaId();
         String data = templateMetadata.getData();
+        
         Element xml = Xml.loadString(data, false);
+        
+        
         boolean isMetadata = templateMetadata.getDataInfo().getType() == MetadataType.METADATA;
         setMetadataTitle(schema, xml, context.getLanguage(), !isMetadata);
         if (isMetadata) {
@@ -484,6 +488,10 @@ public class BaseMetadataManager implements IMetadataManager {
         newMetadata.getMetadataCategories().addAll(filteredCategories);
 
         boolean generateGAID = true;
+        
+        //Add default Owner 
+        xml = addOwner(context, xml);
+    	
         int finalId = insertMetadata(context, newMetadata, xml, false, true, true, UpdateDatestamp.YES,
             fullRightsForGroup, true, generateGAID).getId();
 
@@ -1266,6 +1274,42 @@ public class BaseMetadataManager implements IMetadataManager {
                 }
             }
         }
+    }
+    
+    private Element addOwner(ServiceContext context, Element xml) {
+       
+        try {
+        	
+        	 UserSession user = context.getUserSession();
+             
+             String division = user.getOrganisation();
+             String position = user.getPosition();
+             
+             if(StringUtils.isEmpty(position) || StringUtils.isEmpty(division)) {
+            	 Metadata md = metadataRepository.findOneByUuid(user.getUsername());
+            	 if(md != null && md.getDataInfo() != null && !StringUtils.isEmpty(md.getDataInfo().getExtra())) {
+            		 String[] extras = md.getDataInfo().getExtra().split("\\|");
+            		 if(extras.length >= 3) {
+            			 position = extras[1];
+            			 division = extras[2];
+            		 }
+            	 }
+             }
+             
+             Map<String, Object> params = new HashMap<>();
+             params.put("name", user.getSurname() + ", " + Character.toUpperCase(user.getName().charAt(0)));
+             params.put("division", division);
+             params.put("position", position);
+             
+             
+             Path p = schemaManager.getSchemaDir(Geonet.SCHEMA_ISO_19115_3).resolve("process").resolve("owner-add.xsl");
+             
+			xml = Xml.transform(xml, p , params);
+		} catch (Exception e) {
+			Log.error(Geonet.DATA_DIRECTORY, "Unable to add onwer to metadata");
+		}
+        
+        return xml;
     }
 
     /**
