@@ -350,6 +350,7 @@
                      to: 10,
                      _root: 'gmd:CI_ResponsibleParty',
                      sortBy: 'title',
+                     contactType: 'Internal Contact',
                      sortOrder: 'reverse',
                      resultType: 'contact',
                      _valid:
@@ -389,6 +390,15 @@
                      scope.closeModal();
                    });
                  };
+
+                 scope.updateContacts = function(type){
+                  scope.searchObj.params.contactType = type;
+                  scope.searchObj.defaultParams.contactType = type;
+                 };
+
+                 scope.clear = function(){
+                  scope.searchObj.any = '';
+                 }
                }
              };
            }

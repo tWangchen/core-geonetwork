@@ -80,4 +80,9 @@ public interface MetadataRepository extends GeonetRepository<Metadata, Integer>,
     @Transactional
     @Query("UPDATE " + Metadata.TABLENAME + " m SET m.dataInfo.popularity = m.dataInfo.popularity + 1 WHERE m.id = ?1")
     void incrementPopularity(int mdId);
+    
+    
+    @Nullable
+    List<Metadata> findAllByDataInfo_ExtraStartsWith(String extra);
+  
 }

@@ -242,8 +242,8 @@
 		}
 	  });
   
-	module.directive('gnBatchEditReport', ['$http', 'gnMetadataManager',
-    function($http, gnMetadataManager) {
+	module.directive('gnBatchEditReport', ['$q','$http', 'gnMetadataManager',
+    function($q, $http, gnMetadataManager) {
       return {
         restrict: 'A',
         replace: true,
@@ -299,23 +299,30 @@
 			  gnMetadataManager.getFilesFromS3(url)
 				.then(function(response) {
 						var filenames = response.data;
-						console.log('filenames.length ---> '+filenames.length);
+						//console.log('filenames.length ---> '+filenames.length);
 						var params = 's3location='+url+'&metadataType=METADATA&uuidProcessing=OVERWRITE&transformWith=_none_&assignToCatalog=on&group=&category=';
+						var sequence = $q.defer();
+			            sequence.resolve();
+			            sequence = sequence.promise;
+						
 						angular.forEach(filenames, function(filename) {
-							console.log('filename --> ' + filename);
-						  gnMetadataManager.importFromS3Bucket(params, filename).then(
-							  function(response) {
-								  var message = JSON.stringify(response.data.metadataInfos);
-									
-									if(message.length > 2){
-										scope.reports.push({'message' : JSON.stringify(response.data.metadataInfos), 'class':'alert alert-info'});	
-									}
-									
-									if(response.data.errors.length > 0){
-										scope.reports.push({'message' : response.data.errors[0].message, 'class':'alert alert-danger'});		
-									}
-							  });
-
+						
+							sequence = sequence.then(function() {
+							
+								return gnMetadataManager.importFromS3Bucket(params, filename).then(
+								  function(response) {
+									  var message = JSON.stringify(response.data.metadataInfos);
+										
+										if(message.length > 2){
+											scope.reports.push({'message' : JSON.stringify(response.data.metadataInfos), 'class':'alert alert-info'});	
+										}
+										
+										if(response.data.errors.length > 0){
+											scope.reports.push({'message' : response.data.errors[0].message, 'class':'alert alert-danger'});		
+										}
+								  });
+							});
+							
 						});
 					  })
 				.catch(function(response) {

@@ -43,11 +43,12 @@
    * TODO: Init form from route parameters
    */
   module.controller('GnImportController', [
+    '$q',
     '$scope',
     '$rootScope',
     'gnMetadataManager',
     '$window',
-    function($scope,  $rootScope, gnMetadataManager, $window) {
+    function($q, $scope,  $rootScope, gnMetadataManager, $window) {
       $scope.importMode = 'uploadFile';
       $scope.file_type = 'single';
       $scope.queue = [];
@@ -165,11 +166,19 @@
 			gnMetadataManager.getFilesFromS3($scope.params.s3location)
 				.then(function(response) {
 						var url = $scope.params.s3location;
-						var filenames = response.data;
+            var filenames = response.data;
+            
+            var sequence = $q.defer();
+            sequence.resolve();
+            sequence = sequence.promise;
+
+
 						angular.forEach(filenames, function(filename) {
-						  gnMetadataManager.importFromS3Bucket(
-							  $(formId).serialize(), filename).then(
-							  onSuccessFn, onErrorFn);
+              sequence = sequence.then(function() {
+                return gnMetadataManager.importFromS3Bucket(
+                  $(formId).serialize(), filename).then(
+                  onSuccessFn, onErrorFn);
+              });
 
 						});
 					  })
