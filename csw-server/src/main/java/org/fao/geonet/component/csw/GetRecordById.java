@@ -25,6 +25,7 @@ package org.fao.geonet.component.csw;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Optional;
 
@@ -57,6 +58,8 @@ import org.fao.geonet.kernel.csw.services.AbstractOperation;
 import org.fao.geonet.kernel.csw.services.getrecords.SearchController;
 import org.fao.geonet.domain.Pair;
 import org.fao.geonet.lib.Lib;
+import org.fao.geonet.token.TokenBucket;
+import org.fao.geonet.token.TokenBuckets;
 import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -75,7 +78,7 @@ public class GetRecordById extends AbstractOperation implements CatalogService {
     //--- Constructor
     //---
     //---------------------------------------------------------------------------
-
+	
     static final String NAME = "GetRecordById";
     private SearchController _searchController;
     @Autowired
@@ -86,7 +89,7 @@ public class GetRecordById extends AbstractOperation implements CatalogService {
 
     @Autowired
     public GetRecordById(ApplicationContext applicationContext) {
-        _searchController = new SearchController(applicationContext);
+        _searchController = new SearchController(applicationContext);        
     }
 
 
@@ -103,6 +106,8 @@ public class GetRecordById extends AbstractOperation implements CatalogService {
     //---------------------------------------------------------------------------
 
     public Element execute(Element request, ServiceContext context) throws CatalogException {
+    	
+    	 
         checkService(request);
         checkVersion(request);
         //-- Added for CSW 2.0.2 compliance by warnock@awcubed.com
@@ -190,6 +195,7 @@ public class GetRecordById extends AbstractOperation implements CatalogService {
             throw new NoApplicableCodeEx(e.toString());
         }
         return response;
+    	
     }
 
     //---------------------------------------------------------------------------

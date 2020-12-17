@@ -56,6 +56,8 @@ import org.fao.geonet.kernel.setting.SettingManager;
 import org.fao.geonet.kernel.setting.Settings;
 import org.fao.geonet.repository.CustomElementSetRepository;
 import org.fao.geonet.repository.SettingRepository;
+import org.fao.geonet.token.TokenBucket;
+import org.fao.geonet.token.TokenBuckets;
 import org.fao.geonet.util.xml.NamespaceUtils;
 import org.fao.geonet.utils.Log;
 import org.fao.geonet.utils.Xml;
@@ -69,6 +71,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.fao.geonet.kernel.setting.Settings.SYSTEM_CSW_ENABLEWHENINDEXING;
 
@@ -78,6 +81,9 @@ import static org.fao.geonet.kernel.setting.Settings.SYSTEM_CSW_ENABLEWHENINDEXI
 @Component(CatalogService.BEAN_PREFIX + GetRecords.NAME)
 public class GetRecords extends AbstractOperation implements CatalogService {
 
+	private final TokenBucket bucket;
+	long capacity = 350;
+	
     static final String NAME = "GetRecords";
     static final int DEFAULT_MAX_RECORDS = 10;
     /**
@@ -103,6 +109,13 @@ public class GetRecords extends AbstractOperation implements CatalogService {
     @Autowired
     public GetRecords(ApplicationContext context) {
         _searchController = new SearchController(context);
+        
+        bucket = TokenBuckets.builder()
+				  .withCapacity(capacity)
+				  .withFixedIntervalRefillStrategy(capacity, 24, TimeUnit.HOURS)
+				  .build();
+        
+        
     }
 
     /**
@@ -133,147 +146,154 @@ public class GetRecords extends AbstractOperation implements CatalogService {
     public Element execute(Element request, ServiceContext context) throws CatalogException {
         String timeStamp = new ISODate().toString();
 
-        // Return exception is indexing.
-        GeonetContext gc = (GeonetContext) context.getHandlerContext(Geonet.CONTEXT_NAME);
-        DataManager dataManager = gc.getBean(DataManager.class);
-        SettingManager settingsManager = gc.getBean(SettingManager.class);
-        if (!settingsManager.getValueAsBool(SYSTEM_CSW_ENABLEWHENINDEXING) &&
-            dataManager.isIndexing()) {
-            throw new RuntimeException("Catalog is indexing records, retry later.");
+        //String userAgent = context.getHeaders().get("user-agent");
+        
+        if (this.bucket.tryConsume(1)) {
+        	        	
+	        // Return exception is indexing.
+	        GeonetContext gc = (GeonetContext) context.getHandlerContext(Geonet.CONTEXT_NAME);
+	        DataManager dataManager = gc.getBean(DataManager.class);
+	        SettingManager settingsManager = gc.getBean(SettingManager.class);
+	        if (!settingsManager.getValueAsBool(SYSTEM_CSW_ENABLEWHENINDEXING) &&
+	            dataManager.isIndexing()) {
+	            throw new RuntimeException("Catalog is indexing records, retry later.");
+	        }
+	
+	        //
+	        // some validation checks (note: this is not an XSD validation)
+	        //
+	
+	        // must be "CSW"
+	        checkService(request);
+	
+	        // must be "2.0.2"
+	        checkVersion(request);
+	
+	        // GeoNetwork only supports "application/xml"
+	        checkOutputFormat(request);
+	
+	        // one of ElementName XOR ElementSetName must be requested
+	        checkElementNamesXORElementSetName(request);
+	
+	        // optional integer, value at least 1
+	        int startPos = getStartPosition(request);
+	
+	        // optional integer, value at least 1
+	        int maxRecords = getMaxRecords(request, context);
+	
+	        Element query = request.getChild("Query", Csw.NAMESPACE_CSW);
+	
+	        // one of "hits", "results", "validate" or the GN-specific (invalid) "results_with_summary".
+	        ResultType resultType = ResultType.parse(request.getAttributeValue("resultType"));
+	
+	        // either Record or IsoRecord
+	        String outSchema = OutputSchema.parse(request.getAttributeValue("outputSchema"), _schemaManager);
+	
+	        // GeoNetwork-specific parameter defining how to deal with ElementNames. See documentation in
+	        // SearchController.applyElementNames() about these strategies.
+	        String elementnameStrategy = getElementNameStrategy(query);
+	
+	        // value csw:Record or gmd:MD_Metadata
+	        // heikki: this is actually a List (in OGC 07-006), though OGC 07-045 states:
+	        // "Because for this application profile it is not possible that a query includes more than one typename, .."
+	        // So: a single String should be OK. However to increase backwards-compatibility with existing clients sending
+	        // a comma separated list (such as GN's own CSW Harvesting Client), the check assumes a comma-separated list,
+	        // and checks whether its values are not other than csw:Record or gmd:MD_Metadata. If both are sent,
+	        // gmd:MD_Metadata is preferred.
+	        final SettingInfo settingInfo = context.getBean(SearchManager.class).getSettingInfo();
+	        String typeName = checkTypenames(query, settingInfo.getInspireEnabled());
+	
+	        // set of elementnames or null
+	        Set<String> elemNames = getElementNames(query);
+	
+	        // If any element names are specified, it's an ad hoc query and overrides the element set name default. In that
+	        // case, we set setName to FULL instead of SUMMARY so that we can retrieve a CSW:Record and trim out the
+	        // elements that aren't in the elemNames set.
+	        ElementSetName setName = ElementSetName.FULL;
+	
+	        //
+	        // no ElementNames requested: use ElementSetName
+	        //
+	        if ((elemNames == null)) {
+	            setName = getElementSetName(query, ElementSetName.SUMMARY);
+	            // elementsetname is FULL: use customized elementset if defined
+	            if (setName.equals(ElementSetName.FULL)) {
+	                final List<CustomElementSet> customElementSets = context.getBean(CustomElementSetRepository.class).findAll();
+	                // custom elementset defined
+	                if (!CollectionUtils.isEmpty(customElementSets)) {
+	                    elemNames = new HashSet<String>();
+	                    for (CustomElementSet customElementSet : customElementSets) {
+	                        elemNames.add(customElementSet.getXpath());
+	                    }
+	                }
+	            }
+	        }
+	
+	
+	        // "Constraint Optional" & "Must be specified with QUERYCONSTRAINT parameter"
+	        Element constr = query.getChild("Constraint", Csw.NAMESPACE_CSW);
+	        Element filterExpr = getFilterExpression(constr);
+	        String filterVersion = getFilterVersion(constr);
+	
+	        // Get max hits to be used for summary - CSW GeoNetwork extension
+	        int maxHitsInSummary = 1000;
+	        String sMaxRecordsInKeywordSummary = query.getAttributeValue("maxHitsInSummary");
+	        if (sMaxRecordsInKeywordSummary != null) {
+	            // TODO : it could be better to use service config parameter instead
+	            // sMaxRecordsInKeywordSummary = config.getValue("maxHitsInSummary", "1000");
+	            maxHitsInSummary = Integer.parseInt(sMaxRecordsInKeywordSummary);
+	        }
+	
+	        Sort sort = getSortFields(request, context);
+	
+	        Element response;
+	
+	        if (resultType == ResultType.VALIDATE) {
+	            //String schema = context.getAppPath() + Geonet.Path.VALIDATION + "csw/2.0.2/csw-2.0.2.xsd";
+	            Path schema = context.getAppPath().resolve(Geonet.Path.VALIDATION).resolve("csw202_apiso100/csw/2.0.2/CSW-discovery.xsd");
+	
+	            if (Log.isDebugEnabled(Geonet.CSW))
+	                Log.debug(Geonet.CSW, "Validating request against " + schema);
+	            try {
+	                Xml.validate(schema, request);
+	            } catch (Exception e) {
+	                throw new NoApplicableCodeEx("Request failed validation:" + e.toString());
+	            }
+	
+	            response = new Element("Acknowledgement", Csw.NAMESPACE_CSW);
+	            response.setAttribute("timeStamp", timeStamp);
+	
+	            Element echoedRequest = new Element("EchoedRequest", Csw.NAMESPACE_CSW);
+	            echoedRequest.addContent(request);
+	
+	            response.addContent(echoedRequest);
+	        } else {
+	            response = new Element(getName() + "Response", Csw.NAMESPACE_CSW);
+	
+	            Attribute schemaLocation = new Attribute("schemaLocation", "http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd", Csw.NAMESPACE_XSI);
+	            response.setAttribute(schemaLocation);
+	
+	            Element status = new Element("SearchStatus", Csw.NAMESPACE_CSW);
+	            status.setAttribute("timestamp", timeStamp);
+	
+	            response.addContent(status);
+	
+	            String cswServiceSpecificContraint = request.getChildText(Geonet.Elem.FILTER);
+	
+	            Pair<Element, Element> search = _searchController.search(context, startPos, maxRecords, resultType, outSchema,
+	                setName, filterExpr, filterVersion, sort, elemNames, typeName, maxHitsInSummary, cswServiceSpecificContraint, elementnameStrategy);
+	
+	            // Only add GeoNetwork summary on results_with_summary option
+	            if (resultType == ResultType.RESULTS_WITH_SUMMARY) {
+	                response.addContent(search.one());
+	            }
+	
+	            response.addContent(search.two());
+	        }
+	        return response;
         }
-
-        //
-        // some validation checks (note: this is not an XSD validation)
-        //
-
-        // must be "CSW"
-        checkService(request);
-
-        // must be "2.0.2"
-        checkVersion(request);
-
-        // GeoNetwork only supports "application/xml"
-        checkOutputFormat(request);
-
-        // one of ElementName XOR ElementSetName must be requested
-        checkElementNamesXORElementSetName(request);
-
-        // optional integer, value at least 1
-        int startPos = getStartPosition(request);
-
-        // optional integer, value at least 1
-        int maxRecords = getMaxRecords(request, context);
-
-        Element query = request.getChild("Query", Csw.NAMESPACE_CSW);
-
-        // one of "hits", "results", "validate" or the GN-specific (invalid) "results_with_summary".
-        ResultType resultType = ResultType.parse(request.getAttributeValue("resultType"));
-
-        // either Record or IsoRecord
-        String outSchema = OutputSchema.parse(request.getAttributeValue("outputSchema"), _schemaManager);
-
-        // GeoNetwork-specific parameter defining how to deal with ElementNames. See documentation in
-        // SearchController.applyElementNames() about these strategies.
-        String elementnameStrategy = getElementNameStrategy(query);
-
-        // value csw:Record or gmd:MD_Metadata
-        // heikki: this is actually a List (in OGC 07-006), though OGC 07-045 states:
-        // "Because for this application profile it is not possible that a query includes more than one typename, .."
-        // So: a single String should be OK. However to increase backwards-compatibility with existing clients sending
-        // a comma separated list (such as GN's own CSW Harvesting Client), the check assumes a comma-separated list,
-        // and checks whether its values are not other than csw:Record or gmd:MD_Metadata. If both are sent,
-        // gmd:MD_Metadata is preferred.
-        final SettingInfo settingInfo = context.getBean(SearchManager.class).getSettingInfo();
-        String typeName = checkTypenames(query, settingInfo.getInspireEnabled());
-
-        // set of elementnames or null
-        Set<String> elemNames = getElementNames(query);
-
-        // If any element names are specified, it's an ad hoc query and overrides the element set name default. In that
-        // case, we set setName to FULL instead of SUMMARY so that we can retrieve a CSW:Record and trim out the
-        // elements that aren't in the elemNames set.
-        ElementSetName setName = ElementSetName.FULL;
-
-        //
-        // no ElementNames requested: use ElementSetName
-        //
-        if ((elemNames == null)) {
-            setName = getElementSetName(query, ElementSetName.SUMMARY);
-            // elementsetname is FULL: use customized elementset if defined
-            if (setName.equals(ElementSetName.FULL)) {
-                final List<CustomElementSet> customElementSets = context.getBean(CustomElementSetRepository.class).findAll();
-                // custom elementset defined
-                if (!CollectionUtils.isEmpty(customElementSets)) {
-                    elemNames = new HashSet<String>();
-                    for (CustomElementSet customElementSet : customElementSets) {
-                        elemNames.add(customElementSet.getXpath());
-                    }
-                }
-            }
-        }
-
-
-        // "Constraint Optional" & "Must be specified with QUERYCONSTRAINT parameter"
-        Element constr = query.getChild("Constraint", Csw.NAMESPACE_CSW);
-        Element filterExpr = getFilterExpression(constr);
-        String filterVersion = getFilterVersion(constr);
-
-        // Get max hits to be used for summary - CSW GeoNetwork extension
-        int maxHitsInSummary = 1000;
-        String sMaxRecordsInKeywordSummary = query.getAttributeValue("maxHitsInSummary");
-        if (sMaxRecordsInKeywordSummary != null) {
-            // TODO : it could be better to use service config parameter instead
-            // sMaxRecordsInKeywordSummary = config.getValue("maxHitsInSummary", "1000");
-            maxHitsInSummary = Integer.parseInt(sMaxRecordsInKeywordSummary);
-        }
-
-        Sort sort = getSortFields(request, context);
-
-        Element response;
-
-        if (resultType == ResultType.VALIDATE) {
-            //String schema = context.getAppPath() + Geonet.Path.VALIDATION + "csw/2.0.2/csw-2.0.2.xsd";
-            Path schema = context.getAppPath().resolve(Geonet.Path.VALIDATION).resolve("csw202_apiso100/csw/2.0.2/CSW-discovery.xsd");
-
-            if (Log.isDebugEnabled(Geonet.CSW))
-                Log.debug(Geonet.CSW, "Validating request against " + schema);
-            try {
-                Xml.validate(schema, request);
-            } catch (Exception e) {
-                throw new NoApplicableCodeEx("Request failed validation:" + e.toString());
-            }
-
-            response = new Element("Acknowledgement", Csw.NAMESPACE_CSW);
-            response.setAttribute("timeStamp", timeStamp);
-
-            Element echoedRequest = new Element("EchoedRequest", Csw.NAMESPACE_CSW);
-            echoedRequest.addContent(request);
-
-            response.addContent(echoedRequest);
-        } else {
-            response = new Element(getName() + "Response", Csw.NAMESPACE_CSW);
-
-            Attribute schemaLocation = new Attribute("schemaLocation", "http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd", Csw.NAMESPACE_XSI);
-            response.setAttribute(schemaLocation);
-
-            Element status = new Element("SearchStatus", Csw.NAMESPACE_CSW);
-            status.setAttribute("timestamp", timeStamp);
-
-            response.addContent(status);
-
-            String cswServiceSpecificContraint = request.getChildText(Geonet.Elem.FILTER);
-
-            Pair<Element, Element> search = _searchController.search(context, startPos, maxRecords, resultType, outSchema,
-                setName, filterExpr, filterVersion, sort, elemNames, typeName, maxHitsInSummary, cswServiceSpecificContraint, elementnameStrategy);
-
-            // Only add GeoNetwork summary on results_with_summary option
-            if (resultType == ResultType.RESULTS_WITH_SUMMARY) {
-                response.addContent(search.one());
-            }
-
-            response.addContent(search.two());
-        }
-        return response;
+        
+        throw new RuntimeException("Too many csw request. Try after few hours.");
     }
 
     /**
@@ -811,7 +831,7 @@ public class GetRecords extends AbstractOperation implements CatalogService {
         // TODO end if(isDebugEnabled)
         return elementNames;
     }
-
+    
 
     /**
      * Retrieves the values of attribute typeNames. If typeNames contains csw:BriefRecord or csw:SummaryRecord, an
