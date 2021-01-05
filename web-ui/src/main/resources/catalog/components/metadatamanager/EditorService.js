@@ -36,6 +36,12 @@
    */
   module.value('gnCurrentEdit', {});
 
+  module.config(['$compileProvider', function( $compileProvider ) {   
+	$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|sdl|file):/);
+	// Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+	}
+  ]);
+  
   module.factory('gnEditor',
       [
         '$rootScope',

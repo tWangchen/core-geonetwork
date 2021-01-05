@@ -29,14 +29,14 @@
         <div id="navbar" class="navbar-collapse collapse">
           
           <div class="col-md-6">
-              <!-- <a href="http://www.ga.gov.au/"  title="Navigate to the Geoscience Australia home page">
-              	<img src="../../../catalog/views/default/images/ga.header.logo.png" />
+              	<a href="http://www.ga.gov.au/"  title="Navigate to the Geoscience Australia home page">
+              	 <!-- <img src="../../../catalog/views/default/images/ga.header.logo.png" /> -->
                 <img src="https://ecat.ga.gov.au/geonetwork/catalog/views/default/images/ga.header.logo.png" />
-              </a> -->
+              </a> 
           </div>
           <div class="title-lg col-md-6">
             <span>Data and Publications Search</span>
-            <a title="{$t/search}" href="{/root/gui/nodeUrl}search" onclick="location.href=('{/root/gui/nodeUrl}{$lang}/catalog.search#/search');return false;">
+            <a title="{$t/search}" href="{/root/gui/nodeUrl}search" onclick="location.href=('{/root/gui/nodeUrl}search');return false;">
               <i class="fa fa-fw fa-search hidden-sm">&#160;</i>
               <!-- <span><xsl:value-of select="$t/search"/></span> -->
             </a>
