@@ -82,7 +82,7 @@ import static org.fao.geonet.kernel.setting.Settings.SYSTEM_CSW_ENABLEWHENINDEXI
 public class GetRecords extends AbstractOperation implements CatalogService {
 
 	private final TokenBucket bucket;
-	long capacity = 350;
+	long capacity = 180;
 	
     static final String NAME = "GetRecords";
     static final int DEFAULT_MAX_RECORDS = 10;
@@ -112,7 +112,7 @@ public class GetRecords extends AbstractOperation implements CatalogService {
         
         bucket = TokenBuckets.builder()
 				  .withCapacity(capacity)
-				  .withFixedIntervalRefillStrategy(capacity, 24, TimeUnit.HOURS)
+				  .withFixedIntervalRefillStrategy(capacity, 60, TimeUnit.MINUTES)
 				  .build();
         
         
