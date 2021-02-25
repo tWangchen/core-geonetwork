@@ -303,7 +303,7 @@
 		  '<div style="padding-left: 50px"><i class="fa fa-spinner fa-spin fa-3x fa-fw" ng-if="exporting"></i></div>' +
 		  '<div style="padding-left: 10px;color:red" ng-if="errMsg"><label>{{errMsgStr}}</label></div>' +
 		  '<div ng-repeat="c in columns">' + 
-		  '<input type="checkbox" checklist-model="csv.columns" checklist-value="c"><label>{{c}}</label></div>',
+		  '<input type="checkbox" checklist-model="csv.columns" checklist-value="c">&nbsp;<label>{{c}}</label></div>',
           className: ''
         }, scope, 'exportSelection');
       };
