@@ -293,7 +293,7 @@ public class GetRecords extends AbstractOperation implements CatalogService {
 	        return response;
         }
         
-        throw new RuntimeException("Too many csw request. Try after few hours.");
+        throw new RuntimeException("Too many csw request. Try to start at the beginning of next hour.");
     }
 
     /**
