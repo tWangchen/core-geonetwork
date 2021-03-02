@@ -76,9 +76,9 @@
 		<for name="gco:Date" use="data-gn-date-picker" />
 		<for name="gco:DateTime" use="data-gn-date-picker" />
 
-	    	<for name="gml:duration" use="data-gn-field-duration-div"/>
-	    	<for name="gco:TM_PeriodDuration" use="data-gn-field-duration-div"/>
-	    	<for name="gml:duration" use="data-gn-field-duration-div"/>
+    	<for name="gml:duration" use="data-gn-field-duration-div"/>
+    	<for name="gco:TM_PeriodDuration" use="data-gn-field-duration-div"/>
+	    	
 		<!-- gmx:FileName/@src attribute -->
 		<for name="src" use="data-gn-logo-selector" />
 
