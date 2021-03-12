@@ -143,6 +143,13 @@
             }
           };
 
+          scope.getDivision = function(extra) {
+            if(extra){
+              division = extra.split('|')[2]
+              return division;
+            }
+          };
+
           /**
            * If local, selection is handled in an array on the client
            * if not, selection is handled on server side and
