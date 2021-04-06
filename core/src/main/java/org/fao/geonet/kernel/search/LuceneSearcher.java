@@ -798,7 +798,8 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         String schema = doc.get("_schema");
         String source = doc.get("_source");
         String uuid = doc.get("_uuid");
-
+        String extra = doc.get("_extra");
+        
         String createDate = doc.get("_createDate");
         if (createDate != null) createDate = createDate.toUpperCase();
         String changeDate = doc.get("_changeDate");
@@ -806,8 +807,9 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         
         if(("s").equals(doc.get("_isTemplate"))){
         	Metadata m = _metadataRepository.findOneByUuid(uuid);
-        	title = m.getDataInfo().getTitle();
+        	title = m.getDataInfo().getTitle();        	
         }
+        
         // Root element is using root element name if not using only the index content (ie. dumpAllField)
         // probably because the XSL need that info later ?
         Element md = new Element("metadata");
@@ -821,6 +823,7 @@ public class LuceneSearcher extends MetaSearcher implements MetadataRecordSelect
         addElement(info, Edit.Info.Elem.CHANGE_DATE, changeDate);
         addElement(info, Edit.Info.Elem.SOURCE, source);
 		addElement(info, Edit.Info.Elem.TITLE, title);
+		addElement(info, Edit.Info.Elem.EXTRA, extra);
 
         HashSet<String> addedTranslation = new LinkedHashSet<String>();
         if ((dumpAllField || dumpFields != null) && searchLang != null && multiLangSearchTerm != null) {

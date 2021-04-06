@@ -46,7 +46,7 @@
           <div class="flex-row flex-align-center">
             <gn-md-type-widget metadata="md"></gn-md-type-widget>
             <div class="flex-spacer" />
-            <strong>{{md.title || md.defaultTitle}}</strong><strong data-ng-if="md.eCatId">({{md.eCatId}})</strong>
+            <strong>{{md.title || md.defaultTitle}}</strong>&nbsp;<strong data-ng-if="getDivision(md['geonet:info'].extra)">({{getDivision(md['geonet:info'].extra)}})</strong>
           </div>
           <p ng-if="::md.abstract" class="small">{{md.abstract | characters:200}}</p>
         </div>

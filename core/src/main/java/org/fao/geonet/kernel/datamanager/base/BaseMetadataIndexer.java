@@ -430,7 +430,7 @@ public class BaseMetadataIndexer implements IMetadataIndexer, ApplicationEventPu
                     SearchManager.makeField(Geonet.IndexFieldNames.FEEDBACKCOUNT, nbOfFeedback + "", true, true));
             }
             moreFields.add(SearchManager.makeField(Geonet.IndexFieldNames.DISPLAY_ORDER, displayOrder, true, false));
-            moreFields.add(SearchManager.makeField(Geonet.IndexFieldNames.EXTRA, extra, false, true));
+            moreFields.add(SearchManager.makeField(Geonet.IndexFieldNames.EXTRA, extra, true, true));
 
             // If the metadata has an atom document, index related information
             InspireAtomFeed feed = inspireAtomFeedRepository.findByMetadataId(id$);
