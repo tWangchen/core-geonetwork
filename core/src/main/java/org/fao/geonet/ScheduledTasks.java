@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.input.BOMInputStream;
 import org.fao.geonet.constants.Geonet;
 import org.fao.geonet.constants.Geonet.Namespaces;
 import org.fao.geonet.domain.AbstractMetadata;
@@ -96,7 +97,7 @@ public class ScheduledTasks {
 			}
 			
 			if(objectData != null) {
-				final Reader reader = new InputStreamReader(objectData);
+				final Reader reader = new InputStreamReader(new BOMInputStream(objectData));
 
 				CSVParser parser = new CSVParser(reader, CSVFormat.EXCEL.withHeader().withIgnoreEmptyLines());
 				Element role = getRoleElement();
@@ -199,13 +200,13 @@ public class ScheduledTasks {
 					            String metadataId = metadataManager.insertMetadata(context, "iso19115-3", xmlElement, UUID.randomUUID().toString(),
 					                    1, String.valueOf(ReservedGroup.all.getId()), settingManager.getSiteId(), MetadataType.SUB_TEMPLATE.codeString, null, null, date, date, false, true);
 					            
-					            Log.info(Geonet.GA, String.format("Changed user % from internal to external contact. metadataId %s ", uuid, metadataId));
+					            Log.info(Geonet.GA, String.format("Changed user %s from internal to external contact. metadataId %s ", uuid, metadataId));
 					            
 					            
 					        } catch (DataIntegrityViolationException ex) {
-					        	Log.error(Geonet.GA, "Error while updating Internal contact to External, " + ex.getMessage());
+					        	Log.error(Geonet.GA, "DataIntegrityViolationException while updating Internal contact to External, " + ex.getMessage());
 					        } catch (Exception ex) {
-					        	Log.error(Geonet.GA, "Error while updating Internal contact to External, " + ex.getMessage());
+					        	Log.error(Geonet.GA, "Exception while updating Internal contact to External, " + ex.getMessage());
 					        }
 							
 							
