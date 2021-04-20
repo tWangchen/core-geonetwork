@@ -38,6 +38,7 @@ import org.apache.http.entity.StringEntity;
 import org.fao.geonet.api.API;
 import org.fao.geonet.api.ApiParams;
 import org.fao.geonet.api.ApiUtils;
+import org.fao.geonet.api.exception.NoResultsFoundException;
 import org.fao.geonet.api.exception.NotAllowedException;
 import org.fao.geonet.api.exception.ResourceNotFoundException;
 import org.fao.geonet.api.records.model.related.FCRelatedMetadataItem.FeatureType.AttributeTable;
@@ -129,6 +130,24 @@ public class MetadataApi {
         this.context = context;
     }
 
+    @ApiOperation(value = "Return alternate identifier", notes = "Return UUID if eCatId is provided or returns eCatId if UUID is provided")
+    @RequestMapping(value = "alternateId/{alternateId}", method=RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+	@ResponseBody
+    public String getAlternateIdentifier(@PathVariable String alternateId) throws Exception {
+    	
+    	String alt_id = "";
+    	if(!ApiUtils.isUuid(alternateId) && NumberUtils.isDigits(alternateId)){
+    		alt_id = opManager.getUuidFromECatId(alternateId);    		
+    	}else {
+    		alt_id = opManager.getECatIdFromUUID(context, alternateId);
+    	}
+    	
+    	if(StringUtils.isEmpty(alt_id))
+    		throw new NoResultsFoundException(ApiParams.API_RESPONSE_RESOURCE_NOT_FOUND);
+    	
+    	return alt_id;
+    }
 
     @ApiOperation(value = "Get a metadata record",
         notes = "Depending on the accept header the appropriate formatter is used. " +
