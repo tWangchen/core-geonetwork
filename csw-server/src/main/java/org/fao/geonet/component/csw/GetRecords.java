@@ -81,8 +81,8 @@ import static org.fao.geonet.kernel.setting.Settings.SYSTEM_CSW_ENABLEWHENINDEXI
 @Component(CatalogService.BEAN_PREFIX + GetRecords.NAME)
 public class GetRecords extends AbstractOperation implements CatalogService {
 
-	private final TokenBucket bucket;
-	long capacity = 180;
+	//private final TokenBucket bucket;
+	//long capacity = 180;
 	
     static final String NAME = "GetRecords";
     static final int DEFAULT_MAX_RECORDS = 10;
@@ -110,10 +110,10 @@ public class GetRecords extends AbstractOperation implements CatalogService {
     public GetRecords(ApplicationContext context) {
         _searchController = new SearchController(context);
         
-        bucket = TokenBuckets.builder()
+        /*bucket = TokenBuckets.builder()
 				  .withCapacity(capacity)
 				  .withFixedIntervalRefillStrategy(capacity, 60, TimeUnit.MINUTES)
-				  .build();
+				  .build();*/
         
         
     }
@@ -148,7 +148,7 @@ public class GetRecords extends AbstractOperation implements CatalogService {
 
         //String userAgent = context.getHeaders().get("user-agent");
         
-        if (this.bucket.tryConsume(1)) {
+        //if (this.bucket.tryConsume(1)) {
         	        	
 	        // Return exception is indexing.
 	        GeonetContext gc = (GeonetContext) context.getHandlerContext(Geonet.CONTEXT_NAME);
@@ -291,9 +291,9 @@ public class GetRecords extends AbstractOperation implements CatalogService {
 	            response.addContent(search.two());
 	        }
 	        return response;
-        }
+        //}
         
-        throw new RuntimeException("Too many csw request. Try to start at the beginning of next hour.");
+        //throw new RuntimeException("Too many csw request. Try to start at the beginning of next hour.");
     }
 
     /**
