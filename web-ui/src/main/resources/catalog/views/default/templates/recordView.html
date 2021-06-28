@@ -253,7 +253,7 @@
                   {{c}}</p>
               </div>
             </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.accessCons">
+            <!-- <div class="row tab-items" data-ng-if="mdView.current.record.accessCons">
               <div class="col-md-3"><b>Access Constraints</b></div>
               <div class="col-md-9">
                 <p> {{mdView.current.record.accessCons}}
@@ -266,7 +266,7 @@
                 <p> {{mdView.current.record.useCons}}
                 </p>
               </div>
-            </div>
+            </div> -->
             <div class="row tab-items" data-ng-if="mdView.current.record.resourceConstraints">
               <div class="col-md-3"><b>Resource Constraints</b></div>
               <div class="col-md-9">
@@ -288,7 +288,12 @@
                 </p>
               </div>
             </div>
-
+            <div class="row tab-items" data-ng-if="mdView.current.record.constraintResponsibleParty">
+              <div class="col-md-3"><b>Constraint Responsible Party</b></div>
+              <div class="col-md-9">
+                <p>{{ mdView.current.record.constraintResponsibleParty }} - {{ mdView.current.record.constraintResponsiblePartyRole | titleCase }}</p>                
+              </div>
+            </div>
           </tab>
 
           <tab class="tablink" heading="About">
