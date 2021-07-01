@@ -220,7 +220,7 @@ public class MetadataInsertDeleteApi {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRecord(
             @ApiParam(value = API_PARAM_RECORD_UUID, required = true) @PathVariable String metadataUuid,
-            @ApiParam(value = API_PARAM_BACKUP_FIRST, required = false) @RequestParam(required = false, defaultValue = "true") boolean withBackup,
+            @ApiParam(value = API_PARAM_BACKUP_FIRST, required = false) @RequestParam(required = false, defaultValue = "false") boolean withBackup,
             HttpServletRequest request) throws Exception {
         AbstractMetadata metadata = ApiUtils.canEditRecord(metadataUuid, request);
         ServiceContext context = ApiUtils.createServiceContext(request);
@@ -256,7 +256,7 @@ public class MetadataInsertDeleteApi {
     public SimpleMetadataProcessingReport deleteRecords(
             @ApiParam(value = API_PARAM_RECORD_UUIDS_OR_SELECTION, required = false, example = "") @RequestParam(required = false) String[] uuids,
             @ApiParam(value = ApiParams.API_PARAM_BUCKET_NAME, required = false) @RequestParam(required = false) String bucket,
-            @ApiParam(value = API_PARAM_BACKUP_FIRST, required = false) @RequestParam(required = false, defaultValue = "true") boolean withBackup,
+            @ApiParam(value = API_PARAM_BACKUP_FIRST, required = false) @RequestParam(required = false, defaultValue = "false") boolean withBackup,
             @ApiIgnore HttpSession session, HttpServletRequest request) throws Exception {
         ServiceContext context = ApiUtils.createServiceContext(request);
         ApplicationContext appContext = ApplicationContextHolder.get();
