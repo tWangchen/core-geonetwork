@@ -94,6 +94,7 @@
         <span data-translate="">workflow</span>
       </li>
       <!-- user = editor, status = 1, statusToSelect = 4 -->
+      <!-- 20210910 comment out as per https://gajira.atlassian.net/browse/ECAT-529
       <li role="menuitem"
           data-ng-if="user.canEditRecord(md) && (user.isAdmin() ||
           user.isEditorForGroup(md.groupOwner)) && md.mdStatus == 1 && isMdWorkflowEnable && md.isWorkflowEnabled()">
@@ -103,6 +104,7 @@
           <span data-translate="">mdStatusTitle-14</span>
         </a>
       </li>
+      -->
       <li role="menuitem"
           data-ng-if="user.canEditRecord(md) && (user.isAdmin() ||
           user.isEditorForGroup(md.groupOwner)) && md.mdStatus == 3 && isMdWorkflowEnable && md.isWorkflowEnabled()">
