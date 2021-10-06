@@ -179,6 +179,7 @@
     <entry key="series">Dataset</entry>
     <entry key="service">Service</entry>
     <entry key="software">Software</entry>
+    <entry key="document">Text</entry>
   </xsl:variable>
 
   <xsl:template mode="toDatacite" match="mdb:metadataScope/*/mdb:resourceScope/*/@codeListValue">
