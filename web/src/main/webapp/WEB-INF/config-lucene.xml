@@ -168,9 +168,6 @@
       <field name="MD_LegalConstraintsUseLimitation" tagName="MD_LegalConstraintsUseLimitation"/>
       <field name="MD_SecurityConstraintsUseLimitation" tagName="securityConstraints"/>
       <field name="MD_ConstraintsUseLimitation" tagName="resourceConstraints"/>
-      <field name="useLimitation" tagName="useLimitation"/>
-      <field name="constraintResponsibleParty" tagName="constraintResponsibleParty"/>
-      <field name="constraintResponsiblePartyRole" tagName="constraintResponsiblePartyRole"/>
       <field name="cl_classification_text" tagName="classification_text"/>
       <field name="cl_maintenanceAndUpdateFrequency_text"
              tagName="maintenanceAndUpdateFrequency_text"/>
