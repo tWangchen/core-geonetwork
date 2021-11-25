@@ -198,6 +198,10 @@
       <field name="author" tagName="author"/>
       <field name="publisher" tagName="publisher"/>
       <field name="legalConstraints" tagName="legalConstraints"/>
+      <!-- Start 20211112 Wangchen updates as per https://gajira.atlassian.net/browse/ECAT-511 -->
+      <field name="licence" tagName="licence"/>
+      <field name="copyrightStatement" tagName="copyrightStatement"/>
+      <!-- End 20211112 Wangchen updates as per https://gajira.atlassian.net/browse/ECAT-511 -->
 	<!-- Martins additions start -->
 	  <field name="issueIdentification" tagName="issueIdentification"/>
 	  <field name="seriesName" tagName="seriesName"/>

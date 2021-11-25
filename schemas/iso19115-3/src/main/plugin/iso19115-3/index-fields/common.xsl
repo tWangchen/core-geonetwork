@@ -303,14 +303,26 @@
        		<Field name="useCons" string="{string(.)}" store="true" index="true"/>
      </xsl:for-each>
 	 
-	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:reference/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString">
+  <!-- Start 202111112 Wangchen replace 'mri:MD_DataIdentification' with wildcard to accomocate all templates -->
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_LegalConstraints/mco:reference/cit:CI_Citation/cit:onlineResource/cit:CI_OnlineResource/cit:linkage/gco:CharacterString">
        		<Field name="licenceLink" string="{string(.)}" store="true" index="true"/>
      </xsl:for-each>
-	 
-	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:resourceConstraints/mco:MD_LegalConstraints/mco:useLimitation/gco:CharacterString">
+   
+	 <xsl:for-each select="$metadata/mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_LegalConstraints/mco:useLimitation/gco:CharacterString">
        		<Field name="MD_LegalConstraintsUseLimitation" string="{string(.)}" store="true" index="true"/>
      </xsl:for-each>
-	 
+  <!-- End 202111112 Wangchen replace 'mri:MD_DataIdentification' with wildcard to accomocate all templates -->
+
+  <!-- Start 20211112 Wangchen updates as per https://gajira.atlassian.net/browse/ECAT-511 -->
+  <xsl:for-each select="$metadata/mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_LegalConstraints/mco:reference/cit:CI_Citation/cit:title/gco:CharacterString">
+    <Field name="licence" string="{string(.)}" store="true" index="true"/>
+  </xsl:for-each>
+
+  <xsl:for-each select="$metadata/mdb:identificationInfo/*/mri:resourceConstraints/mco:MD_LegalConstraints/mco:otherConstraints/gco:CharacterString">
+    <Field name="copyrightStatement" string="{string(.)}" store="true" index="true"/>
+  </xsl:for-each>
+  <!-- End 20211112 Wangchen updates as per https://gajira.atlassian.net/browse/ECAT-511 -->
+
 	 <xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:purpose/gco:CharacterString">
        		<Field name="purpose" string="{string(.)}" store="true" index="true"/>
      </xsl:for-each>	 
@@ -883,10 +895,10 @@
           <Field name="{$fieldPrefix}OtherConstraints"
                  string="{concat('link|',string(@xlink:href), '|', string(.))}" store="true" index="true"/>
         </xsl:for-each>
-        <xsl:for-each select="mco:useLimitation[gco:CharacterString]">
+        <!-- <xsl:for-each select="mco:useLimitation[gco:CharacterString]">
           <xsl:copy-of select="gn-fn-iso19115-3:index-field(
                                   concat($fieldPrefix, 'UseLimitation'), ., $langId)"/>
-        </xsl:for-each>
+        </xsl:for-each> -->
 
  	<xsl:for-each select="mco:useLimitation/gcx:Anchor[not(string(@xlink:href))]">
           <Field name="{$fieldPrefix}UseLimitation"

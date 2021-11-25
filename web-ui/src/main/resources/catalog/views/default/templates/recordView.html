@@ -240,56 +240,30 @@
                       class="fa fa-files-o fa-5"></i></a></label>
               </div>
             </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.legalConstraints">
-              <div class="col-md-3"><b>Legal Constraints</b></div>
+            <!-- Start 20211112 Wangchen update as per https://gajira.atlassian.net/browse/ECAT-511 -->
+            <div class="row tab-items" data-ng-if="mdView.current.record.licence">
+              <div class="col-md-3"><b>Licence</b></div>
               <div class="col-md-9">
-                <p data-ng-repeat="c in mdView.current.record.legalConstraints">{{c}}</p>
-              </div>
-            </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.securityConstraints">
-              <div class="col-md-3"><b>Security Constraints</b></div>
-              <div class="col-md-9">
-                <p data-ng-repeat="c in mdView.current.record.securityConstraints">
-                  {{c}}</p>
-              </div>
-            </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.accessCons">
-              <div class="col-md-3"><b>Access Constraints</b></div>
-              <div class="col-md-9">
-                <p> {{mdView.current.record.accessCons}}
+                <p>{{mdView.current.record.licence}}</p>
+                <p> 
+                  <a href="{{mdView.current.record.licenceLink}}" target="_blank">{{mdView.current.record.licenceLink}}</a>
                 </p>
               </div>
             </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.useCons">
-              <div class="col-md-3"><b>Use Constraints</b></div>
+            <div class="row tab-items" data-ng-if="mdView.current.record.copyrightStatement">
+              <div class="col-md-3"><b>Copyright statement</b></div>
               <div class="col-md-9">
-                <p> {{mdView.current.record.useCons}}
-                </p>
-              </div>
-            </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.resourceConstraints">
-              <div class="col-md-3"><b>Resource Constraints</b></div>
-              <div class="col-md-9">
-                <p data-ng-repeat="c in mdView.current.record.resourceConstraints">
-                  {{c}}</p>
-              </div>
-            </div>
-            <div class="row tab-items" data-ng-if="mdView.current.record.licenceLink">
-              <div class="col-md-3"><b>Link to Licence</b></div>
-              <div class="col-md-9">
-                <p> {{mdView.current.record.licenceLink}}
-                </p>
+                <p>{{mdView.current.record.copyrightStatement}}</p>
               </div>
             </div>
             <div class="row tab-items" data-ng-if="mdView.current.record.MD_LegalConstraintsUseLimitation">
-              <div class="col-md-3"><b>Use Limitations</b></div>
+              <div class="col-md-3"><b>Disclaimer</b></div>
               <div class="col-md-9">
-                <p> {{mdView.current.record.MD_LegalConstraintsUseLimitation}}
-                </p>
+                <p>{{mdView.current.record.MD_LegalConstraintsUseLimitation}}</p>
               </div>
             </div>
-
           </tab>
+          <!-- End 20211112 Wangchen update as per https://gajira.atlassian.net/browse/ECAT-511 -->
 
           <tab class="tablink" heading="About">
             <div class="subheader">About the resource</div>
