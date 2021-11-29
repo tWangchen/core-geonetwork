@@ -1172,9 +1172,10 @@
     
 
 
+    <!-- 20211129 comment out as per: https://gajira.atlassian.net/browse/ECAT-531
     <sch:rule context="//mri:MD_DataIdentification/mri:associatedResource/*|                        //srv:SV_ServiceIdentification/mri:associatedResource/*">
 
-      <!-- May be a CharacterString or LocalisedCharacterString -->
+      <!- May be a CharacterString or LocalisedCharacterString ->
 
       <sch:let name="nameTitle" value="normalize-space(mri:name/*/cit:title)"/>
 
@@ -1189,7 +1190,7 @@
 
       <sch:let name="hasMdRef" value="$mdRefTitle != '' or $mdRefRef != ''"/>
 
-      <!-- Concat ref assuming there is not both name and metadataReference -->
+      <!- Concat ref assuming there is not both name and metadataReference ->
 
       <sch:let name="resourceRef" value="concat($nameTitle, $nameRef,                               $mdRefRef, $mdRefTitle)"/>
 
@@ -1200,6 +1201,7 @@
       <sch:report test="$hasName or $hasMdRef" diagnostics="rule.mri.associatedresource-success-en                       rule.mri.associatedresource-success-fr"/>
 
     </sch:rule>
+    -->
 
   </sch:pattern>
   <sch:diagnostics>
