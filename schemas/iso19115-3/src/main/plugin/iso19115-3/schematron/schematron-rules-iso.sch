@@ -1194,10 +1194,10 @@
       <sch:let name="resourceRef" value="concat($nameTitle, $nameRef,                               $mdRefRef, $mdRefTitle)"/>
 
 
-      <sch:assert test="$hasName or $hasMdRef" diagnostics="rule.mri.associatedresource-failure-en                        rule.mri.associatedresource-failure-fr"/>
+      <sch:assert test="count($hasName)>0 or count($hasMdRef)>0" diagnostics="rule.mri.associatedresource-failure-en                        rule.mri.associatedresource-failure-fr"/>
 
 
-      <sch:report test="$hasName or $hasMdRef" diagnostics="rule.mri.associatedresource-success-en                       rule.mri.associatedresource-success-fr"/>
+      <sch:report test="count($hasName)>0 or count($hasMdRef)>0" diagnostics="rule.mri.associatedresource-success-en                       rule.mri.associatedresource-success-fr"/>
 
     </sch:rule>
 
