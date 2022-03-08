@@ -407,9 +407,11 @@
 		   <Field name="originator" string="{string(.)}" store="true" index="true"/>
 	</xsl:for-each>
 	
-	<xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode[@codeListValue='pointOfContact']]">
-		   <Field name="pointOfContact" string="{string(.)}" store="true" index="true"/>
-	</xsl:for-each>
+	<!-- Wangchen 20220131 update point of contact path -->
+	<xsl:for-each select="$metadata//cit:CI_Responsibility[cit:role/cit:CI_RoleCode[@codeListValue='pointOfContact']]">
+		   <Field name="pointOfContact" string="{string(cit:party/cit:CI_Individual/cit:name/gco:CharacterString)}" store="true" index="true"/>
+       <Field name="pointOfContact" string="{string(cit:party/cit:CI_Organisation/cit:name/gco:CharacterString)}" store="true" index="true"/>
+	</xsl:for-each>>
 	
 	<xsl:for-each select="$metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode[@codeListValue='principalInvestigator']]">
 		   <Field name="principalInvestigator" string="{string(.)}" store="true" index="true"/>

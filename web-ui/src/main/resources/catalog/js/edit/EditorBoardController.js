@@ -244,6 +244,9 @@
         sortBy: 'changeDate',
         sortOrder: ''
       }, {
+        sortBy: 'draft', // https://gajira.atlassian.net/browse/ECAT-552 - 'working copy'
+        sortOrder: ''
+      }, {
         sortBy: 'title',
         sortOrder: 'reverse'
       }];
