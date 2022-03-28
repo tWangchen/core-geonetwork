@@ -3,7 +3,7 @@ name: eCat cicd
 on: 
   push:
     branches:
-      - devtw-githubactions
+      - devtw-github-actions
 
 jobs:
   build:
