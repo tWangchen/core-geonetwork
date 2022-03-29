@@ -9,6 +9,7 @@ jobs:
   build:
     
     runs-on: ubuntu-latest
+    timeout-minutes: 600
 
     steps:
     - uses: actions/checkout@v3
@@ -20,4 +21,6 @@ jobs:
         distriubtion: 'zulu'
         cache: maven
     - name: Build with Maven
-      run: mvn clean install -DskipTests
+      run: |
+        git submodule update --init 
+        mvn clean install -DskipTests
