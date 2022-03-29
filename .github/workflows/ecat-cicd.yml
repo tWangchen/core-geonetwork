@@ -21,4 +21,4 @@ jobs:
         # distriubtion: 'zulu'
         # cache: maven
     - name: Build with Maven
-      run: mvn clean install -o -DskipTests -T 2C -Penv-prod,es
+      run: mvn clean install -DskipTests -T 2C
