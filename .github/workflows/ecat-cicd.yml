@@ -16,8 +16,8 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '8'
-        java-package: jdk
-        distribution: 'zulu'
-        cache: maven
+        java-package: 'jdk'
+        distribution: 'temurin'
+        cache: 'maven'
     - name: Build with Maven
       run: mvn clean install -DskipTests -T 2C
