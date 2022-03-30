@@ -17,7 +17,7 @@ jobs:
       with:
         java-version: '8'
         java-package: jdk
-        distribution: 'termurin'
+        distribution: 'zulu'
         cache: maven
     - name: Build with Maven
       run: mvn clean install -DskipTests -T 2C
