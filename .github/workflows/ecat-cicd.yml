@@ -9,7 +9,6 @@ jobs:
   build:
     
     runs-on: ubuntu-latest
-    timeout-minutes: 600
 
     steps:
     - uses: actions/checkout@v3
@@ -18,7 +17,7 @@ jobs:
       with:
         java-version: '8'
         java-package: jdk
-        distribution: 'zulu'
+        distribution: 'termurin'
         cache: maven
     - name: Build with Maven
       run: mvn clean install -DskipTests -T 2C
