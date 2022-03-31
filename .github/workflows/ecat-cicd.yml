@@ -27,5 +27,7 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Build with Maven
       run: |
-        mvn --projects org.geonetwork-opensource:geonetwork,org.geonetwork-opensource:common \
+        mvn --projects org.geonetwork-opensource:geonetwork,\
+        org.geonetwork-opensource:common,\
+        org.geonetwork-opensource:cachingxslt \
         install -DskipTests -fn -T 2C
