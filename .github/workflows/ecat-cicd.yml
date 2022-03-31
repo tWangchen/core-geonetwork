@@ -29,5 +29,6 @@ jobs:
       run: mvn --projects org.geonetwork-opensource:geonetwork, \
                     org.geonetwork-opensource:cachingxslt, \
                     org.geonetwork-opensource:dummy-api, \
-                    org.geonetwork-opensource:domain \
+                    org.geonetwork-opensource:domain, \
+                    org.geonetwork-opensource:oaipmh. \
                     install -DskipTests -fn -T 2C
