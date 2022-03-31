@@ -792,7 +792,8 @@
         <artifactId>gt-jdbc-mysql</artifactId>
         <version>${geotools.version}</version>
       </dependency>
-    </dependencyManagement>
+    </dependencies>
+  </dependencyManagement>
 
   <!-- =========================================================== -->
   <!--     Dependencies to be inherited by all modules.            -->
