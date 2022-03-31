@@ -28,5 +28,6 @@ jobs:
     - name: Build with Maven
       run: mvn --projects org.geonetwork-opensource:geonetwork, \
                     org.geonetwork-opensource:cachingxslt, \
-                    org.geonetwork-opensource:dummy-api \
+                    org.geonetwork-opensource:dummy-api, \
+                    org.geonetwork-opensource:domain \
                     install -DskipTests -fn -T 2C
