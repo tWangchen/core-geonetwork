@@ -29,5 +29,23 @@ jobs:
       run: |
         mvn --projects org.geonetwork-opensource:geonetwork,\
         org.geonetwork-opensource:common,\
-        org.geonetwork-opensource:cachingxslt \
+        org.geonetwork-opensource:cachingxslt,\
+        org.geonetwork-opensource:dummy-api,\
+        org.geonetwork-opensource:domain,\
+        org.geonetwork-opensource:oaipmh,\
+        org.geonetwork-opensource:events,\
+        org.geonetwork-opensource:schemas,\
+        org.geonetwork-opensource:schema-core,\
+        org.geonetwork-opensource:schema-iso19139,\
+        org.geonetwork-opensource:es,\
+        org.geonetwork-opensource:es-core,\
+        org.geonetwork-opensource:core,\
+        org.geonetwork-opensource:listeners,\
+        org.geonetwork-opensource:schema-csw-record,\
+        org.geonetwork-opensource:schema-dublin-core,\
+        org.geonetwork-opensource:schema-iso19110,\
+        org.geonetwork-opensource:schema-iso19115-3,\
+        org.geonetwork-opensource:csw-server,\
+        org.geonetwork-opensource:harvesters,\
+        org.geonetwork-opensource:health-monitor \
         install -DskipTests -fn -T 2C
