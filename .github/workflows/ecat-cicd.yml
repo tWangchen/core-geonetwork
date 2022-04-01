@@ -27,17 +27,4 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Build with Maven
       run: |
-        mvn --projects org.geonetwork-opensource:doi,\
-        org.geonetwork-opensource:services,\
-        org.geonetwork-opensource:wro4j,\
-        org.geonetwork-opensource:inspire-atom,\
-        org.geonetwork-opensource:es-dashboards,\
-        org.geonetwork-opensource:release,\
-        org.geonetwork-opensource:messaging,\
-        org.geonetwork-opensource:workers,\
-        org.geonetwork-opensource:wfsfeature-harvester,\
-        org.geonetwork-opensource:slave,\
-        org.geonetwork-opensource:schema-tests,\
-        org.geonetwork-opensource:web-ui,\
-        org.geonetwork-opensource:web-app \
-        install -DskipTests -fn -T 2C
+        mvn clean install -DskipTests -Penv-prod,es -fn -T 2C
