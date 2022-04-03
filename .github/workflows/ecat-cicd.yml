@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - devtw-github-actions
+  # Optimise action runs: restrict PR only to Prod.
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  build:
+  build-deploy:
     
     runs-on: ubuntu-latest
 
@@ -28,3 +32,23 @@ jobs:
     - name: Build with Maven
       run: |
         mvn clean install -DskipTests -Penv-prod,es
+
+    - name: Deploy to AWS S3
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        asw-bucket: ${{ secrets.AWS_S3_BUCKET }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-southeast-2
+    
+    - name: Config and deploy dev branch
+      if: github.ref == 'refs/heads/devtw-github-actions'
+      run: aws s3 sync --exclude '*' --include '/web/target/geonetwork.war' . s3://tw-aws-s3-bucket/dev
+
+    - name: Config and deploy test branch
+      if: github.ref == 'refs/heads/dev'
+      run: aws s3 sync --exclude '*' --include '/web/target/geonetwork.war' . s3://tw-aws-s3-bucket/test
+
+    - name: Config and deploy prod branch
+      if: github.ref == 'refs/heads/master'
+      run: aws s3 sync --exclude '*' --include '/web/target/geonetwork.war' . s3://tw-aws-s3-bucket/prod
