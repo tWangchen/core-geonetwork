@@ -45,7 +45,7 @@ jobs:
       run: aws s3 sync --exclude '*' --include 'web/target/geonetwork.war' . s3://tw-aws-s3-bucket/dev
 
     - name: Config and deploy test branch
-      if: github.ref == 'refs/heads/dev'
+      if: github.ref == 'refs/heads/test'
       run: aws s3 sync --exclude '*' --include 'web/target/geonetwork.war' . s3://tw-aws-s3-bucket/test
 
     - name: Config and deploy prod branch
