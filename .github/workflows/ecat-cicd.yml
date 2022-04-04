@@ -36,7 +36,7 @@ jobs:
     - name: Build with Maven
       run: |
         git submodule update --init --recursive
-        mvn clean install -DskipTests -Penv-prod,es
+        mvn -B -V install -DskipTests=true -Dmaven.javadoc.skip=true
 
     - name: Deploy to AWS S3
       uses: aws-actions/configure-aws-credentials@v1
