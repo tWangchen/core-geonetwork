@@ -46,7 +46,7 @@ jobs:
     
     - name: Config and deploy dev branch
       if: github.ref == 'refs/heads/devtw-github-actions'
-      run: aws s3 sync --exclude '*' --include 'web/target/geonetwork.war' . s3://tw-aws-s3-bucket/dev
+      run: aws s3 sync --exclude '*' --include 'web/target/geonetwork-classes.jar' . s3://tw-aws-s3-bucket/dev
 
     - name: Config and deploy test branch
       if: github.ref == 'refs/heads/ecat-test'
