@@ -6,7 +6,7 @@ on:
       - devtw-github-actions
       - ecat-test
       - 3.10.x
-  # Optimise action runs: restrict PR only to Prod.
+  # Optimise action runs: restrict PR only to Prod
   pull_request:
     branches:
       - 3.10.x
