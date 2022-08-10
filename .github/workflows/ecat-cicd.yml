@@ -34,8 +34,8 @@ jobs:
         key: ${{ runner.os }}-maven-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    # - name: Build with Maven
-    #   run: mvn clean install -DskipTests -Penv-prod,es
+    - name: Build with Maven
+      run: mvn clean install -DskipTests -Penv-prod,es
 
     - name: Deploy to AWS S3
       uses: aws-actions/configure-aws-credentials@v1
@@ -46,7 +46,7 @@ jobs:
     
     - name: Config and deploy dev branch
       if: github.ref == 'refs/heads/devtw-github-actions'
-      run: aws s3 sync --exclude '*' --include 'web/target/geonetwork.war' . s3://tw-aws-s3-bucket/dev
+      run: aws s3 sync --exclude '*' --include 'web/target/geonetwork.war' . ${{ secrets.AWS_SS3_BUCKET }}/dev
 
     - name: Config and deploy test branch
       if: github.ref == 'refs/heads/ecat-test'
